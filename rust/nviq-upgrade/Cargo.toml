@@ -1,0 +1,11 @@
+[package]
+name = "nviq-upgrade"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1"
+flate2 = { version = "1.0", features = ["zlib-ng"], default-features = false }
+native-dialog = "0.9"
+tar = "0.4.44"
+zip-extract = "0.4"

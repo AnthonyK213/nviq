@@ -1,0 +1,581 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Configuration schema for Neovim.",
+  "type": "object",
+  "properties": {
+    "general": {
+      "description": "General settings",
+      "type": "object",
+      "properties": {
+        "offline": {
+          "description": "Set this to true if internet connection is unavailable",
+          "type": "boolean",
+          "default": false
+        },
+        "proxy": {
+          "description": "Proxy",
+          "type": "string"
+        },
+        "shell": {
+          "description": "The shell that the terminal emulator to start with",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "upgrade": {
+          "description": "Whether to enable nvim-upgrade. It's useful when you are using official released binary archives directly rather than installers or package managers.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "path": {
+      "description": "Paths",
+      "type": "object",
+      "properties": {
+        "home": {
+          "description": "Path to home directory",
+          "type": "string"
+        },
+        "desktop": {
+          "description": "Path to desktop directory",
+          "type": "string"
+        },
+        "vimwiki": {
+          "description": "Path to vimwiki directory",
+          "type": "string"
+        }
+      }
+    },
+    "tui": {
+      "description": "TUI settings",
+      "type": "object",
+      "properties": {
+        "scheme": {
+          "description": "Color scheme",
+          "type": "string",
+          "enum": [
+            "default",
+            "gruvbox",
+            "nanovim",
+            "nightfox"
+          ]
+        },
+        "theme": {
+          "description": "TUI background theme",
+          "type": "string",
+          "enum": [
+            "auto",
+            "dark",
+            "light"
+          ]
+        },
+        "style": {
+          "description": "Style of the color scheme",
+          "type": "string",
+          "enum": [
+            "day",
+            "night",
+            "dawn",
+            "dusk",
+            "nord",
+            "tera",
+            "carbon"
+          ]
+        },
+        "transparent": {
+          "description": "Whether to make background transparent",
+          "type": "boolean",
+          "default": false
+        },
+        "global_statusline": {
+          "description": "Whether to enable global statusline",
+          "type": "boolean",
+          "default": false
+        },
+        "border": {
+          "description": "Floating window border style",
+          "type": "string",
+          "enum": [
+            "bold",
+            "double",
+            "none",
+            "rounded",
+            "single"
+          ]
+        },
+        "auto_dim": {
+          "description": "Whether to dim inactive window automatically",
+          "type": "boolean",
+          "default": false
+        },
+        "devicons": {
+          "description": "Whether to enable devicons (nvim-web-devicons)",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "gui": {
+      "description": "GUI settings (Neovim Qt | FVim | Neovide | VimR)",
+      "type": "object",
+      "properties": {
+        "theme": {
+          "description": "GUI background theme",
+          "type": "string",
+          "enum": [
+            "auto",
+            "dark",
+            "light"
+          ]
+        },
+        "opacity": {
+          "description": "Window opacity (0.0~1.0)",
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "ligature": {
+          "description": "Whether to render ligatures",
+          "type": "boolean",
+          "default": false
+        },
+        "popup_menu": {
+          "description": "Whether to use GUI popup menu",
+          "type": "boolean",
+          "default": false
+        },
+        "tabline": {
+          "description": "Whether to use GUI tabline",
+          "type": "boolean",
+          "default": false
+        },
+        "scroll_bar": {
+          "description": "Whether to show GUI scroll bar",
+          "type": "boolean",
+          "default": false
+        },
+        "line_space": {
+          "description": "Line space",
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 10.0
+        },
+        "cursor_blink": {
+          "description": "Whether to enable cursor blink",
+          "type": "boolean",
+          "default": false
+        },
+        "font_size": {
+          "description": "GUI font size",
+          "type": "integer",
+          "minimum": 1
+        },
+        "font_half": {
+          "description": "See 'guifont'",
+          "type": "string"
+        },
+        "font_wide": {
+          "description": "See 'guifontwide'",
+          "type": "string"
+        }
+      }
+    },
+    "lsp": {
+      "description": "Language Server Protocol",
+      "type": "object",
+      "patternProperties": {
+        "^.+$": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "load": {
+                  "description": "Whethter to load this server",
+                  "type": "boolean",
+                  "default": false
+                },
+                "disable_semantic_tokens": {
+                  "description": "Disable semantic tokens if it doesn't work well",
+                  "type": "boolean",
+                  "default": false
+                },
+                "settings": {
+                  "description": "Extra settings, LSP specific",
+                  "type": "object",
+                  "default": {}
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ts": {
+      "description": "Treesitter",
+      "type": "object",
+      "properties": {
+        "ensure_installed": {
+          "description": "Parsers to install automatically",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "ada",
+              "agda",
+              "angular",
+              "apex",
+              "arduino",
+              "asm",
+              "astro",
+              "authzed",
+              "awk",
+              "bash",
+              "bass",
+              "beancount",
+              "bibtex",
+              "bicep",
+              "bitbake",
+              "blade",
+              "blueprint",
+              "bp",
+              "brightscript",
+              "c",
+              "c_sharp",
+              "caddy",
+              "cairo",
+              "capnp",
+              "chatito",
+              "circom",
+              "clojure",
+              "cmake",
+              "comment",
+              "commonlisp",
+              "cooklang",
+              "corn",
+              "cpon",
+              "cpp",
+              "css",
+              "csv",
+              "cuda",
+              "cue",
+              "cylc",
+              "d",
+              "dart",
+              "desktop",
+              "devicetree",
+              "dhall",
+              "diff",
+              "disassembly",
+              "djot",
+              "dockerfile",
+              "dot",
+              "doxygen",
+              "dtd",
+              "earthfile",
+              "ebnf",
+              "editorconfig",
+              "eds",
+              "eex",
+              "elixir",
+              "elm",
+              "elsa",
+              "elvish",
+              "embedded_template",
+              "enforce",
+              "erlang",
+              "facility",
+              "faust",
+              "fennel",
+              "fidl",
+              "firrtl",
+              "fish",
+              "foam",
+              "forth",
+              "fortran",
+              "fsh",
+              "fsharp",
+              "func",
+              "fusion",
+              "gap",
+              "gaptst",
+              "gdscript",
+              "gdshader",
+              "git_config",
+              "git_rebase",
+              "gitattributes",
+              "gitcommit",
+              "gitignore",
+              "gleam",
+              "glimmer",
+              "glimmer_javascript",
+              "glimmer_typescript",
+              "glsl",
+              "gn",
+              "gnuplot",
+              "go",
+              "goctl",
+              "godot_resource",
+              "gomod",
+              "gosum",
+              "gotmpl",
+              "gowork",
+              "gpg",
+              "graphql",
+              "gren",
+              "groovy",
+              "gstlaunch",
+              "hack",
+              "hare",
+              "haskell",
+              "haskell_persistent",
+              "hcl",
+              "heex",
+              "helm",
+              "hjson",
+              "hlsl",
+              "hlsplaylist",
+              "hocon",
+              "hoon",
+              "html",
+              "htmldjango",
+              "http",
+              "hurl",
+              "hyprlang",
+              "idl",
+              "idris",
+              "ini",
+              "inko",
+              "ipkg",
+              "ispc",
+              "janet_simple",
+              "java",
+              "javadoc",
+              "javascript",
+              "jinja",
+              "jinja_inline",
+              "jq",
+              "jsdoc",
+              "json",
+              "json5",
+              "jsonc",
+              "jsonnet",
+              "julia",
+              "just",
+              "kcl",
+              "kconfig",
+              "kdl",
+              "kotlin",
+              "koto",
+              "kusto",
+              "lalrpop",
+              "latex",
+              "ledger",
+              "leo",
+              "linkerscript",
+              "liquid",
+              "liquidsoap",
+              "llvm",
+              "lua",
+              "luadoc",
+              "luap",
+              "luau",
+              "m68k",
+              "make",
+              "markdown",
+              "markdown_inline",
+              "matlab",
+              "menhir",
+              "mermaid",
+              "meson",
+              "mlir",
+              "muttrc",
+              "nasm",
+              "nginx",
+              "nickel",
+              "nim",
+              "nim_format_string",
+              "ninja",
+              "nix",
+              "norg",
+              "nqc",
+              "nu",
+              "objc",
+              "objdump",
+              "ocaml",
+              "ocaml_interface",
+              "ocamllex",
+              "odin",
+              "pascal",
+              "passwd",
+              "pem",
+              "perl",
+              "php",
+              "php_only",
+              "phpdoc",
+              "pioasm",
+              "po",
+              "pod",
+              "poe_filter",
+              "pony",
+              "powershell",
+              "printf",
+              "prisma",
+              "problog",
+              "prolog",
+              "promql",
+              "properties",
+              "proto",
+              "prql",
+              "psv",
+              "pug",
+              "puppet",
+              "purescript",
+              "pymanifest",
+              "python",
+              "ql",
+              "qmldir",
+              "qmljs",
+              "query",
+              "r",
+              "racket",
+              "ralph",
+              "rasi",
+              "razor",
+              "rbs",
+              "re2c",
+              "readline",
+              "regex",
+              "rego",
+              "requirements",
+              "rescript",
+              "rnoweb",
+              "robot",
+              "robots",
+              "roc",
+              "ron",
+              "rst",
+              "ruby",
+              "runescript",
+              "rust",
+              "scala",
+              "scfg",
+              "scheme",
+              "scss",
+              "sflog",
+              "slang",
+              "slim",
+              "slint",
+              "smali",
+              "smithy",
+              "snakemake",
+              "solidity",
+              "soql",
+              "sosl",
+              "sourcepawn",
+              "sparql",
+              "sql",
+              "squirrel",
+              "ssh_config",
+              "starlark",
+              "strace",
+              "styled",
+              "supercollider",
+              "superhtml",
+              "surface",
+              "svelte",
+              "sway",
+              "swift",
+              "sxhkdrc",
+              "systemtap",
+              "t32",
+              "tablegen",
+              "tact",
+              "tcl",
+              "teal",
+              "templ",
+              "tera",
+              "terraform",
+              "textproto",
+              "thrift",
+              "tiger",
+              "tlaplus",
+              "tmux",
+              "todotxt",
+              "toml",
+              "tsv",
+              "tsx",
+              "turtle",
+              "twig",
+              "typescript",
+              "typespec",
+              "typoscript",
+              "typst",
+              "udev",
+              "ungrammar",
+              "unison",
+              "usd",
+              "uxntal",
+              "v",
+              "vala",
+              "vento",
+              "verilog",
+              "vhdl",
+              "vhs",
+              "vim",
+              "vimdoc",
+              "vrl",
+              "vue",
+              "wgsl",
+              "wgsl_bevy",
+              "wing",
+              "wit",
+              "xcompose",
+              "xml",
+              "xresources",
+              "yaml",
+              "yang",
+              "yuck",
+              "zathurarc",
+              "zig",
+              "ziggy",
+              "ziggy_schema"
+            ]
+          }
+        }
+      }
+    },
+    "dap": {
+      "description": "Debug Adapter Protocol",
+      "type": "object",
+      "properties": {
+        "codelldb": {
+          "description": "https://github.com/vadimcn/codelldb",
+          "type": "boolean",
+          "default": false
+        },
+        "coreclr": {
+          "description": "https://github.com/Samsung/netcoredbg",
+          "type": "boolean",
+          "default": false
+        },
+        "python": {
+          "description": "https://github.com/microsoft/debugpy",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  }
+}

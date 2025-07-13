@@ -1,0 +1,186 @@
+local mini_deps = require("mini.deps")
+
+mini_deps.add {
+  source = "mfussenegger/nvim-dap",
+  depends = {
+    "jay-babu/mason-nvim-dap.nvim",
+    "mason-org/mason.nvim",
+  }
+}
+
+mini_deps.add {
+  source = "rcarriga/nvim-dap-ui",
+  depends = {
+    "mfussenegger/nvim-dap",
+    "nvim-neotest/nvim-nio",
+  }
+}
+
+---------------------------------mason-nvim-dap---------------------------------
+
+require("mason-nvim-dap").setup {
+  ensure_installed = vim.tbl_keys(_G.NVIQ.settings.dap),
+  automatic_installation = false,
+}
+
+---------------------------------------dap--------------------------------------
+
+local dap = require("dap")
+local has_win = jit.os == "Windows"
+local mason_dir = vim.fs.joinpath(vim.fn.stdpath("data"), "mason")
+
+---@class nviq.pack.dap.Adapter
+---@field typename string
+---@field filetype string|string[]
+---@field option table
+---@field configuration table
+local Adapter = {}
+
+Adapter.__index = Adapter
+
+---Constructor.
+---@param filetype string|string[]
+---@param typename string
+---@param option table
+---@param configuration table[]
+---@return nviq.pack.dap.Adapter
+function Adapter.new(filetype, typename, option, configuration)
+  local o = {
+    filetype = filetype,
+    typename = typename,
+    option = option,
+    configuration = configuration,
+  }
+  setmetatable(o, Adapter)
+  return o
+end
+
+---Setup the adapter.
+function Adapter:setup()
+  dap.adapters[self.typename] = self.option
+  for _, config in ipairs(self.configuration) do
+    config.type = self.typename
+  end
+  local ft = self.filetype
+  if type(ft) == "string" then
+    dap.configurations[ft] = self.configuration
+  elseif type(ft) == "table" then
+    for _, t in ipairs(ft) do
+      dap.configurations[t] = self.configuration
+    end
+  end
+end
+
+---@type table<string, nviq.pack.dap.Adapter>
+local adapters = {}
+
+adapters.codelldb = Adapter.new({ "c", "cpp", "rust" }, "codelldb", {
+  type = "executable",
+  command = vim.fs.joinpath(mason_dir, "packages/codelldb/extension/adapter/codelldb"),
+  name = "codelldb",
+  detached = not has_win,
+}, {
+  {
+    name = "Launch",
+    type = "codelldb",
+    request = "launch",
+    program = function()
+      return vim.fn.input {
+        prompt = "Path to executable: ",
+        default = vim.uv.cwd() .. "/",
+        completion = "file"
+      }
+    end,
+    cwd = "${workspaceFolder}",
+    stopOnEntry = false,
+    args = {},
+  }
+})
+
+local function get_netcoredbg_path()
+  if has_win then
+    return vim.fs.joinpath(mason_dir, "packages/netcoredbg/netcoredbg/netcoredbg")
+  else
+    return vim.fs.joinpath(mason_dir, "bin/netcoredbg")
+  end
+end
+
+adapters.coreclr = Adapter.new("cs", "coreclr", {
+  type = "executable",
+  command = get_netcoredbg_path(),
+  args = { "--interpreter=vscode" }
+}, {
+  {
+    name = "Launch",
+    type = "coreclr",
+    request = "launch",
+    program = function()
+      return vim.fn.input {
+        prompt = "Path to dll: ",
+        default = vim.uv.cwd() .. "/",
+        completion = "file"
+      }
+    end,
+  },
+  {
+    name = "Attach",
+    type = "coreclr",
+    request = "attach",
+    processId = require("dap.utils").pick_process,
+    args = {}
+  }
+})
+
+local function get_python_path()
+  local dir = has_win and "Scripts" or "bin"
+  return vim.fs.joinpath(mason_dir, "packages/debugpy/venv", dir, "python")
+end
+
+adapters.python = Adapter.new("python", "python", {
+  type = "executable",
+  command = get_python_path(),
+  args = { "-m", "debugpy.adapter" }
+}, {
+  {
+    type = "python",
+    name = "Launch",
+    request = "launch",
+    program = "${file}",
+    pythonPath = get_python_path,
+  }
+})
+
+-- Setup adapters.
+for type_, load in pairs(_G.NVIQ.settings.dap or {}) do
+  local adapter = adapters[type_]
+  if load and adapter then
+    adapter:setup()
+  end
+end
+
+-- Enable overseer integration.
+require("overseer").enable_dap()
+
+-------------------------------------dap-ui-------------------------------------
+
+local dapui = require("dapui")
+dapui.setup()
+dap.listeners.before.attach.dapui_config = function() dapui.open() end
+dap.listeners.before.launch.dapui_config = function() dapui.open() end
+dap.listeners.before.event_terminated.dapui_config = function() dapui.close() end
+dap.listeners.before.event_exited.dapui_config = function() dapui.close() end
+
+vim.keymap.set("n", "<F5>", function() require("dap").continue() end)
+vim.keymap.set("n", "<F10>", function() require("dap").step_over() end)
+vim.keymap.set("n", "<F23>", function() require("dap").step_into() end)
+vim.keymap.set("n", "<S-F11>", function() require("dap").step_into() end)
+vim.keymap.set("n", "<F47>", function() require("dap").step_out() end)
+vim.keymap.set("n", "<S-C-F11>", function() require("dap").step_out() end)
+vim.keymap.set("n", "<leader>db", function() require("dap").toggle_breakpoint() end)
+vim.keymap.set("n", "<leader>dc", function() require("dap").clear_breakpoints() end)
+vim.keymap.set("n", "<leader>dl", function() require("dap").run_last() end)
+vim.keymap.set("n", "<leader>dr", function() require("dap").repl.toggle() end)
+vim.keymap.set("n", "<leader>dt", function() require("dap").terminate() end)
+vim.keymap.set("n", "<leader>dn", function() require("dapui").toggle() end)
+vim.keymap.set("n", "<leader>df", function() require("dapui").float_element() end)
+vim.keymap.set("x", "<leader>dv", function() require("dapui").eval() end)

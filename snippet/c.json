@@ -1,0 +1,50 @@
+{
+  "Include guard": {
+    "prefix": "once",
+    "body": [
+      "#ifndef ${1:X}",
+      "#define ${1:X}",
+      "",
+      "${0}",
+      "",
+      "#endif"
+    ],
+    "description": "Include guard."
+  },
+  "Main function": {
+    "prefix": "main",
+    "body": [
+      "int main(int argc, char *argv[]) {",
+      "\t${0}",
+      "",
+      "\treturn 0;",
+      "}"
+    ],
+    "description": "Main function."
+  },
+  "LeetCode template": {
+    "prefix": "leetcode",
+    "body": [
+      "#include <iostream>",
+      "#include <map>",
+      "#include <set>",
+      "#include <string>",
+      "#include <unordered_map>",
+      "#include <vector>",
+      "",
+      "using namespace std;",
+      "",
+      "class Solution {",
+      "public:",
+      "\t${0}",
+      "};",
+      "",
+      "int main(int argc, char *argv[]) {",
+      "\tSolution aSolution{};",
+      "",
+      "\treturn 0;",
+      "}"
+    ],
+    "description": "LeetCode template for c++."
+  }
+}
