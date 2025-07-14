@@ -81,7 +81,7 @@ end
 ---@return string?
 function M.md_bullet_decrement(bullet)
   local index = tonumber(bullet:match("%d+"))
-  if index <= 1 then return end
+  if not index or index <= 1 then return end
   return tostring(index - 1) .. "."
 end
 
@@ -90,6 +90,7 @@ end
 ---@return string?
 function M.md_bullet_increment(bullet)
   local index = tonumber(bullet:match("%d+"))
+  if not index then return end
   return tostring(index + 1) .. "."
 end
 

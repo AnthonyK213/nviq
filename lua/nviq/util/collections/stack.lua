@@ -37,14 +37,18 @@ end
 ---Returns the object at the top of the Stack without removing it.
 ---@return any
 function Stack:peek()
-  if self._top == 0 then error("Stack is empty") end
+  if self._top == 0 then
+    error("Stack is empty")
+  end
   return self._data[self._top]
 end
 
 ---Removes and returns the object at the top of the `Stack`.
 ---@return any
 function Stack:pop()
-  if self._top == 0 then error("Stack is empty") end
+  if self._top == 0 then
+    error("Stack is empty")
+  end
   local item = self._data[self._top]
   self._data[self._top] = nil
   self._top = self._top - 1

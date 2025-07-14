@@ -298,6 +298,30 @@ function M.new_split(position, option)
   return true, vim.api.nvim_get_current_win(), vim.api.nvim_get_current_buf()
 end
 
+---Locates surrounding pair in direction `dir`. Returns -1 when not found.
+---CAVEATS: This function won't check the syntax, so imbalanced pairs in a string
+---won't be handled correctly.
+---@param left string Left part of the pair.
+---@param right string Right part of the pair.
+---@return integer l_lin Line number of the left pair pos (0-based).
+---@return integer l_col Column number of the left pair pos (0-based).
+---@return integer r_lin Line number of the right pair pos (0-based).
+---@return integer r_col Column number of the right pair pos (0-based).
+function M.search_pair_pos(left, right)
+  if left == right then
+    local pat = "\\v" .. M.vim_pesc(left)
+    local l_lin, l_col = unpack(vim.fn.searchpos(pat, "nbW"))
+    local r_lin, r_col = unpack(vim.fn.searchpos(pat, "ncW"))
+    return l_lin - 1, l_col - 1, r_lin - 1, r_col - 1
+  else
+    local l_pat = "\\v" .. M.vim_pesc(left)
+    local r_pat = "\\v" .. M.vim_pesc(right)
+    local l_lin, l_col = unpack(vim.fn.searchpairpos(l_pat, "", r_pat, "nbW"))
+    local r_lin, r_col = unpack(vim.fn.searchpairpos(l_pat, "", r_pat, "ncW"))
+    return l_lin - 1, l_col - 1, r_lin - 1, r_col - 1
+  end
+end
+
 ---Try-Catch-Finally.
 ---@param try_block function
 ---@return { catch: fun(catch_block: fun(ex: string)):{ finally: fun(finally_block: function) }, finally: fun(finally_block: function) }

@@ -101,6 +101,27 @@ kbd("Change cwd to current buffer", "n", "<leader>bc", function()
 end, { silent = false })
 kbd("Delete current buffer", "n", "<leader>bd", function() require("nviq.util.misc").del_cur_buf() end)
 
+-- Search
+for key, val in pairs {
+  Bing       = { "b", "https://www.bing.com/search?q=" },
+  DuckDuckGo = { "d", "https://duckduckgo.com/?q=" },
+  Google     = { "g", "https://www.google.com/search?q=" },
+} do
+  kbd("Search <cword>/selection with " .. key, { "n", "x" }, "<leader>h" .. val[1], function()
+    local txt
+    local mode = get_mode()
+    if mode == "n" then
+      local word = _G.NVIQ.handlers.get_word()
+      txt = vim.uri_encode(word)
+    elseif mode == "v" then
+      txt = vim.uri_encode(lib.get_gv())
+    else
+      return
+    end
+    vim.ui.open(val[2] .. txt)
+  end)
+end
+
 -- Autopair
 require("nviq.util.autopair").setup {
   pairs = {
@@ -236,7 +257,7 @@ kbd("Look up the word under the cursor", { "n", "x" }, "<leader>hh", function()
   local word
   local mode = get_mode()
   if mode == "n" then
-    word = (NVIQ.handlers.get_word or lib.get_word)()
+    word = NVIQ.handlers.get_word()
   elseif mode == "v" then
     word = lib.get_gv()
   else

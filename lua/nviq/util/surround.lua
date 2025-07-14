@@ -45,29 +45,6 @@ local function extract_pair(pair)
   return left, right
 end
 
----Locates surrounding pair in direction `dir`.
----FIXME: If there are imbalanced pairs in string, how to get this work?
----@param left string
----@param right string
----@return integer l_lin (0-based)
----@return integer l_col (0-based)
----@return integer r_lin (0-based)
----@return integer r_col (0-based)
-local function locate_pair(left, right)
-  if left == right then
-    local pat = "\\v" .. lib.vim_pesc(left)
-    local l_lin, l_col = unpack(vim.fn.searchpos(pat, "nbW"))
-    local r_lin, r_col = unpack(vim.fn.searchpos(pat, "ncW"))
-    return l_lin - 1, l_col - 1, r_lin - 1, r_col - 1
-  else
-    local l_pat = "\\v" .. lib.vim_pesc(left)
-    local r_pat = "\\v" .. lib.vim_pesc(right)
-    local l_lin, l_col = unpack(vim.fn.searchpairpos(l_pat, "", r_pat, "nbW"))
-    local r_lin, r_col = unpack(vim.fn.searchpairpos(l_pat, "", r_pat, "ncW"))
-    return l_lin - 1, l_col - 1, r_lin - 1, r_col - 1
-  end
-end
-
 ---Inserts the input surrounding to the ends of <cword>.
 ---@param mode "n"|"v" The mode.
 ---@param pair string|string[] The surrounding pair.
@@ -99,7 +76,7 @@ function M.delete(pair)
   local left, right = extract_pair(pair)
   if not left or not right then return end
 
-  local l_lin, l_col, r_lin, r_col = locate_pair(left, right)
+  local l_lin, l_col, r_lin, r_col = lib.search_pair_pos(left, right)
   if l_lin < 0 or l_col < 0 or r_lin < 0 or r_col < 0 then
     vim.notify("Surrounding not found")
     return
@@ -121,7 +98,7 @@ function M.change(pair_old, pair_new)
   local left_new, right_new = extract_pair(pair_new)
   if not left_new or not right_new then return end
 
-  local l_lin, l_col, r_lin, r_col = locate_pair(left_old, right_old)
+  local l_lin, l_col, r_lin, r_col = lib.search_pair_pos(left_old, right_old)
   if l_lin < 0 or l_col < 0 or r_lin < 0 or r_col < 0 then
     vim.notify("Surrounding not found")
     return
