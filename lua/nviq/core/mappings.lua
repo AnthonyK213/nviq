@@ -308,3 +308,17 @@ kbd("Regenerate bullets for ordered list", "n", "<leader>ml", function()
   if not lib.has_filetype("markdown") then return end
   require("nviq.util.note").md_regen_ordered_list()
 end)
+
+-- Evaluate
+kbd("Evaluate lisp expression", "n", "<leader>el", function()
+  local l_lin, l_col, r_lin, r_col = lib.search_pair_pos("(", ")")
+  if l_lin < 0 or l_col < 0 or r_lin < 0 or r_col < 0 then return end
+  local txt = vim.api.nvim_buf_get_text(0, l_lin, l_col, r_lin, r_col + 1, {})
+  local str = table.concat(txt, " ")
+  local ok, result = pcall(require("nviq.util.calc").eval, str)
+  if not ok then
+    lib.warn("Invalid expression")
+    return
+  end
+  vim.api.nvim_buf_set_text(0, l_lin, l_col, r_lin, r_col + 1, { tostring(result) })
+end)
