@@ -1,6 +1,5 @@
-if _G.NVIQ.settings.general.offline then
-  return
-end
+-- No plugins when offline.
+if _G.NVIQ.settings.general.offline then return end
 
 local path_package = vim.fs.joinpath(vim.fn.stdpath("data"), "site")
 local mini_path = vim.fs.joinpath(path_package, "pack/deps/start/mini.deps")

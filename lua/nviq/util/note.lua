@@ -217,12 +217,10 @@ function M.md_regen_ordered_list(bufnr, lnum, options)
     local l = curr.begin - 1
     while l >= 0 do
       local region = ListItemRegion.get(bufnr, l)
-      if not region or
-          not region.ordered or
-          region.indent < curr.indent then
+      if not region or region.indent < curr.indent then
         break
       end
-      if region.indent == curr.indent then
+      if region.ordered and region.indent == curr.indent then
         regions:push_front(region)
       end
       l = region.begin - 1
