@@ -435,11 +435,11 @@ function M.vim_source(file)
   end
 end
 
----Escapes vim regex(magic) special characters in a pattern by **backslash**.
----@param str string String of vim regex to escape.
+---Escapes vim regex (\\v) special characters in a string.
+---@param str string The string.
 ---@return string result Escaped string.
 function M.vim_pesc(str)
-  return vim.fn.escape(str, " ()[]{}<>.+*^$")
+  return vim.fn.escape(str, " ()[]{}<>.+!@#$%^&*=\\|?~")
 end
 
 ---Notifies a warning message.
