@@ -322,6 +322,14 @@ function M.search_pair_pos(left, right)
   end
 end
 
+---Sets background theme.
+---@param theme "dark"|"light"
+function M.set_theme(theme)
+  if vim.o.background ~= theme then
+    vim.o.background = theme
+  end
+end
+
 ---Try-Catch-Finally.
 ---@param try_block function
 ---@return { catch: fun(catch_block: fun(ex: string)):{ finally: fun(finally_block: function) }, finally: fun(finally_block: function) }

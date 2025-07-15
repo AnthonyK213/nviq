@@ -1,4 +1,5 @@
 require("nviq.core")
+require("nviq.appl")
 
 if vim.g.vscode then
   require("nviq.appl.vscode")

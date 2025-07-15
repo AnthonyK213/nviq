@@ -57,6 +57,51 @@ function M.edit_file(file_path, chdir)
   end
 end
 
+---Creates new mapping with fallback.
+---@param mode string Mode short-name.
+---@param lhs string Left-hand-side of the mapping.
+---@param new_rhs fun(fallback: function) New `rhs`.
+---@param opts? vim.keymap.set.Opts Optional parameters map.
+function M.new_keymap(mode, lhs, new_rhs, opts)
+  opts = opts or {}
+
+  local kbd_table
+  local buf = opts.buffer
+  if type(buf) == "number" then
+    if not vim.api.nvim_buf_is_valid(buf) then
+      return
+    end
+    kbd_table = vim.api.nvim_buf_get_keymap(buf, mode)
+  elseif type(buf) == "boolean" and buf then
+    error("Should provide buffer number for a buffer specific keymap.")
+  else
+    kbd_table = vim.api.nvim_get_keymap(mode)
+  end
+
+  local fallback
+
+  for _, val in ipairs(kbd_table) do
+    if val.lhs == lhs then
+      if val.rhs then
+        fallback = function()
+          lib.feedkeys(val.rhs, "n", true)
+        end
+      elseif val.callback then
+        fallback = val.callback
+      end
+      break
+    end
+  end
+
+  if fallback == nil then
+    fallback = function()
+      lib.feedkeys(lhs, "n", true)
+    end
+  end
+
+  vim.keymap.set(mode, lhs, function() new_rhs(fallback) end, opts)
+end
+
 ---Opens nvimrc, if no exists, create one.
 function M.open_nvimrc()
   local exists, opt_file = lib.get_dotfile("nvimrc")

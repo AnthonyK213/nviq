@@ -20,20 +20,6 @@ require("luasnip.loaders.from_vscode").lazy_load {
   paths = { vim.fs.joinpath(vim.fn.stdpath("config"), "snippet") }
 }
 
-local function feedkeys(key, mode)
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, true, true), mode, true)
-end
-
----Checks whether `chunk` is a markdown list marker (with a suffix space).
----@param chunk string
----@return boolean
-local function is_md_list_marker(chunk)
-  if not chunk or not lib.has_filetype("markdown") then
-    return false
-  end
-  return vim.regex([[\v^\s*(\+|-|\*|\d+\.|\w\))(\s\[.\])?\s$]]):match_str(chunk) ~= nil
-end
-
 local cmp = require("cmp")
 
 cmp.setup {
@@ -67,15 +53,11 @@ cmp.setup {
           return
         end
 
-        local context = lib.get_half_line(-1)
-        if is_md_list_marker(context.b) then
-          feedkeys("<C-\\><C-O>>>", "n")
-          vim.api.nvim_feedkeys(string.rep(vim.g.nviq_const_dir_r, vim.bo.ts), "n", true)
-        elseif luasnip.locally_jumpable(1) then
+        if luasnip.locally_jumpable(1) then
           luasnip.jump(1)
         elseif luasnip.expandable() then
           luasnip.expand {}
-        elseif context.b:match("[%w._:]$")
+        elseif lib.get_half_line(-1).b:match("[%w._:]$")
             and vim.bo.bt ~= "prompt" then
           cmp.complete()
         else
@@ -108,16 +90,7 @@ cmp.setup {
           return
         end
 
-        local context = lib.get_half_line(-1)
-        if is_md_list_marker(context.b) then
-          local idt = vim.fn.indent(".")
-          local pos = vim.api.nvim_win_get_cursor(0)
-          if idt ~= 0 then
-            feedkeys("<C-\\><C-O><<", "n")
-            pos[2] = pos[2] - math.min(idt, vim.bo.ts)
-            vim.api.nvim_win_set_cursor(0, pos)
-          end
-        elseif luasnip.locally_jumpable(-1) then
+        if luasnip.locally_jumpable(-1) then
           luasnip.jump(-1)
         else
           fallback()

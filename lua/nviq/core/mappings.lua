@@ -1,17 +1,11 @@
 local lib = require("nviq.util.lib")
 
--- Directional operation that won't break the history.
-vim.g.nviq_const_dir_l = vim.api.nvim_replace_termcodes(lib.dir_key("l"), true, false, true)
-vim.g.nviq_const_dir_r = vim.api.nvim_replace_termcodes(lib.dir_key("r"), true, false, true)
-vim.g.nviq_const_dir_u = vim.api.nvim_replace_termcodes(lib.dir_key("u"), true, false, true)
-vim.g.nviq_const_dir_d = vim.api.nvim_replace_termcodes(lib.dir_key("d"), true, false, true)
-
 ---Sets a new key mapping.
 ---@param desc string The description.
 ---@param mode string|table Mode short-name.
 ---@param lhs string Left-hand side {lhs} of the mapping.
 ---@param rhs string|function Right-hand side {rhs} of the mapping.
----@param opts? table Options.
+---@param opts? vim.keymap.set.Opts Options.
 local function kbd(desc, mode, lhs, rhs, opts)
   local options = { noremap = true, silent = true }
   if opts then
@@ -38,7 +32,15 @@ end
 
 ---Switches mode to normal.
 local function to_normal()
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-\\><C-N>", false, true, true), "nx", false)
+  lib.feedkeys("<C-\\><C-N>", "nx", false)
+end
+
+---Checks whether `chunk` is a markdown list marker (with a suffix space).
+---@param chunk string
+---@return boolean
+local function is_after_md_list_item(chunk)
+  if not chunk then return false end
+  return vim.regex([[\v^\s*(\+|-|\*|\d+\.|\w\))(\s\[.\])?\s$]]):match_str(chunk) ~= nil
 end
 
 kbd("Switch to normal mode in terminal", "t", "<ESC>", "<C-\\><C-N>")
@@ -55,6 +57,12 @@ kbd("Paste from system clipboard", { "n", "v" }, "<M-v>", '"+p')
 kbd("Paste from system clipboard", "i", "<M-v>", "<C-R>=@+<CR>")
 kbd("Select all lines in buffer", "n", "<M-a>", "ggVG")
 kbd("Open nvimrc", "n", "<M-,>", function() require("nviq.util.misc").open_nvimrc() end)
+kbd("Toggle background theme", "n", "<leader>bg", function()
+  if vim.is_callable(_G.NVIQ.handlers.set_theme) then
+    local theme = vim.o.background == "dark" and "light" or "dark"
+    _G.NVIQ.handlers.set_theme(theme)
+  end
+end)
 
 -- Emacs
 kbd("Move cursor to the beginning", "c", "<C-A>", "<C-B>", { silent = false })
@@ -73,9 +81,9 @@ kbd("Move cursor to the first character of the screen line", "i", "<C-A>", "<C-\
 kbd("Move cursor to the last character of the screen line", "i", "<C-E>", "<C-\\><C-O>g$")
 kbd("Kill text until the end of the line", "i", "<C-K>", "<C-\\><C-O>D")
 ---@format disable-next
-kbd("Move cursor to the left", "i", "<C-B>", [[col(".") == 1 ? "<C-\><C-O>-<C-\><C-O>$" : g:nviq_const_dir_l]], { expr = true, replace_keycodes = false })
+kbd("Move cursor to the left", "i", "<C-B>", [[col(".") == 1 ? "<C-\><C-O>-<C-\><C-O>$" : "]] .. lib.dir_key("l") .. '"', { expr = true, replace_keycodes = false })
 ---@format disable-next
-kbd("Move cursor to the right", "i", "<C-F>", [[col(".") >= col("$") ? "<C-\><C-O>+" : g:nviq_const_dir_r]], { expr = true, replace_keycodes = false })
+kbd("Move cursor to the right", "i", "<C-F>", [[col(".") >= col("$") ? "<C-\><C-O>+<C-\><C-O>0" : "]] .. lib.dir_key("r") .. '"', { expr = true, replace_keycodes = false })
 kbd("Kill text until the end of the word", "i", "<M-d>", "<C-\\><C-O>dw")
 kbd("Move line up", "n", "<M-p>", [[<Cmd>exe "move" max([line(".") - 2, 0])<CR>]])
 kbd("Move line down", "n", "<M-n>", [[<Cmd>exe "move" min([line(".") + 1, line("$")])<CR>]])
@@ -84,7 +92,17 @@ kbd("Move block down", "v", "<M-n>", [[:<C-U>exe "'<,'>move" min([line("'>") + 1
 kbd("Move cursor down", { "n", "v", "i" }, "<C-N>", function() vim.cmd.normal("gj") end)
 kbd("Move cursor up", { "n", "v", "i" }, "<C-P>", function() vim.cmd.normal("gk") end)
 
+-- Moving cursor to other windows
+for dir, desc in pairs { h = "left", j = "down", k = "up", l = "right" } do
+  kbd("Move cursor to window: " .. desc, "n", "<M-" .. dir .. ">", function()
+    lib.feedkeys("<C-W>" .. dir, "nx", false)
+  end)
+end
+
 -- Open
+kbd("Open file manager", "n", "<leader>oe", function()
+  vim.ui.open(lib.buf_dir())
+end)
 kbd("Open terminal", "n", "<leader>ot", function()
   local ok = require("nviq.util.misc").terminal()
   if ok then
@@ -239,43 +257,10 @@ kbd("Change surrounding", "n", "<leader>sc", function()
   end)
 end)
 
--- Jieba
-kbd("Toggle jieba-mode.", "n", "<leader>jm", function()
-  local jieba = require("nviq.appl.jieba")
-  if jieba.is_enabled() then
-    jieba:disable()
-    vim.notify("Jieba is disabled")
-  else
-    if jieba:enable() then
-      vim.notify("Jieba is enabled")
-    end
-  end
-end)
-
--- Stardict
-kbd("Look up the word under the cursor", { "n", "x" }, "<leader>hh", function()
-  local word
-  local mode = get_mode()
-  if mode == "n" then
-    word = NVIQ.handlers.get_word()
-  elseif mode == "v" then
-    word = lib.get_gv()
-  else
-    return
-  end
-  require("nviq.appl.stardict").stardict(word)
-end)
-
--- Theme
-kbd("Toggle background theme", "n", "<leader>bg", function()
-  local bg = vim.o.bg == "dark" and "light" or "dark"
-  require("nviq.appl.theme").set_theme(bg)
-end)
-
 -- Note
 kbd("Insert new list item", "i", "<M-CR>", function()
   if not lib.has_filetype("markdown") then
-    vim.api.nvim_input("<C-O>o")
+    lib.feedkeys("<C-O>o", "n", true)
     return
   end
 
@@ -284,7 +269,7 @@ kbd("Insert new list item", "i", "<M-CR>", function()
   local region = note.ListItemRegion.get(0)
 
   if not region then
-    vim.api.nvim_input("<C-O>o")
+    lib.feedkeys("<C-O>o", "n", true)
     return
   end
 
@@ -303,6 +288,24 @@ kbd("Insert new list item", "i", "<M-CR>", function()
   end
 
   vim.api.nvim_win_set_cursor(0, { region.end_ + 1, col })
+end)
+kbd("Indent markdown list item rightwards", "i", "<Tab>", function()
+  if not lib.has_filetype("markdown") then return end
+  local context = lib.get_half_line(-1)
+  if not is_after_md_list_item(context.b) then return end
+  lib.feedkeys("<C-\\><C-O>>>", "n", true)
+  lib.feedkeys(string.rep(lib.dir_key("r"), vim.bo.tabstop), "n", true)
+end)
+kbd("Indent markdown list item leftwards", "i", "<S-Tab>", function()
+  if not lib.has_filetype("markdown") then return end
+  local context = lib.get_half_line(-1)
+  if not is_after_md_list_item(context.b) then return end
+  local indent = vim.fn.indent(".")
+  local pos = vim.api.nvim_win_get_cursor(0)
+  if indent == 0 then return end
+  lib.feedkeys("<C-\\><C-O><<", "n", true)
+  pos[2] = pos[2] - math.min(indent, vim.bo.tabstop)
+  vim.api.nvim_win_set_cursor(0, pos)
 end)
 kbd("Regenerate bullets for ordered list", "n", "<leader>ml", function()
   if not lib.has_filetype("markdown") then return end

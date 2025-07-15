@@ -59,13 +59,9 @@ end
 ---
 ---@param theme? string
 function M.set_theme(theme)
-  local bg = M.normalize(theme)
-  if vim.g.nviq_theme_toggle == true then
-    if vim.o.bg ~= bg then
-      vim.o.bg = bg
-    end
-  elseif vim.is_callable(vim.g.nviq_theme_toggle) then
-    vim.g.nviq_theme_toggle(bg)
+  if vim.is_callable(_G.NVIQ.handlers.set_theme) then
+    theme = M.normalize(theme)
+    _G.NVIQ.handlers.set_theme(theme)
   end
 end
 
