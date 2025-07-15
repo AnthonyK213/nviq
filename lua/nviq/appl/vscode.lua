@@ -6,7 +6,7 @@ local vscode = require("vscode")
 
 vim.o.loadplugins = false
 
-vim.cmd.filetype("off")
+vim.cmd.filetype("on")
 vim.cmd.filetype("indent", "off")
 vim.cmd.filetype("plugin", "off")
 vim.cmd.syntax("off")
