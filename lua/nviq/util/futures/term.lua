@@ -1,5 +1,4 @@
 local lib = require("nviq.util.lib")
-local putil = require("nviq.util.p")
 
 ---@class nviq.futures.Terminal Represents a neovim terminal.
 ---@field cmd string[] Command with arguments.
@@ -52,7 +51,7 @@ end
 ---@return integer winnr Window number of the terminal, -1 on failure.
 ---@return integer bufnr Buffer number of the terminal, -1 on failure.
 function Terminal:start()
-  if not putil.has_exe(self.cmd[1], true) then self.is_valid = false end
+  if not lib.has_exe(self.cmd[1], true) then self.is_valid = false end
   if self.has_exited or not self.is_valid then return false, -1, -1 end
   local ok, winnr, bufnr = lib.new_split(self.option.split_pos or "belowright", {
     split_size = self.option.split_size,

@@ -1,5 +1,4 @@
 local lib = require("nviq.util.lib")
-local putil = require("nviq.util.p")
 
 ---@type nviq.futures.ProcessHandle[]
 local handles = {}
@@ -124,7 +123,7 @@ end
 ---Run the process.
 ---@return boolean ok True if process starts successfully.
 function Process:start()
-  if not putil.has_exe(self.path, true) then self.is_valid = false end
+  if not lib.has_exe(self.path, true) then self.is_valid = false end
   if self:has_exited() or not self.is_valid then return false end
 
   self.stdout_buf = {}

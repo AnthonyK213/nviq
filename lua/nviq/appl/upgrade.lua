@@ -1,5 +1,4 @@
 local lib = require("nviq.util.lib")
-local putil = require("nviq.util.p")
 local rsmod = require("nviq.appl.rsmod")
 local futures = require("nviq.util.futures")
 
@@ -70,7 +69,7 @@ end
 ---@param proxy? string
 ---@return vim.Version?
 local function fetch_version(channel, proxy)
-  if not putil.has_exe(CURL_CMD, true) then
+  if not lib.has_exe(CURL_CMD, true) then
     return
   end
 
@@ -148,11 +147,6 @@ end
 ---Returns the pre-built binary archive name.
 ---@return string?
 local function get_source_name()
-  if jit.os == "OSX" then
-    lib.warn("Maybe using a package manager is better...")
-    return
-  end
-
   local source_name = vim.tbl_get(source_table, jit.os, jit.arch)
   if not source_name then
     lib.warn("No pre-built binaries available")

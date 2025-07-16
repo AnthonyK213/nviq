@@ -176,6 +176,22 @@ function M.get_word()
   return word, #b - #p_a, #b + #p_b
 end
 
+---Checks whether `exe` exists in path.
+---@param exe string Name of the executable.
+---@param to_warn? boolean If true, warn when executable not found.
+---@return boolean result True if `exe` is a valid executable.
+function M.has_exe(exe, to_warn)
+  if vim.fn.executable(exe) == 1 then
+    return true
+  end
+
+  if to_warn then
+    M.warn("Executable " .. exe .. " was not found.")
+  end
+
+  return false
+end
+
 ---Checks if `filetype` has `target` filetype.
 ---@param target string Destination file type.
 ---@param filetype? string File type to be checked, default *filetype* of current buffer.
@@ -184,6 +200,12 @@ function M.has_filetype(target, filetype)
   filetype = filetype or vim.bo.filetype
   if not filetype then return false end
   return vim.list_contains(vim.split(filetype, "%."), target)
+end
+
+---Checks whether the OS is Windows.
+---@return boolean
+function M.has_win()
+  return putil.os_type() == putil.OS.Windows
 end
 
 ---Decodes a json file.

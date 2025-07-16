@@ -1,5 +1,4 @@
 local lib = require("nviq.util.lib")
-local putil = require("nviq.util.p")
 local mini_deps = require("mini.deps")
 
 mini_deps.add {
@@ -19,7 +18,7 @@ end
 ---@param parsers string[]
 ---@return boolean
 local function install_parsers(parsers)
-  if not putil.has_exe("tree-sitter") then
+  if not lib.has_exe("tree-sitter") then
     return false
   end
 

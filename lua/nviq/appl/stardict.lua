@@ -1,7 +1,6 @@
 local ffi = require("ffi")
 local lib = require("nviq.util.lib")
 local futil = require("nviq.util.f")
-local putil = require("nviq.util.p")
 local rsmod = require("nviq.appl.rsmod")
 local futures = require("nviq.util.futures")
 
@@ -166,7 +165,7 @@ function M.stardict(word)
     return
   end
 
-  if putil.has_exe("sdcv") then
+  if lib.has_exe("sdcv") then
     local p = futures.Process.new("sdcv", { args = { "-n", "-j", word } })
     p.on_stdout = on_stdout
     p:start()

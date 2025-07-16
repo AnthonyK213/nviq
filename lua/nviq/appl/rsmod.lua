@@ -23,7 +23,7 @@ function M.get_dylib_path(name)
   end
 
   local dylib_dir = get_release_dir(name)
-  local dylib_prefix = putil.has_win() and "" or "lib"
+  local dylib_prefix = lib.has_win() and "" or "lib"
   local dylib_name = name:gsub("%-", "_")
   local dylib_file = dylib_prefix .. dylib_name .. dylib_ext
   local dylib_path = vim.fs.joinpath(dylib_dir, dylib_file)
@@ -40,7 +40,7 @@ end
 ---@return string?
 function M.get_bin_path(name)
   local bin_dir = get_release_dir(name)
-  local bin_ext = putil.has_win() and ".exe" or ""
+  local bin_ext = lib.has_win() and ".exe" or ""
   local bin_file = name .. bin_ext
   local bin_path = vim.fs.joinpath(bin_dir, bin_file)
   if not futil.is_file(bin_path) then
@@ -72,7 +72,7 @@ end
 ---Builds crates in this configuration.
 ---@param crates table<string,{path:string}>
 function M.build_crates(crates)
-  if not putil.has_exe("cargo", true) then
+  if not lib.has_exe("cargo", true) then
     return
   end
 

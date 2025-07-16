@@ -2,7 +2,10 @@
 
 local M = {}
 
----@enum nviq.enum.OS
+---@type nviq.util.p.OS
+local _current_os = nil
+
+---@enum nviq.util.p.OS
 M.OS = {
   Unknown = 0,
   Linux   = 1,
@@ -20,41 +23,23 @@ function M.dylib_ext()
   })[M.os_type()]
 end
 
----Checks whether `exe` exists.
----@param exe string Name of the executable.
----@param to_warn? boolean If true, warn when executable not found.
----@return boolean result True if `exe` is a valid executable.
-function M.has_exe(exe, to_warn)
-  if vim.fn.executable(exe) == 1 then
-    return true
-  end
-
-  if to_warn then
-    M.warn("Executable " .. exe .. " is not found.")
-  end
-
-  return false
-end
-
----Checks whether the OS is Windows.
----@return boolean
-function M.has_win()
-  return jit.os == "Windows"
-end
-
 ---Returns the type of current OS.
----@return nviq.enum.OS os_type Type of current OS.
+---@return nviq.util.p.OS os_type Type of current OS.
 function M.os_type()
+  if _current_os then return _current_os end
+
   local name = vim.uv.os_uname().sysname
   if name == "Linux" then
-    return M.OS.Linux
+    _current_os = M.OS.Linux
   elseif name == "Windows_NT" then
-    return M.OS.Windows
+    _current_os = M.OS.Windows
   elseif name == "Darwin" then
-    return M.OS.MacOS
+    _current_os = M.OS.MacOS
   else
-    return M.OS.Unknown
+    _current_os = M.OS.Unknown
   end
+
+  return _current_os
 end
 
 return M

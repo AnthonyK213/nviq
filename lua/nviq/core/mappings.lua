@@ -101,7 +101,18 @@ end
 
 -- Open
 kbd("Open file manager", "n", "<leader>oe", function()
-  vim.ui.open(lib.buf_dir())
+  local buf_dir = lib.buf_dir()
+  if lib.has_win() then
+    local handle
+    handle = vim.uv.spawn("cmd", {
+      args = { "/c", "start", [[""]], buf_dir },
+      cwd = buf_dir,
+    }, vim.schedule_wrap(function()
+      handle:close()
+    end))
+  else
+    vim.ui.open(buf_dir)
+  end
 end)
 kbd("Open terminal", "n", "<leader>ot", function()
   local ok = require("nviq.util.misc").terminal()
@@ -290,22 +301,30 @@ kbd("Insert new list item", "i", "<M-CR>", function()
   vim.api.nvim_win_set_cursor(0, { region.end_ + 1, col })
 end)
 kbd("Indent markdown list item rightwards", "i", "<Tab>", function()
-  if not lib.has_filetype("markdown") then return end
-  local context = lib.get_half_line(-1)
-  if not is_after_md_list_item(context.b) then return end
-  lib.feedkeys("<C-\\><C-O>>>", "n", true)
-  lib.feedkeys(string.rep(lib.dir_key("r"), vim.bo.tabstop), "n", true)
+  if lib.has_filetype("markdown") then
+    local back = lib.get_half_line(-1).b
+    if is_after_md_list_item(back) then
+      lib.feedkeys("<C-\\><C-O>>>", "n", true)
+      lib.feedkeys(string.rep(lib.dir_key("r"), vim.bo.tabstop), "n", true)
+      return
+    end
+  end
+  lib.feedkeys("<Tab>", "n", true)
 end)
 kbd("Indent markdown list item leftwards", "i", "<S-Tab>", function()
-  if not lib.has_filetype("markdown") then return end
-  local context = lib.get_half_line(-1)
-  if not is_after_md_list_item(context.b) then return end
-  local indent = vim.fn.indent(".")
-  local pos = vim.api.nvim_win_get_cursor(0)
-  if indent == 0 then return end
-  lib.feedkeys("<C-\\><C-O><<", "n", true)
-  pos[2] = pos[2] - math.min(indent, vim.bo.tabstop)
-  vim.api.nvim_win_set_cursor(0, pos)
+  if lib.has_filetype("markdown") then
+    local back = lib.get_half_line(-1).b
+    if is_after_md_list_item(back) then
+      local indent = vim.fn.indent(".")
+      if indent == 0 then return end
+      local pos = vim.api.nvim_win_get_cursor(0)
+      lib.feedkeys("<C-\\><C-O><<", "n", true)
+      pos[2] = pos[2] - math.min(indent, vim.bo.tabstop)
+      vim.api.nvim_win_set_cursor(0, pos)
+      return
+    end
+  end
+  lib.feedkeys("<S-Tab>", "n", true)
 end)
 kbd("Regenerate bullets for ordered list", "n", "<leader>ml", function()
   if not lib.has_filetype("markdown") then return end
