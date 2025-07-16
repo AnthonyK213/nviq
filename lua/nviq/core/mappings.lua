@@ -17,32 +17,6 @@ local function kbd(desc, mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, options)
 end
 
----Normal mode or Visual mode?
----@return string?
-local function get_mode()
-  local m = vim.api.nvim_get_mode().mode
-  if m == "n" then
-    return m
-  elseif vim.list_contains({ "v", "V", "" }, m) then
-    return "v"
-  else
-    return nil
-  end
-end
-
----Switches mode to normal.
-local function to_normal()
-  lib.feedkeys("<C-\\><C-N>", "nx", false)
-end
-
----Checks whether `chunk` is a markdown list marker (with a suffix space).
----@param chunk string
----@return boolean
-local function is_after_md_list_item(chunk)
-  if not chunk then return false end
-  return vim.regex([[\v^\s*(\+|-|\*|\d+\.|\w\))(\s\[.\])?\s$]]):match_str(chunk) ~= nil
-end
-
 kbd("Switch to normal mode in terminal", "t", "<ESC>", "<C-\\><C-N>")
 kbd("Close the terminal", "t", "<M-d>", "<C-\\><C-N><Cmd>bd!<CR>")
 kbd("Find and replace", "n", "<M-g>", ":%s/", { silent = false })
@@ -57,6 +31,11 @@ kbd("Paste from system clipboard", { "n", "v" }, "<M-v>", '"+p')
 kbd("Paste from system clipboard", "i", "<M-v>", "<C-R>=@+<CR>")
 kbd("Select all lines in buffer", "n", "<M-a>", "ggVG")
 kbd("Open nvimrc", "n", "<M-,>", function() require("nviq.util.misc").open_nvimrc() end)
+for dir, desc in pairs { h = "left", j = "down", k = "up", l = "right" } do
+  kbd("Move cursor to window: " .. desc, "n", "<M-" .. dir .. ">", function()
+    lib.feedkeys("<C-W>" .. dir, "nx", false)
+  end)
+end
 kbd("Toggle background theme", "n", "<leader>bg", function()
   if vim.is_callable(_G.NVIQ.handlers.set_theme) then
     local theme = vim.o.background == "dark" and "light" or "dark"
@@ -92,12 +71,14 @@ kbd("Move block down", "v", "<M-n>", [[:<C-U>exe "'<,'>move" min([line("'>") + 1
 kbd("Move cursor down", { "n", "v", "i" }, "<C-N>", function() vim.cmd.normal("gj") end)
 kbd("Move cursor up", { "n", "v", "i" }, "<C-P>", function() vim.cmd.normal("gk") end)
 
--- Moving cursor to other windows
-for dir, desc in pairs { h = "left", j = "down", k = "up", l = "right" } do
-  kbd("Move cursor to window: " .. desc, "n", "<M-" .. dir .. ">", function()
-    lib.feedkeys("<C-W>" .. dir, "nx", false)
-  end)
-end
+-- Buffer
+kbd("Next buffer", "n", "<leader>bn", "<Cmd>bn<CR>")
+kbd("Previous buffer", "n", "<leader>bp", "<Cmd>bp<CR>")
+kbd("Change cwd to current buffer", "n", "<leader>bc", function()
+  vim.api.nvim_set_current_dir(lib.buf_dir())
+  vim.cmd.pwd()
+end, { silent = false })
+kbd("Delete current buffer", "n", "<leader>bd", function() require("nviq.util.misc").del_cur_buf() end)
 
 -- Open
 kbd("Open file manager", "n", "<leader>oe", function()
@@ -121,15 +102,6 @@ kbd("Open terminal", "n", "<leader>ot", function()
   end
 end)
 
--- Buffer
-kbd("Next buffer", "n", "<leader>bn", "<Cmd>bn<CR>")
-kbd("Previous buffer", "n", "<leader>bp", "<Cmd>bp<CR>")
-kbd("Change cwd to current buffer", "n", "<leader>bc", function()
-  vim.api.nvim_set_current_dir(lib.buf_dir())
-  vim.cmd.pwd()
-end, { silent = false })
-kbd("Delete current buffer", "n", "<leader>bd", function() require("nviq.util.misc").del_cur_buf() end)
-
 -- Search
 for key, val in pairs {
   Bing       = { "b", "https://www.bing.com/search?q=" },
@@ -138,11 +110,11 @@ for key, val in pairs {
 } do
   kbd("Search <cword>/selection with " .. key, { "n", "x" }, "<leader>h" .. val[1], function()
     local txt
-    local mode = get_mode()
-    if mode == "n" then
+    local mode = lib.get_mode()
+    if mode == lib.Mode.Normal then
       local word = _G.NVIQ.handlers.get_word()
       txt = vim.uri_encode(word)
-    elseif mode == "v" then
+    elseif mode == lib.Mode.Visual then
       txt = vim.uri_encode(lib.get_gv())
     else
       return
@@ -150,197 +122,3 @@ for key, val in pairs {
     vim.ui.open(val[2] .. txt)
   end)
 end
-
--- Autopair
-require("nviq.util.autopair").setup {
-  pairs = {
-    ["()"] = { left = "(", right = ")" },
-    ["[]"] = { left = "[", right = "]" },
-    ["{}"] = { left = "{", right = "}" },
-    ["''"] = { left = "'", right = "'" },
-    ['""'] = { left = '"', right = '"' },
-    tex_bf = { left = "\\textbf{", right = "}" },
-    tex_it = { left = "\\textit{", right = "}" },
-    tex_rm = { left = "\\textrm{", right = "}" },
-    md_p   = { left = "`", right = "`" },
-    md_i   = { left = "*", right = "*" },
-    md_b   = { left = "**", right = "**" },
-    md_m   = { left = "***", right = "***" },
-    md_u   = { left = "<u>", right = "</u>" },
-  },
-  keymaps = {
-    ["("] = { action = "open", pair = "()" },
-    [")"] = { action = "close", pair = "()" },
-    ["["] = { action = "open", pair = "[]" },
-    ["]"] = { action = "close", pair = "[]" },
-    ["{"] = { action = "open", pair = "{}" },
-    ["}"] = { action = "close", pair = "{}" },
-    ["'"] = {
-      action = "closeopen",
-      pair = {
-        ["_"] = "''",
-        lisp = "",
-        rust = "",
-      }
-    },
-    ['"'] = { action = "closeopen", pair = '""' },
-    ["<M-P>"] = {
-      action = "closeopen",
-      pair = {
-        markdown = "md_p",
-      }
-    },
-    ["<M-I>"] = {
-      action = "closeopen",
-      pair = {
-        markdown = "md_i",
-        tex = "tex_it",
-      }
-    },
-    ["<M-B>"] = {
-      action = "closeopen",
-      pair = {
-        markdown = "md_b",
-        tex = "tex_bf",
-      }
-    },
-    ["<M-N>"] = {
-      action = "closeopen",
-      pair = {
-        markdown = "tex_rm",
-        tex = "tex_rm",
-      }
-    },
-    ["<M-M>"] = {
-      action = "closeopen",
-      pair = {
-        markdown = "md_m"
-      }
-    },
-    ["<M-U>"] = {
-      action = "closeopen",
-      pair = {
-        markdown = "md_u"
-      }
-    },
-  }
-}
-
--- Commenting
-kbd("Toggle comment", "x", "<leader>kc", function()
-  return require("vim._comment").operator()
-end, { expr = true })
-kbd("Toggle comment line", "n", "<leader>kc", function()
-  return require("vim._comment").operator() .. "_"
-end, { expr = true })
-
--- Surrounding
-kbd("Insert surrounding", { "n", "x" }, "<leader>sa", function()
-  if not vim.bo.modifiable then return end
-  local mode = get_mode()
-  if not mode then return end
-  to_normal()
-  local futures = require("nviq.util.futures")
-  futures.spawn(function()
-    local left = futures.ui.input { prompt = "Insert surrounding: " }
-    if not left then return end
-    require("nviq.util.surround").insert(mode, left, _G.NVIQ.handlers.get_word)
-  end)
-end)
-kbd("Delete surrounding", "n", "<leader>sd", function()
-  if not vim.bo.modifiable then return end
-  local futures = require("nviq.util.futures")
-  futures.spawn(function()
-    local left = futures.ui.input { prompt = "Delete surrounding: " }
-    if not left then return end
-    require("nviq.util.surround").delete(left)
-  end)
-end)
-kbd("Change surrounding", "n", "<leader>sc", function()
-  if not vim.bo.modifiable then return end
-  local futures = require("nviq.util.futures")
-  futures.spawn(function()
-    local old = futures.ui.input { prompt = "Change surrounding: " }
-    if not old then return end
-    local new = futures.ui.input { prompt = "New surrounding: " }
-    if not new then return end
-    require("nviq.util.surround").change(old, new)
-  end)
-end)
-
--- Note
-kbd("Insert new list item", "i", "<M-CR>", function()
-  if not lib.has_filetype("markdown") then
-    lib.feedkeys("<C-O>o", "n", true)
-    return
-  end
-
-  local note = require("nviq.util.note")
-
-  local region = note.ListItemRegion.get(0)
-
-  if not region then
-    lib.feedkeys("<C-O>o", "n", true)
-    return
-  end
-
-  local new_bullet = region.bullet
-  if region.ordered then
-    new_bullet = note.md_bullet_increment(region.bullet) or region.bullet
-  end
-
-  local new_line = string.rep(" ", region.indent) .. new_bullet .. " "
-  vim.api.nvim_buf_set_lines(0, region.end_, region.end_, true, { new_line })
-
-  local col = #new_line
-  if region.ordered then
-    note.md_regen_ordered_list(0, region.end_, { forward_only = true })
-    col = vim.api.nvim_buf_get_lines(0, region.end_, region.end_ + 1, true)[1]:len()
-  end
-
-  vim.api.nvim_win_set_cursor(0, { region.end_ + 1, col })
-end)
-kbd("Indent markdown list item rightwards", "i", "<Tab>", function()
-  if lib.has_filetype("markdown") then
-    local back = lib.get_half_line(-1).b
-    if is_after_md_list_item(back) then
-      lib.feedkeys("<C-\\><C-O>>>", "n", true)
-      lib.feedkeys(string.rep(lib.dir_key("r"), vim.bo.tabstop), "n", true)
-      return
-    end
-  end
-  lib.feedkeys("<Tab>", "n", true)
-end)
-kbd("Indent markdown list item leftwards", "i", "<S-Tab>", function()
-  if lib.has_filetype("markdown") then
-    local back = lib.get_half_line(-1).b
-    if is_after_md_list_item(back) then
-      local indent = vim.fn.indent(".")
-      if indent == 0 then return end
-      local pos = vim.api.nvim_win_get_cursor(0)
-      lib.feedkeys("<C-\\><C-O><<", "n", true)
-      pos[2] = pos[2] - math.min(indent, vim.bo.tabstop)
-      vim.api.nvim_win_set_cursor(0, pos)
-      return
-    end
-  end
-  lib.feedkeys("<S-Tab>", "n", true)
-end)
-kbd("Regenerate bullets for ordered list", "n", "<leader>ml", function()
-  if not lib.has_filetype("markdown") then return end
-  require("nviq.util.note").md_regen_ordered_list()
-end)
-
--- Evaluate
-kbd("Evaluate lisp expression", "n", "<leader>el", function()
-  local l_lin, l_col, r_lin, r_col = lib.search_pair_pos("(", ")")
-  if l_lin < 0 or l_col < 0 or r_lin < 0 or r_col < 0 then return end
-  local txt = vim.api.nvim_buf_get_text(0, l_lin, l_col, r_lin, r_col + 1, {})
-  local str = table.concat(txt, " ")
-  local ok, result = pcall(require("nviq.util.calc").eval, str)
-  if not ok then
-    lib.warn("Invalid expression")
-    return
-  end
-  vim.api.nvim_buf_set_text(0, l_lin, l_col, r_lin, r_col + 1, { tostring(result) })
-end)

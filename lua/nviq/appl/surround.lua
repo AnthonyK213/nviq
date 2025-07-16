@@ -46,7 +46,7 @@ local function extract_pair(pair)
 end
 
 ---Inserts the input surrounding to the ends of <cword>.
----@param mode "n"|"v" The mode.
+---@param mode nviq.util.lib.Mode The mode.
 ---@param pair string|string[] The surrounding pair.
 ---@param get_word? fun():string,integer,integer Function to get <cword>.
 function M.insert(mode, pair, get_word)
@@ -55,13 +55,13 @@ function M.insert(mode, pair, get_word)
   local left, right = extract_pair(pair)
   if not left or not right then return end
 
-  if mode == "n" then
+  if mode == lib.Mode.Normal then
     local _, s, e = (get_word or lib.get_word)()
     local lin, col = unpack(vim.api.nvim_win_get_cursor(0))
     vim.api.nvim_buf_set_text(0, lin - 1, e, lin - 1, e, { right })
     vim.api.nvim_buf_set_text(0, lin - 1, s, lin - 1, s, { left })
     vim.api.nvim_win_set_cursor(0, { lin, col + #left })
-  elseif mode == "v" then
+  elseif mode == lib.Mode.Visual then
     local s_lin, s_col, e_lin, e_col = lib.get_gv_mark()
     vim.api.nvim_buf_set_text(0, e_lin, e_col, e_lin, e_col, { right })
     vim.api.nvim_buf_set_text(0, s_lin, s_col, s_lin, s_col, { left })

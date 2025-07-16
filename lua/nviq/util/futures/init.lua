@@ -32,7 +32,7 @@ function Future:await()
   return tutil.unpack(self.result)
 end
 
----@class futures.JoinHandle
+---@class nviq.futures.JoinHandle
 ---@field private co thread
 local JoinHandle = {}
 
@@ -42,7 +42,7 @@ JoinHandle.__index = JoinHandle
 ---@private
 ---Constructor.
 ---@param co thread
----@return futures.JoinHandle
+---@return nviq.futures.JoinHandle
 function JoinHandle.new(co)
   local handle = {
     co = co,

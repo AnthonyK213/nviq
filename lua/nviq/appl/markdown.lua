@@ -4,7 +4,7 @@ local Deque = require("nviq.util.collections").Deque
 
 local M = {}
 
----@enum nviq.util.note.LineType
+---@enum nviq.appl.note.LineType
 local LineType = {
   None   = 0,
   List   = 1,
@@ -12,17 +12,17 @@ local LineType = {
   Ignore = 3,
 }
 
----@class nviq.util.note.LineInfo
----@field type nviq.util.note.LineType
+---@class nviq.appl.note.LineInfo
+---@field type nviq.appl.note.LineType
 ---@field lnum integer Line number (0-based).
 ---@field indent integer
 
 ---
 ---@param bufnr integer
 ---@param lnum integer Line number (0-based).
----@return nviq.util.note.LineInfo
-local function md_get_line_info(bufnr, lnum)
-  ---@type nviq.util.note.LineInfo
+---@return nviq.appl.note.LineInfo
+local function get_line_info(bufnr, lnum)
+  ---@type nviq.appl.note.LineInfo
   local info = {
     type = LineType.None,
     lnum = lnum,
@@ -60,7 +60,7 @@ end
 ---@return integer b_s Start byte pos (0-based, inclusive)
 ---@return integer b_e End byte pos (0-base, exclusive)
 ---@return boolean ordered
-local function md_get_list_bullet(line)
+local function get_list_bullet(line)
   local bullet, s, e
 
   s, bullet, e = line:match("^%s*()([%-%*])()%s+.*$")
@@ -79,7 +79,7 @@ end
 ---
 ---@param bullet string
 ---@return string?
-function M.md_bullet_decrement(bullet)
+function M.bullet_decrement(bullet)
   local index = tonumber(bullet:match("%d+"))
   if not index or index <= 1 then return end
   return tostring(index - 1) .. "."
@@ -88,13 +88,13 @@ end
 ---
 ---@param bullet string
 ---@return string?
-function M.md_bullet_increment(bullet)
+function M.bullet_increment(bullet)
   local index = tonumber(bullet:match("%d+"))
   if not index then return end
   return tostring(index + 1) .. "."
 end
 
----@class nviq.util.note.ListItemRegion
+---@class nviq.appl.note.ListItemRegion
 ---@field bufnr integer
 ---@field bullet string
 ---@field b_s integer Bullet byte start pos (0-based, inclusive).
@@ -110,7 +110,7 @@ ListItemRegion.__index = ListItemRegion
 ---
 ---@param bufnr integer Buffer number.
 ---@param lnum? integer Line number (0-based).
----@return nviq.util.note.ListItemRegion?
+---@return nviq.appl.note.ListItemRegion?
 function ListItemRegion.get(bufnr, lnum)
   bufnr = lib.bufnr(bufnr)
   lnum = lnum or (vim.api.nvim_win_get_cursor(0)[1] - 1)
@@ -126,14 +126,14 @@ function ListItemRegion.get(bufnr, lnum)
     indent  = 0,
   }
 
-  local info = md_get_line_info(bufnr, lnum)
+  local info = get_line_info(bufnr, lnum)
 
   -- Search for the beginning.
 
   local indent = (info.type == LineType.Empty or info.type == LineType.Ignore) and 1e8 or info.indent
   if info.type ~= LineType.List then
     for l = lnum - 1, 0, -1 do
-      local i = md_get_line_info(bufnr, l)
+      local i = get_line_info(bufnr, l)
       if i.indent < indent then
         if i.type == LineType.List then
           info = i
@@ -153,7 +153,7 @@ function ListItemRegion.get(bufnr, lnum)
   -- Get the bullet.
 
   local line = vim.api.nvim_buf_get_lines(bufnr, region.begin, region.begin + 1, true)[1]
-  local bullet, b_s, b_e, ordered = md_get_list_bullet(line)
+  local bullet, b_s, b_e, ordered = get_list_bullet(line)
   if not bullet then return end
   region.bullet = bullet
   region.b_s = b_s
@@ -165,7 +165,7 @@ function ListItemRegion.get(bufnr, lnum)
   local lcnt = vim.api.nvim_buf_line_count(bufnr)
   local empty_flag = false
   for l = lnum + 1, lcnt - 1, 1 do
-    local i = md_get_line_info(bufnr, l)
+    local i = get_line_info(bufnr, l)
     -- Find the last non-empty line.
     if i.type == LineType.Empty then
       if not empty_flag then
@@ -203,7 +203,7 @@ end
 ---@param bufnr? integer
 ---@param lnum? integer Line numebr (0-based)
 ---@param options? { forward_only:boolean? }
-function M.md_regen_ordered_list(bufnr, lnum, options)
+function M.regen_ordered_list(bufnr, lnum, options)
   bufnr = lib.bufnr(bufnr)
   options = options or {}
 
@@ -238,7 +238,7 @@ function M.md_regen_ordered_list(bufnr, lnum, options)
   local l = curr.end_
   local lcnt = vim.api.nvim_buf_line_count(bufnr)
   while l < lcnt do
-    local info = md_get_line_info(bufnr, l)
+    local info = get_line_info(bufnr, l)
     if info.type == LineType.Empty then
       l = l + 1
     else

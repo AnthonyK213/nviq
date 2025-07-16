@@ -115,16 +115,16 @@ local _lisp_func_map = {
   tan   = function(args) return math.tan(args[1]) end,
 }
 
----@class nviq.util.eval.AstNode
+---@class nviq.appl.evaluate.AstNode
 ---@field m_value string
----@field m_child nviq.util.eval.AstNode[]
+---@field m_child nviq.appl.evaluate.AstNode[]
 local AstNode = {}
 
 AstNode.__index = AstNode
 
 ---Constructs a node with value.
 ---@param value string
----@return nviq.util.eval.AstNode
+---@return nviq.appl.evaluate.AstNode
 function AstNode.new(value)
   local node = {
     m_value = value,
@@ -141,7 +141,7 @@ function AstNode:is_leaf()
 end
 
 ---Inserts a child node to this node.
----@param child nviq.util.eval.AstNode
+---@param child nviq.appl.evaluate.AstNode
 function AstNode:insert_child(child)
   table.insert(self.m_child, child)
 end
@@ -167,15 +167,15 @@ function AstNode:eval()
   return func(args)
 end
 
----@class nviq.util.eval.Ast
----@field private m_root nviq.util.eval.AstNode
+---@class nviq.appl.evaluate.Ast
+---@field private m_root nviq.appl.evaluate.AstNode
 local Ast = {}
 
 Ast.__index = Ast
 
 ---Parses the lisp expression into AST.
 ---@param str string
----@return nviq.util.eval.Ast
+---@return nviq.appl.evaluate.Ast
 function Ast.parse(str)
   local pre_parse = str:gsub("[%(%)]", function(s) return " " .. s .. " " end)
   local seg_arr = vim.split(vim.trim(pre_parse), "%s+")

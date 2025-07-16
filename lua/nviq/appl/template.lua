@@ -4,7 +4,7 @@ local futures = require("nviq.util.futures")
 
 local _template_dir = vim.fs.joinpath(vim.fn.stdpath("config"), "template")
 
----@class nviq.util.template.Template
+---@class nviq.appl.template.Template
 ---@field private name string
 ---@field private args string[]
 ---@field private dirs string[]
@@ -16,7 +16,7 @@ Template.__index = Template
 
 ---Constructor.
 ---@param temp_obj table
----@return nviq.util.template.Template?
+---@return nviq.appl.template.Template?
 function Template.new(temp_obj)
   if temp_obj.files then
     for k, v in pairs(temp_obj.files) do
@@ -93,7 +93,7 @@ end
 local M = {}
 
 ---@private
----@type table<string, nviq.util.template.Template>
+---@type table<string, nviq.appl.template.Template>
 M.templates = {}
 
 ---

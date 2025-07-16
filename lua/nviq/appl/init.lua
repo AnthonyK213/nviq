@@ -1,5 +1,224 @@
 local lib = require("nviq.util.lib")
 
+-- Autopair
+require("nviq.appl.autopair").setup {
+  pairs = {
+    ["()"] = { left = "(", right = ")" },
+    ["[]"] = { left = "[", right = "]" },
+    ["{}"] = { left = "{", right = "}" },
+    ["''"] = { left = "'", right = "'" },
+    ['""'] = { left = '"', right = '"' },
+    tex_bf = { left = "\\textbf{", right = "}" },
+    tex_it = { left = "\\textit{", right = "}" },
+    tex_rm = { left = "\\textrm{", right = "}" },
+    md_p   = { left = "`", right = "`" },
+    md_i   = { left = "*", right = "*" },
+    md_b   = { left = "**", right = "**" },
+    md_m   = { left = "***", right = "***" },
+    md_u   = { left = "<u>", right = "</u>" },
+  },
+  keymaps = {
+    ["("] = { action = "open", pair = "()" },
+    [")"] = { action = "close", pair = "()" },
+    ["["] = { action = "open", pair = "[]" },
+    ["]"] = { action = "close", pair = "[]" },
+    ["{"] = { action = "open", pair = "{}" },
+    ["}"] = { action = "close", pair = "{}" },
+    ["'"] = {
+      action = "closeopen",
+      pair = {
+        ["_"] = "''",
+        lisp = "",
+        rust = "",
+      }
+    },
+    ['"'] = { action = "closeopen", pair = '""' },
+    ["<M-P>"] = {
+      action = "closeopen",
+      pair = {
+        markdown = "md_p",
+      }
+    },
+    ["<M-I>"] = {
+      action = "closeopen",
+      pair = {
+        markdown = "md_i",
+        tex = "tex_it",
+      }
+    },
+    ["<M-B>"] = {
+      action = "closeopen",
+      pair = {
+        markdown = "md_b",
+        tex = "tex_bf",
+      }
+    },
+    ["<M-N>"] = {
+      action = "closeopen",
+      pair = {
+        markdown = "tex_rm",
+        tex = "tex_rm",
+      }
+    },
+    ["<M-M>"] = {
+      action = "closeopen",
+      pair = {
+        markdown = "md_m"
+      }
+    },
+    ["<M-U>"] = {
+      action = "closeopen",
+      pair = {
+        markdown = "md_u"
+      }
+    },
+  }
+}
+
+-- Commenting
+
+vim.keymap.set("x", "<leader>kc", function()
+  return require("vim._comment").operator()
+end, { expr = true, desc = "Toggle comment" })
+
+vim.keymap.set("n", "<leader>kc", function()
+  return require("vim._comment").operator() .. "_"
+end, { expr = true, desc = "Toggle comment line" })
+
+-- Surrounding
+
+vim.keymap.set({ "n", "x" }, "<leader>sa", function()
+  if not vim.bo.modifiable then return end
+  local mode = lib.get_mode()
+  if not mode then return end
+  -- Switch to normal mode.
+  lib.feedkeys("<C-\\><C-N>", "nx", false)
+  local futures = require("nviq.util.futures")
+  futures.spawn(function()
+    local left = futures.ui.input { prompt = "Insert surrounding: " }
+    if not left then return end
+    require("nviq.appl.surround").insert(mode, left, _G.NVIQ.handlers.get_word)
+  end)
+end, { desc = "Insert surrounding" })
+
+vim.keymap.set("n", "<leader>sd", function()
+  if not vim.bo.modifiable then return end
+  local futures = require("nviq.util.futures")
+  futures.spawn(function()
+    local left = futures.ui.input { prompt = "Delete surrounding: " }
+    if not left then return end
+    require("nviq.appl.surround").delete(left)
+  end)
+end, { desc = "Delete surrounding" })
+
+vim.keymap.set("n", "<leader>sc", function()
+  if not vim.bo.modifiable then return end
+  local futures = require("nviq.util.futures")
+  futures.spawn(function()
+    local old = futures.ui.input { prompt = "Change surrounding: " }
+    if not old then return end
+    local new = futures.ui.input { prompt = "New surrounding: " }
+    if not new then return end
+    require("nviq.appl.surround").change(old, new)
+  end)
+end, { desc = "Change surrounding" })
+
+-- Markdown
+
+---Checks whether `chunk` is a markdown list marker (with a suffix space).
+---@param chunk string
+---@return boolean
+local function is_after_md_list_item(chunk)
+  if not chunk then return false end
+  return vim.regex([[\v^\s*(\+|-|\*|\d+\.|\w\))(\s\[.\])?\s$]]):match_str(chunk) ~= nil
+end
+
+vim.keymap.set("i", "<M-CR>", function()
+  if not lib.has_filetype("markdown") then
+    lib.feedkeys("<C-O>o", "n", true)
+    return
+  end
+
+  local note = require("nviq.appl.markdown")
+
+  local region = note.ListItemRegion.get(0)
+
+  if not region then
+    lib.feedkeys("<C-O>o", "n", true)
+    return
+  end
+
+  local new_bullet = region.bullet
+  if region.ordered then
+    new_bullet = note.bullet_increment(region.bullet) or region.bullet
+  end
+
+  local new_line = string.rep(" ", region.indent) .. new_bullet .. " "
+  vim.api.nvim_buf_set_lines(0, region.end_, region.end_, true, { new_line })
+
+  local col = #new_line
+  if region.ordered then
+    note.regen_ordered_list(0, region.end_, { forward_only = true })
+    col = vim.api.nvim_buf_get_lines(0, region.end_, region.end_ + 1, true)[1]:len()
+  end
+
+  vim.api.nvim_win_set_cursor(0, { region.end_ + 1, col })
+end, { desc = "Insert new list item" })
+
+vim.keymap.set("i", "<Tab>", function()
+  if lib.has_filetype("markdown") then
+    local back = lib.get_half_line(-1).b
+    if is_after_md_list_item(back) then
+      lib.feedkeys("<C-\\><C-O>>>", "n", true)
+      lib.feedkeys(string.rep(lib.dir_key("r"), vim.bo.tabstop), "n", true)
+      return
+    end
+  end
+  lib.feedkeys("<Tab>", "n", true)
+end, { desc = "Indent markdown list item rightwards" })
+
+vim.keymap.set("i", "<S-Tab>", function()
+  if lib.has_filetype("markdown") then
+    local back = lib.get_half_line(-1).b
+    if is_after_md_list_item(back) then
+      local indent = vim.fn.indent(".")
+      if indent == 0 then return end
+      local pos = vim.api.nvim_win_get_cursor(0)
+      lib.feedkeys("<C-\\><C-O><<", "n", true)
+      pos[2] = pos[2] - math.min(indent, vim.bo.tabstop)
+      vim.api.nvim_win_set_cursor(0, pos)
+      return
+    end
+  end
+  lib.feedkeys("<S-Tab>", "n", true)
+end, { desc = "Indent markdown list item leftwards" })
+
+vim.keymap.set("n", "<leader>ml", function()
+  if not lib.has_filetype("markdown") then return end
+  require("nviq.appl.markdown").regen_ordered_list()
+end, { desc = "Regenerate bullets for ordered list" })
+
+-- Evaluate
+
+vim.keymap.set("n", "<leader>el", function()
+  local l_lin, l_col, r_lin, r_col = lib.search_pair_pos("(", ")")
+  if l_lin < 0 or l_col < 0 or r_lin < 0 or r_col < 0 then return end
+  local txt = vim.api.nvim_buf_get_text(0, l_lin, l_col, r_lin, r_col + 1, {})
+  local str = table.concat(txt, " ")
+  local ok, result = pcall(require("nviq.appl.evaluate").eval, str)
+  if not ok then
+    lib.warn("Invalid expression")
+    return
+  end
+  vim.api.nvim_buf_set_text(0, l_lin, l_col, r_lin, r_col + 1, { tostring(result) })
+end, { desc = "Evaluate lisp expression" })
+
+-- Template
+
+vim.api.nvim_create_user_command("CreateProject", function(_)
+  require("nviq.appl.template"):create_project()
+end, { desc = "Create project with templates" })
+
 -- Theme
 
 require("nviq.appl.theme").set_theme(_G.NVIQ.settings.tui.theme)
@@ -17,6 +236,8 @@ vim.keymap.set("n", "<leader>jm", function()
     end
   end
 end, { desc = "Toggle jieba-mode" })
+
+-- Run
 
 -- Rust modules
 
@@ -44,10 +265,10 @@ end, {
 
 vim.keymap.set({ "n", "x" }, "<leader>hh", function()
   local word
-  local mode = vim.api.nvim_get_mode().mode
-  if mode == "n" then
+  local mode = lib.get_mode()
+  if mode == lib.Mode.Normal then
     word = NVIQ.handlers.get_word()
-  elseif vim.list_contains({ "v", "V", "" }, mode) then
+  elseif mode == lib.Mode.Visual then
     word = lib.get_gv()
   else
     return

@@ -2,11 +2,11 @@ local lib = require("nviq.util.lib")
 local rsmod = require("nviq.appl.rsmod")
 local futures = require("nviq.util.futures")
 
-local augroup = vim.api.nvim_create_augroup("nviq.appl.upgrade", {
+local _augroup = vim.api.nvim_create_augroup("nviq.appl.upgrade", {
   clear = true
 })
 
-local source_table = {
+local _source_table = {
   Windows = {
     x64 = "nvim-win64.zip",
   },
@@ -20,7 +20,7 @@ local source_table = {
   },
 }
 
----@enum upgrade.Status
+---@enum nviq.appl.upgrade.Status
 local Status = {
   Idle = 0,
   Busy = 1,
@@ -147,7 +147,7 @@ end
 ---Returns the pre-built binary archive name.
 ---@return string?
 local function get_source_name()
-  local source_name = vim.tbl_get(source_table, jit.os, jit.arch)
+  local source_name = vim.tbl_get(_source_table, jit.os, jit.arch)
   if not source_name then
     lib.warn("No pre-built binaries available")
     return
@@ -287,7 +287,7 @@ function M.nvim_upgrade(channel)
     end
 
     vim.api.nvim_create_autocmd("VimLeave", {
-      group = augroup,
+      group = _augroup,
       callback = function()
         local cmd = {
           upgrader,

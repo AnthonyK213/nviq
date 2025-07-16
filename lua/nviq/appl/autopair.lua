@@ -5,7 +5,7 @@ local M = {}
 
 local kopt = { noremap = true, expr = false, silent = true }
 
----@enum nviq.util.autopair.ActionType
+---@enum nviq.appl.autopair.ActionType
 local ActionType = {
   Open      = 0,
   Close     = 1,
@@ -26,11 +26,11 @@ local function is_nac(char)
   return char:match("[%w_]") or (nr >= 0x4E00 and nr <= 0x9FFF)
 end
 
----@class nviq.util.autopair.PairSpec
+---@class nviq.appl.autopair.PairSpec
 ---@field left string
 ---@field right string
 
----@class nviq.util.autopair.Pair
+---@class nviq.appl.autopair.Pair
 ---@field private m_left string Left side of the pair.
 ---@field private m_right string Right side of the pair.
 local Pair = {}
@@ -38,8 +38,8 @@ local Pair = {}
 Pair.__index = Pair
 
 ---
----@param spec nviq.util.autopair.PairSpec
----@return nviq.util.autopair.Pair
+---@param spec nviq.appl.autopair.PairSpec
+---@return nviq.appl.autopair.Pair
 function Pair.new(spec)
   local pair = {
     m_left = spec.left,
@@ -50,7 +50,7 @@ function Pair.new(spec)
 end
 
 ---
----@return nviq.util.autopair.Pair
+---@return nviq.appl.autopair.Pair
 function Pair.unset()
   local pair = {}
   setmetatable(pair, Pair)
@@ -128,24 +128,24 @@ function Pair:closeopen()
   return true
 end
 
----@class nviq.util.autopair.KeymapSpec
+---@class nviq.appl.autopair.KeymapSpec
 ---@field action "open"|"close"|"closeopen"
 ---@field pair string|table<string, string>
 
----@class nviq.util.autopair.Keymap
+---@class nviq.appl.autopair.Keymap
 ---@field private m_key string LHS of the key map.
----@field private m_action nviq.util.autopair.ActionType
----@field private m_pair nviq.util.autopair.Pair
----@field private m_ft table<string, nviq.util.autopair.Pair>
+---@field private m_action nviq.appl.autopair.ActionType
+---@field private m_pair nviq.appl.autopair.Pair
+---@field private m_ft table<string, nviq.appl.autopair.Pair>
 local Keymap = {}
 
 Keymap.__index = Keymap
 
 ---
 ---@param key string
----@param spec nviq.util.autopair.KeymapSpec
----@param pair_table table<string, nviq.util.autopair.Pair>
----@return nviq.util.autopair.Keymap
+---@param spec nviq.appl.autopair.KeymapSpec
+---@param pair_table table<string, nviq.appl.autopair.Pair>
+---@return nviq.appl.autopair.Keymap
 function Keymap.new(key, spec, pair_table)
   local keymap = {
     m_key = key,
@@ -221,18 +221,18 @@ function Keymap:set()
   vim.keymap.set("i", self.m_key, function() self:action() end, kopt)
 end
 
----@type table<string, nviq.util.autopair.Pair>
+---@type table<string, nviq.appl.autopair.Pair>
 local _pairs = {}
 
----@type table<string, nviq.util.autopair.Keymap>
+---@type table<string, nviq.appl.autopair.Keymap>
 local _keymaps = {}
 
----@class nviq.util.autopair.Context
+---@class nviq.appl.autopair.Context
 ---@field b string The half line before the cursor (backward);
 ---@field f string The half line after the cursor  (forward).
 
 ---
----@param context nviq.util.autopair.Context
+---@param context nviq.appl.autopair.Context
 ---@return boolean
 local function is_sur(context)
   for _, pair in pairs(_pairs) do
@@ -296,12 +296,12 @@ local function action_supbs()
   end
 end
 
----@class nviq.util.autopair.Config
----@field pairs table<string, nviq.util.autopair.PairSpec>
----@field keymaps table<string, nviq.util.autopair.KeymapSpec>
+---@class nviq.appl.autopair.Config
+---@field pairs table<string, nviq.appl.autopair.PairSpec>
+---@field keymaps table<string, nviq.appl.autopair.KeymapSpec>
 
 ---Setup autopair.
----@param config nviq.util.autopair.Config
+---@param config nviq.appl.autopair.Config
 function M.setup(config)
   for name, spec in pairs(config.pairs) do
     _pairs[name] = Pair.new(spec)

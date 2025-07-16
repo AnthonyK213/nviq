@@ -4,6 +4,22 @@ local sutil = require("nviq.util.s")
 
 local M = {}
 
+---@enum nviq.util.lib.Mode
+M.Mode = {
+  Normal    = 0,
+  Insert    = 1,
+  Visual    = 2,
+  Command   = 3,
+  Replace   = 4,
+  Select    = 5,
+  Ex        = 6,
+  More      = 7,
+  Confirm   = 8,
+  Shell     = 9,
+  Termianl  = 10,
+  O_Pending = 11,
+}
+
 local _p_word_first_half = [[\v([\]] .. [[u4e00-\]] .. [[u9fff0-9a-zA-Z_-]+)$]]
 local _p_word_last_half = [[\v^([\]] .. [[u4e00-\]] .. [[u9fff0-9a-zA-Z_-])+]]
 local _dir_keys = {
@@ -11,6 +27,47 @@ local _dir_keys = {
   r = "<C-G>U<Right>",
   u = "<C-G>U<Up>",
   d = "<C-G>U<Down>",
+}
+
+---@type table<string, nviq.util.lib.Mode>
+local _mode_map = {
+  ["n"]     = M.Mode.Normal,
+  ["no"]    = M.Mode.O_Pending,
+  ["nov"]   = M.Mode.O_Pending,
+  ["noV"]   = M.Mode.O_Pending,
+  ["no\22"] = M.Mode.O_Pending,
+  ["niI"]   = M.Mode.Normal,
+  ["niR"]   = M.Mode.Normal,
+  ["niV"]   = M.Mode.Normal,
+  ["nt"]    = M.Mode.Normal,
+  ["ntT"]   = M.Mode.Normal,
+  ["v"]     = M.Mode.Visual,
+  ["vs"]    = M.Mode.Visual,
+  ["V"]     = M.Mode.Visual,
+  ["Vs"]    = M.Mode.Visual,
+  ["\22"]   = M.Mode.Visual,
+  ["\22s"]  = M.Mode.Visual,
+  ["s"]     = M.Mode.Select,
+  ["S"]     = M.Mode.Select,
+  ["\19"]   = M.Mode.Select,
+  ["i"]     = M.Mode.Insert,
+  ["ic"]    = M.Mode.Insert,
+  ["ix"]    = M.Mode.Insert,
+  ["R"]     = M.Mode.Replace,
+  ["Rc"]    = M.Mode.Replace,
+  ["Rx"]    = M.Mode.Replace,
+  ["Rv"]    = M.Mode.Replace,
+  ["Rvc"]   = M.Mode.Replace,
+  ["Rvx"]   = M.Mode.Replace,
+  ["c"]     = M.Mode.Command,
+  ["cr"]    = M.Mode.Command,
+  ["cv"]    = M.Mode.Ex,
+  ["cvr"]   = M.Mode.Ex,
+  ["r"]     = M.Mode.Replace,
+  ["rm"]    = M.Mode.More,
+  ["r?"]    = M.Mode.Confirm,
+  ["!"]     = M.Mode.Shell,
+  ["t"]     = M.Mode.Termianl,
 }
 
 ---Returns the directory of the buffer with bufnr.
@@ -95,16 +152,15 @@ end
 ---Returns the visual selections.
 ---@return string selection Visual selection.
 function M.get_gv()
-  local mode = vim.api.nvim_get_mode().mode
-  local in_vis = vim.list_contains({ "v", "V", "" }, mode)
+  local mode = M.get_mode()
   local a_bak = vim.fn.getreg("a", 1)
   vim.cmd.normal {
-    (in_vis and "" or "gv") .. [["ay]],
+    (mode == M.Mode.Visual and "" or "gv") .. [["ay]],
     mods = {
       silent = true
     }
   }
-  local a_val = vim.fn.getreg("a") --[[@as string]]
+  local a_val = vim.fn.getreg("a")
   vim.fn.setreg("a", a_bak)
   return a_val
 end
@@ -150,6 +206,13 @@ function M.get_half_line(half)
   end
 
   return res
+end
+
+---Returns the current mode.
+---@return nviq.util.lib.Mode
+function M.get_mode()
+  local mode = vim.api.nvim_get_mode().mode
+  return _mode_map[mode]
 end
 
 ---Get the word and its position under the cursor.
