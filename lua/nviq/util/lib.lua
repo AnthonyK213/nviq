@@ -16,7 +16,7 @@ M.Mode = {
   More      = 7,
   Confirm   = 8,
   Shell     = 9,
-  Termianl  = 10,
+  Terminal  = 10,
   O_Pending = 11,
 }
 
@@ -67,7 +67,7 @@ local _mode_map = {
   ["rm"]    = M.Mode.More,
   ["r?"]    = M.Mode.Confirm,
   ["!"]     = M.Mode.Shell,
-  ["t"]     = M.Mode.Termianl,
+  ["t"]     = M.Mode.Terminal,
 }
 
 ---Returns the directory of the buffer with bufnr.
@@ -102,7 +102,7 @@ function M.dir_key(dir)
   return _dir_keys[dir]
 end
 
----Escapes the termianl codes, feeds them to nvim.
+---Escapes the terminal codes, feeds them to nvim.
 ---@see vim.api.nvim_feedkeys
 ---@param keys string To be typed.
 ---@param mode string Behavior flags, see **feedkeys()**.

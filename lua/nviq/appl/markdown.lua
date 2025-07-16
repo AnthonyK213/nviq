@@ -4,7 +4,7 @@ local Deque = require("nviq.util.collections").Deque
 
 local M = {}
 
----@enum nviq.appl.note.LineType
+---@enum nviq.appl.markdown.LineType
 local LineType = {
   None   = 0,
   List   = 1,
@@ -12,17 +12,17 @@ local LineType = {
   Ignore = 3,
 }
 
----@class nviq.appl.note.LineInfo
----@field type nviq.appl.note.LineType
+---@class nviq.appl.markdown.LineInfo
+---@field type nviq.appl.markdown.LineType
 ---@field lnum integer Line number (0-based).
 ---@field indent integer
 
 ---
 ---@param bufnr integer
 ---@param lnum integer Line number (0-based).
----@return nviq.appl.note.LineInfo
+---@return nviq.appl.markdown.LineInfo
 local function get_line_info(bufnr, lnum)
-  ---@type nviq.appl.note.LineInfo
+  ---@type nviq.appl.markdown.LineInfo
   local info = {
     type = LineType.None,
     lnum = lnum,
@@ -94,7 +94,7 @@ function M.bullet_increment(bullet)
   return tostring(index + 1) .. "."
 end
 
----@class nviq.appl.note.ListItemRegion
+---@class nviq.appl.markdown.ListItemRegion
 ---@field bufnr integer
 ---@field bullet string
 ---@field b_s integer Bullet byte start pos (0-based, inclusive).
@@ -110,7 +110,7 @@ ListItemRegion.__index = ListItemRegion
 ---
 ---@param bufnr integer Buffer number.
 ---@param lnum? integer Line number (0-based).
----@return nviq.appl.note.ListItemRegion?
+---@return nviq.appl.markdown.ListItemRegion?
 function ListItemRegion.get(bufnr, lnum)
   bufnr = lib.bufnr(bufnr)
   lnum = lnum or (vim.api.nvim_win_get_cursor(0)[1] - 1)

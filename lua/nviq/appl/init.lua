@@ -139,9 +139,9 @@ vim.keymap.set("i", "<M-CR>", function()
     return
   end
 
-  local note = require("nviq.appl.markdown")
+  local markdown = require("nviq.appl.markdown")
 
-  local region = note.ListItemRegion.get(0)
+  local region = markdown.ListItemRegion.get(0)
 
   if not region then
     lib.feedkeys("<C-O>o", "n", true)
@@ -150,7 +150,7 @@ vim.keymap.set("i", "<M-CR>", function()
 
   local new_bullet = region.bullet
   if region.ordered then
-    new_bullet = note.bullet_increment(region.bullet) or region.bullet
+    new_bullet = markdown.bullet_increment(region.bullet) or region.bullet
   end
 
   local new_line = string.rep(" ", region.indent) .. new_bullet .. " "
@@ -158,7 +158,7 @@ vim.keymap.set("i", "<M-CR>", function()
 
   local col = #new_line
   if region.ordered then
-    note.regen_ordered_list(0, region.end_, { forward_only = true })
+    markdown.regen_ordered_list(0, region.end_, { forward_only = true })
     col = vim.api.nvim_buf_get_lines(0, region.end_, region.end_ + 1, true)[1]:len()
   end
 
