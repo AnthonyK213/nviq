@@ -14,7 +14,7 @@ local Terminal = {}
 Terminal.__index = Terminal
 
 ---Constructor.
----@param cmd string Command with arguments.
+---@param cmd string The command.
 ---@param option? table See `futures.Process.option`. Addtional:
 ---  - *split_pos*: "belowright"(default)|"aboveleft"|"topleft"|"botright"
 ---  - *split_size*: Split size;

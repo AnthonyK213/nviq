@@ -77,13 +77,17 @@ require("nviq.appl.autopair").setup {
 
 -- Commenting
 
+vim.keymap.set("n", "<leader>kc", function()
+  return require("vim._comment").operator() .. "_"
+end, { expr = true, desc = "Toggle comment line" })
+
+vim.keymap.set("n", "<leader>ku", function() end)
+
 vim.keymap.set("x", "<leader>kc", function()
   return require("vim._comment").operator()
 end, { expr = true, desc = "Toggle comment" })
 
-vim.keymap.set("n", "<leader>kc", function()
-  return require("vim._comment").operator() .. "_"
-end, { expr = true, desc = "Toggle comment line" })
+vim.keymap.set("x", "<leader>ku", function() end)
 
 -- Surrounding
 
@@ -238,6 +242,35 @@ vim.keymap.set("n", "<leader>jm", function()
 end, { desc = "Toggle jieba-mode" })
 
 -- Run
+
+vim.api.nvim_create_user_command("CodeRun", function(tbl)
+  local run = require("nviq.appl.run")
+  local filetype = vim.bo.filetype
+  local recipe = run.get_recipe(filetype)
+  if not recipe then
+    lib.warn("File type " .. filetype .. " is not supported")
+    return
+  end
+  local option = tbl.args:len() > 0 and tbl.args or 1
+  local task = recipe[option]
+  if not task then
+    lib.warn("Option is invalid")
+    return
+  end
+  run.task_run(task, {
+    file_name = vim.api.nvim_buf_get_name(0),
+    file_dir  = lib.buf_dir(0),
+    file_type = filetype,
+  })
+end, {
+  nargs = "?",
+  complete = function()
+    local run = require("nviq.appl.run")
+    local recipe = run.get_recipe(vim.bo.filetype)
+    if not recipe then return {} end
+    return run.recipe_get_options(recipe)
+  end
+})
 
 -- Rust modules
 
