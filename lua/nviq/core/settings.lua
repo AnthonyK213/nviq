@@ -33,6 +33,19 @@ local settings = {
     auto_dim          = false,
     devicons          = false,
   },
+  gui = {
+    theme        = "auto",
+    opacity      = 1.0,
+    ligature     = false,
+    popup_menu   = false,
+    tabline      = false,
+    scroll_bar   = false,
+    cursor_blink = false,
+    line_space   = 0.0,
+    font_size    = 13,
+    font_half    = "Monospace",
+    font_wide    = "Monospace",
+  },
   ---@type table<string, boolean|nviq.core.settings.LspSpec>
   lsp = {},
   ---@type table<string, boolean>
