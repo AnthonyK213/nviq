@@ -83,23 +83,22 @@ kbd("Delete current buffer", "n", "<leader>bd", function() require("nviq.util.mi
 -- Open
 kbd("Open file manager", "n", "<leader>oe", function()
   local buf_dir = lib.buf_dir()
-  if lib.has_win() then
-    local handle
-    handle = vim.uv.spawn("cmd", {
-      args = { "/c", "start", [[""]], buf_dir },
-      cwd = buf_dir,
-    }, vim.schedule_wrap(function()
-      handle:close()
-    end))
-  else
-    vim.ui.open(buf_dir)
-  end
+  require("nviq.util.misc").open(buf_dir)
 end)
 kbd("Open terminal", "n", "<leader>ot", function()
   local ok = require("nviq.util.misc").terminal()
   if ok then
     vim.api.nvim_feedkeys("i", "n", true)
   end
+end)
+kbd("Open URL or path under the cursor", "n", "<leader>ou", function()
+  local misc = require("nviq.util.misc")
+  local path = misc.match_url_or_path()
+  if not path then
+    lib.warn("Path not found")
+    return
+  end
+  misc.open(path)
 end)
 
 -- Search

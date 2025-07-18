@@ -26,6 +26,22 @@ function M.is_dir(path)
   return (stat ~= nil) and (stat.type == "directory")
 end
 
+---Checks whether `path` is a relative path.
+---@param path string The path
+---@return boolean
+function M.is_relative(path)
+  if jit.os == "Windows" then
+    if path:match("^%a:[\\/]") then
+      return false
+    end
+  else
+    if path:match("^/") then
+      return false
+    end
+  end
+  return true
+end
+
 ---Opens a text file, reads all the text in the file into a string, and then
 ---closes the file.
 ---@param path string The file to open for reading.

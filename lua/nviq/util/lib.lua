@@ -509,6 +509,28 @@ function M.try(try_block)
   }
 end
 
+---Matches URL within a string.
+---@param str string The string.
+---@return string? url The matched URL.
+function M.url_match(str)
+  local url_pat = "((%f[%w]%a+://)(%w[-.%w]*)(:?)(%d*)(/?)([%w_.~!*:@&+$/?%%#=-]*))"
+  local protocols = {
+    [""] = 0,
+    ["http://"] = 0,
+    ["https://"] = 0,
+    ["ftp://"] = 0
+  }
+
+  local url, prot, dom, colon, port, slash, path = str:match(url_pat)
+
+  if (url and
+        not (dom .. "."):find("%W%W") and
+        protocols[prot:lower()] == (1 - #slash) * #path and
+        (colon == "" or port ~= "" and port + 0 < 65536)) then
+    return url
+  end
+end
+
 ---Sources a vim file in config directory.
 ---@param file string Vim script path relative to the config directory.
 function M.vim_source(file)

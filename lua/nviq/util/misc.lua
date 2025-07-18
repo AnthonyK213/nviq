@@ -1,4 +1,5 @@
 local lib = require("nviq.util.lib")
+local futil = require("nviq.util.f")
 local tutil = require("nviq.util.t")
 local futures = require("nviq.util.futures")
 
@@ -54,6 +55,40 @@ function M.edit_file(file_path, chdir)
   end
   if chdir then
     vim.api.nvim_set_current_dir(lib.buf_dir())
+  end
+end
+
+---Matches URL or path under the cursor.
+---@return string?
+function M.match_url_or_path()
+  local url = lib.url_match(vim.fn.expand("<cWORD>"))
+  if url then
+    return url
+  end
+
+  local path = vim.fn.expand("<cfile>")
+  if futil.is_relative(path) then
+    path = vim.fs.joinpath(lib.buf_dir(), path)
+    path = vim.fs.normalize(path)
+  end
+
+  if futil.exist(path) then
+    return path
+  end
+end
+
+---The same as `vim.ui.open`, but uses `start` on Windows.
+---@param path string Path or URL to open.
+function M.open(path)
+  if lib.has_win() then
+    local handle
+    handle = vim.uv.spawn("cmd", {
+      args = { "/c", "start", '""', path }
+    }, vim.schedule_wrap(function()
+      handle:close()
+    end))
+  else
+    vim.ui.open(path)
   end
 end
 

@@ -1,3 +1,9 @@
+-- GUI configurations.
+-- Adapted GUIs:
+-- - [Neovim Qt](https://github.com/equalsraf/neovim-qt)
+-- - [Neovide](https://github.com/neovide/neovide)
+-- - [VimR](https://github.com/qvacua/vimr)
+
 local lib = require("nviq.util.lib")
 local futil = require("nviq.util.f")
 
@@ -23,7 +29,7 @@ local futil = require("nviq.util.f")
 -----------------------------------Neovim Qt------------------------------------
 
 local function has_nvim_qt()
-  return vim.fn.exists("*GuiName") == 1 and vim.fn.GuiName() == "nvim-qt"
+  return vim.g.GuiLoaded == 1
 end
 
 ---
@@ -89,6 +95,27 @@ local function neovide_setup(settings, _)
   })
 end
 
+-------------------------------------VimR---------------------------------------
+
+local function has_vimr()
+  return vim.fn.has("gui_vimr") == 1
+end
+
+---
+---@param settings nviq.appl.gui.Settings
+---@param handlers nviq.appl.gui.Handlers
+local function vimr_setup(settings, handlers)
+  vim.cmd.VimRSetLinespacing(string.format("%.1f", settings.line_space))
+
+  handlers.toggle_file_explorer = function()
+    vim.cmd.VimRToggleTools()
+  end
+
+  handlers.toggle_fullscreen = function()
+    vim.cmd.VimRToggleFullscreen()
+  end
+end
+
 -------------------------------------Setup--------------------------------------
 
 if has_neovide() then
@@ -152,6 +179,8 @@ if has_nvim_qt() then
   nvim_qt_setup(_gui_settings, _gui_handlers)
 elseif has_neovide() then
   neovide_setup(_gui_settings, _gui_handlers)
+elseif has_vimr() then
+  vimr_setup(_gui_settings, _gui_handlers)
 end
 
 if not has_neovide() then

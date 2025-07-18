@@ -21,7 +21,7 @@ function M:init()
   if _nviq_jieba then return true end
   local dylib_path = rsmod.get_dylib_path("nviq-jieba")
   if not dylib_path then
-    lib.warn("Dynamic library is not found")
+    lib.warn("Dynamic library was not found")
     return false
   end
   ffi.cdef [[
