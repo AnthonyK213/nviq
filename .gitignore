@@ -1,8 +1,6 @@
 # Configuration
-[._]mail.json
 [._]nvimrc
 .luarc.json
-coc-settings.json
 
 # Rust
 /rust/*/target
@@ -11,4 +9,4 @@ Cargo.lock
 # Misc
 *.netrwhist
 .DS_Store
-lazy-lock.json
+doc/tags

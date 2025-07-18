@@ -67,4 +67,9 @@ if exists and opt_file then
   end
 end
 
+-- Normalize the paths.
+for k, v in pairs(settings.path) do
+  settings.path[k] = vim.fs.normalize(v)
+end
+
 _G.NVIQ.settings = settings

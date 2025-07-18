@@ -1,0 +1,107 @@
+*nviq.txt*
+*Nviq* *nviq*
+--------------------------------------------------------------------------------
+CONTENTS                                                           *nviq-contents*
+
+  1. Config                                                      |nviq-config|
+  2. Mappings                                                  |nviq-mappings|
+  3. Commands                                                  |nviq-commands|
+
+--------------------------------------------------------------------------------
+CONFIG                                                               *nviq-config*
+
+Create file `.nvimrc` (also can be `_nvimrc` on Windows) in `home` or `config`
+directory. It's a pure text file with json syntax. Example:
+
+>json
+    {
+      "$schema": "https://raw.githubusercontent.com/AnthonyK213/nviq/refs/heads/main/schema.json",
+      "general": {
+        "shell": "zsh"
+      },
+      "path": {
+        "desktop": "$HOME/Desktop",
+        "vimwiki": "$HOME/vimwiki"
+      },
+      "tui": {
+        "scheme": "default",
+        "theme": "auto",
+        "border": "rounded",
+        "devicons": true,
+        "global_statusline": true
+      },
+      "gui": {
+        "theme": "auto",
+        "font_half": "Courier New",
+        "font_wide": "Fangsong",
+        "font_size": 13,
+        "ligature": true,
+        "cursor_blink": true
+      },
+      "lsp": {
+        "clangd": false,
+        "lua_ls": {
+          "load": false,
+          "settings": {
+            "Lua": {
+              "runtime": {
+                "version": "LuaJIT"
+              },
+              "diagnostics": {
+                "globals": [
+                  "vim"
+                ]
+              },
+              "workspace": {
+                "library": [],
+                "checkThirdParty": false
+              },
+              "telemetry": {
+                "enable": false
+              },
+              "format": {
+                "defaultConfig": {
+                  "indent_style": "space",
+                  "indent_size": "2"
+                }
+              }
+            }
+          }
+        },
+        "pyright": {
+          "load": false,
+          "settings": {
+            "python": {
+              "analysis": {
+                "autoSearchPaths": true,
+                "diagnosticMode": "workspace",
+                "useLibraryCodeForTypes": true,
+                "stubPath": "stubPath",
+                "typeCheckingMode": "off"
+              }
+            }
+          }
+        },
+        "rust_analyzer": false
+        // And so on...
+      },
+      "dap": {
+        "python": false
+      },
+      "ts": {
+        "ensure_installed": [
+          "c",
+          "lua"
+        ]
+      }
+    }
+<
+
+--------------------------------------------------------------------------------
+MAPPINGS                                                           *nviq-mappings*
+
+--------------------------------------------------------------------------------
+COMMANDS                                                           *nviq-commands*
+
+================================================================================
+vim:tw=80:ts=2:ft=help:norl:syntax=help:

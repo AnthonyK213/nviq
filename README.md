@@ -15,6 +15,18 @@
   - [fd](https://github.com/sharkdp/fd) (optional)
   - [Deno](https://github.com/denoland/deno/) (optional, for peek.nvim)
 
-# Configuration
+- Clone the repository
+  - Windows
+    ``` ps1
+    git clone --depth=1 https://github.com/AnthonyK213/nviq.git "$env:LOCALAPPDATA\nvim"
+    ```
+  - GNU/Linux
+    ``` sh
+    git clone --depth=1 https://github.com/AnthonyK213/nviq.git "${XDG_DATA_HOME:-$HOME/.config}"/nvim
+    ```
 
-# Key bindings
+- Start Neovim and wait for the Installation to complete
+
+# Documentation
+
+[documentation](./doc/nviq.txt)
