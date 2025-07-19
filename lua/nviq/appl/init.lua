@@ -95,8 +95,7 @@ vim.keymap.set({ "n", "x" }, "<leader>sa", function()
   if not vim.bo.modifiable then return end
   local mode = lib.get_mode()
   if not mode then return end
-  -- Switch to normal mode.
-  lib.feedkeys("<C-\\><C-N>", "nx", false)
+  lib.to_normal()
   local futures = require("nviq.util.futures")
   futures.spawn(function()
     local left = futures.ui.input { prompt = "Insert surrounding: " }

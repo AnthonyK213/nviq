@@ -19,16 +19,26 @@ vim.notify = vscode.notify
 
 -- Mappings
 
+---
+---@param mode "n"|"v"
+---@param lhs string Left-hand-side of the mapping.
+---@param cmd string VSCode command.
+---@param block? boolean Whether to block or not.
 local function kbd(mode, lhs, cmd, block)
-  local invoke = block and vscode.call or vscode.action
-  local options = {}
-  if mode == "v" then
-    options.range = {
-      vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
-      vim.api.nvim_buf_get_mark(0, ">")[1] - 1,
-    }
+  local execute = block and vscode.call or vscode.action
+  if mode == "n" then
+    vim.keymap.set(mode, lhs, function() execute(cmd) end)
+  elseif mode == "v" then
+    vim.keymap.set(mode, lhs, function()
+      require("nviq.util.lib").to_normal()
+      execute(cmd, {
+        range = {
+          vim.api.nvim_buf_get_mark(0, "<")[1] - 1,
+          vim.api.nvim_buf_get_mark(0, ">")[1] - 1,
+        }
+      })
+    end)
   end
-  vim.keymap.set(mode, lhs, function() invoke(cmd, options) end)
 end
 
 -- Buffer

@@ -460,6 +460,11 @@ function M.set_theme(theme)
   end
 end
 
+---Switches mode to NORMAL.
+function M.to_normal()
+  M.feedkeys("<C-\\><C-N>", "nx", false)
+end
+
 ---Try-Catch-Finally.
 ---@param try_block function
 ---@return { catch: fun(catch_block: fun(ex: string)):{ finally: fun(finally_block: function) }, finally: fun(finally_block: function) }
