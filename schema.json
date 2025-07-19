@@ -10,7 +10,7 @@
         "offline": {
           "description": "Set this to true if internet connection is unavailable",
           "type": "boolean",
-          "default": false
+          "default": true
         },
         "proxy": {
           "description": "Proxy",
@@ -31,7 +31,7 @@
           ]
         },
         "upgrade": {
-          "description": "Whether to enable nvim-upgrade. It's useful when you are using official released binary archives directly rather than installers or package managers.",
+          "description": "Whether to enable nviq-upgrade. It's useful when you are using official released binary archives directly rather than installers or package managers.",
           "type": "boolean",
           "default": false
         }

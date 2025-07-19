@@ -8,7 +8,7 @@ local putil = require("nviq.util.p")
 
 local settings = {
   general = {
-    offline = false,
+    offline = true,
     proxy   = nil,
     shell   = ({
       [putil.OS.Unknown] = "bash",
@@ -25,7 +25,7 @@ local settings = {
   },
   tui = {
     scheme            = "default",
-    theme             = "auto",
+    theme             = "dark",
     style             = "dark",
     transparent       = false,
     global_statusline = false,
@@ -34,7 +34,7 @@ local settings = {
     devicons          = false,
   },
   gui = {
-    theme        = "auto",
+    theme        = "dark",
     opacity      = 1.0,
     ligature     = false,
     popup_menu   = false,

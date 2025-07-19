@@ -25,8 +25,6 @@
     git clone --depth=1 https://github.com/AnthonyK213/nviq.git "${XDG_DATA_HOME:-$HOME/.config}"/nvim
     ```
 
-- Start Neovim and wait for the Installation to complete
-
 # Documentation
 
 [documentation](./doc/nviq.txt)

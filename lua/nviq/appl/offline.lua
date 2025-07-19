@@ -11,6 +11,8 @@ vim.keymap.set("n", "<leader>op", "<Cmd>20Lexplore<CR>")
 
 -- Completion
 
+vim.o.completeopt = "menu,menuone,noselect"
+
 lib.new_keymap("i", "<CR>", function(fallback)
   if vim.fn.pumvisible() ~= 0 then
     lib.feedkeys("<C-Y>", "n", true)

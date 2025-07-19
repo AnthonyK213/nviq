@@ -216,6 +216,27 @@ vim.keymap.set("n", "<leader>el", function()
   vim.api.nvim_buf_set_text(0, l_lin, l_col, r_lin, r_col + 1, { tostring(result) })
 end, { desc = "Evaluate lisp expression" })
 
+-- GLSL
+
+vim.api.nvim_create_autocmd("Filetype", {
+  pattern = "glsl",
+  command = [[setlocal omnifunc=v:lua.require('nviq.appl.glsl').omnifunc]]
+})
+
+vim.api.nvim_create_user_command("GlslViewer", function(tbl)
+  require("nviq.appl.glsl").start(0, tbl.fargs)
+end, { nargs = "*", desc = "Start GlslViewer", complete = "file" })
+
+vim.api.nvim_create_user_command("GlslViewerInput", function(_)
+  require("nviq.appl.glsl").input(0)
+end, { desc = "GlslViewer input commands" })
+
+-- Marp
+
+vim.api.nvim_create_user_command("MarpToggle", function(_)
+  require("nviq.appl.marp").toggle()
+end, { desc = "Toggle marp-cli" })
+
 -- Template
 
 vim.api.nvim_create_user_command("CreateProject", function(_)
@@ -268,7 +289,8 @@ end, {
     local recipe = run.get_recipe(vim.bo.filetype)
     if not recipe then return {} end
     return run.recipe_get_options(recipe)
-  end
+  end,
+  desc = "Run code in current buffer",
 })
 
 -- Rust modules
