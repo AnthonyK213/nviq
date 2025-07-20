@@ -1,5 +1,7 @@
 local lib = require("nviq.util.lib")
 
+local _augroup = vim.api.nvim_create_augroup("nviq.appl", { clear = true })
+
 -- Autopair
 require("nviq.appl.autopair").setup {
   pairs = {
@@ -94,7 +96,6 @@ vim.keymap.set("x", "<leader>ku", function() end)
 vim.keymap.set({ "n", "x" }, "<leader>sa", function()
   if not vim.bo.modifiable then return end
   local mode = lib.get_mode()
-  if not mode then return end
   lib.to_normal()
   local futures = require("nviq.util.futures")
   futures.spawn(function()
@@ -125,6 +126,47 @@ vim.keymap.set("n", "<leader>sc", function()
     require("nviq.appl.surround").change(old, new)
   end)
 end, { desc = "Change surrounding" })
+
+---
+---@param lhs string
+---@param pair string|string[]
+---@param pattern? string
+---@param opts? vim.keymap.set.Opts
+local function surround_toggle(lhs, pair, pattern, opts)
+  vim.keymap.set({ "n", "x" }, lhs, function()
+    local mode = lib.get_mode()
+    if mode == lib.Mode.Normal and pattern and require("nviq.util.syntax").Syntax.get():match(pattern) then
+      require("nviq.appl.surround").delete(pair)
+    else
+      lib.to_normal()
+      require("nviq.appl.surround").insert(mode, pair, _G.NVIQ.handlers.get_word)
+    end
+  end, opts)
+end
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "markdown",
+  callback = function(event)
+    local opts = { buffer = event.buf }
+    surround_toggle("<M-P>", "`", [[\v(markdown|Vimwiki)Code|raw]], opts)
+    surround_toggle("<M-I>", "*", [[\v(markdown|Vimwiki)Italic|italic]], opts)
+    surround_toggle("<M-B>", "**", [[\v(markdown|Vimwiki)Bold|strong]], opts)
+    surround_toggle("<M-M>", "***", [[\v(markdown|Vimwiki)BoldItalic|strong|italic]], opts)
+    surround_toggle("<M-U>", "<u>", [[\v(html|Vimwiki)Underline]], opts)
+  end,
+  group = _augroup,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "tex",
+  callback = function(event)
+    local opts = { buffer = event.buf }
+    surround_toggle("<M-I>", { "\\textit{", "}" }, [[\vtexStyle(Ital|Both)]], opts)
+    surround_toggle("<M-B>", { "\\textbf{", "}" }, [[\vtexStyleBo(ld|th)]], opts)
+    surround_toggle("<M-M>", { "\\textrm{", "}" }, [[\vtex(StyleArgConc|MathTextConcArg)]], opts)
+  end,
+  group = _augroup,
+})
 
 -- Markdown
 
@@ -220,7 +262,11 @@ end, { desc = "Evaluate lisp expression" })
 
 vim.api.nvim_create_autocmd("Filetype", {
   pattern = "glsl",
-  command = [[setlocal omnifunc=v:lua.require('nviq.appl.glsl').omnifunc]]
+  callback = function(event)
+    vim.bo[event.buf].omnifunc = "v:lua.require('nviq.appl.glsl').omnifunc"
+    vim.b[event.buf].nviq_handler_preview_toggle = require("nviq.appl.glsl").toggle
+  end,
+  group = _augroup,
 })
 
 vim.api.nvim_create_user_command("GlslViewer", function(tbl)

@@ -1,11 +1,6 @@
 local lib = require("nviq.util.lib")
 local mini_deps = require("mini.deps")
 
-mini_deps.add {
-  source = "nvim-treesitter/nvim-treesitter",
-  checkout = "main",
-}
-
 ---Registers filetypes for the pasers.
 ---@param parser_table table<string, string|string[]>
 local function register_parsers(parser_table)
@@ -40,27 +35,36 @@ local function enable_parsers(parsers)
     end
   end
 
+  local augroup = vim.api.nvim_create_augroup("nviq.pack.treesitter", { clear = true })
   vim.api.nvim_create_autocmd("FileType", {
     pattern = ft_list,
     callback = function()
       vim.treesitter.start()
       vim.wo.foldexpr = [[v:lua.vim.treesitter.foldexpr()]]
       vim.bo.indentexpr = [[v:lua.require("nvim-treesitter").indentexpr()]]
-    end
+    end,
+    group = augroup,
   })
 end
 
--- Setup treesitter.
-local ts_settings = _G.NVIQ.settings.ts or {}
----@type string[]
-local ensure_installed = ts_settings.ensure_installed or {}
-
-if install_parsers(ensure_installed) then
-  register_parsers {
-    powershell = { "ps1" },
+mini_deps.now(function()
+  mini_deps.add {
+    source = "nvim-treesitter/nvim-treesitter",
+    checkout = "main",
   }
-  enable_parsers(ensure_installed)
-else
-  -- TODO: Download tree-sitter cli and add it to path if not found.
-  lib.warn("tree-sitter cli was not found")
-end
+
+  -- Setup treesitter.
+  local ts_settings = _G.NVIQ.settings.ts or {}
+  ---@type string[]
+  local ensure_installed = ts_settings.ensure_installed or {}
+
+  if install_parsers(ensure_installed) then
+    register_parsers {
+      powershell = { "ps1" },
+    }
+    enable_parsers(ensure_installed)
+  else
+    -- TODO: Download tree-sitter cli and add it to path if not found.
+    lib.warn("tree-sitter cli was not found")
+  end
+end)

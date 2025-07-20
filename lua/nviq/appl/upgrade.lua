@@ -2,10 +2,6 @@ local lib = require("nviq.util.lib")
 local rsmod = require("nviq.appl.rsmod")
 local futures = require("nviq.util.futures")
 
-local _augroup = vim.api.nvim_create_augroup("nviq.appl.upgrade", {
-  clear = true
-})
-
 local _source_table = {
   Windows = {
     x64 = "nvim-win64.zip",
@@ -286,8 +282,9 @@ function M.nvim_upgrade(channel)
       return
     end
 
+    local augroup = vim.api.nvim_create_augroup("nviq.appl.upgrade", { clear = true })
     vim.api.nvim_create_autocmd("VimLeave", {
-      group = _augroup,
+      group = augroup,
       callback = function()
         local cmd = {
           upgrader,

@@ -83,3 +83,4 @@ kbd("n", "<leader>l[", "editor.action.marker.prev")
 kbd("n", "<leader>l]", "editor.action.marker.next")
 -- MISC
 kbd("n", "<leader>mv", "outline.focus")
+kbd("n", "<leader>pt", "markdown.showPreviewToSide")

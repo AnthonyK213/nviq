@@ -299,8 +299,6 @@ M.Task = require("nviq.util.futures.task")
 
 M.Terminal = require("nviq.util.futures.term")
 
-M.Terminal2 = require("nviq.util.futures.term2")
-
 M.fs = {
   ---Opens a text file, reads all the text in the file into a string,
   ---and then closes the file.

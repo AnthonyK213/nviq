@@ -84,14 +84,18 @@ local function neovide_setup(settings, _)
   vim.g.neovide_floating_blur_amount_x = 2.0
   vim.g.neovide_floating_blur_amount_y = 2.0
 
+  local augroup = vim.api.nvim_create_augroup("nviq.appl.gui.neovide", { clear = true })
+
   vim.api.nvim_create_autocmd("InsertEnter", {
     pattern = "*",
     callback = function(_) vim.g.neovide_input_ime = true end,
+    group = augroup,
   })
 
   vim.api.nvim_create_autocmd({ "InsertLeave", "CmdlineEnter" }, {
     pattern = "*",
     callback = function(_) vim.g.neovide_input_ime = false end,
+    group = augroup,
   })
 end
 

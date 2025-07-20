@@ -1,20 +1,22 @@
 local mini_deps = require("mini.deps")
 
-mini_deps.add {
-  source = "neovim/nvim-lspconfig",
-  depends = {
-    "mason-org/mason-lspconfig.nvim",
-    "mason-org/mason.nvim",
-    "hrsh7th/cmp-nvim-lsp",
-  },
-}
-
 ---------------------------------mason-lspconfig--------------------------------
 
-require("mason-lspconfig").setup {
-  ensure_installed = vim.tbl_keys(_G.NVIQ.settings.lsp),
-  automatic_enable = false,
-}
+mini_deps.now(function()
+  mini_deps.add {
+    source = "mason-org/mason-lspconfig.nvim",
+    depends = {
+      "neovim/nvim-lspconfig",
+      "mason-org/mason.nvim",
+      "hrsh7th/cmp-nvim-lsp",
+    },
+  }
+
+  require("mason-lspconfig").setup {
+    ensure_installed = vim.tbl_keys(_G.NVIQ.settings.lsp),
+    automatic_enable = false,
+  }
+end)
 
 -------------------------------------vim.lsp------------------------------------
 

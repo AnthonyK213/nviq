@@ -121,3 +121,13 @@ for key, val in pairs {
     vim.ui.open(val[2] .. txt)
   end)
 end
+
+-- Preview
+
+kbd("Toggle preview", "n", "<leader>pt", function()
+  if vim.is_callable(vim.b.nviq_handler_preview_toggle) then
+    vim.b.nviq_handler_preview_toggle()
+  else
+    vim.notify("No preview available")
+  end
+end)

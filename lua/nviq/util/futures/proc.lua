@@ -2,7 +2,9 @@ local lib = require("nviq.util.lib")
 
 ---@type nviq.futures.ProcessHandle[]
 local handles = {}
+local augroup = vim.api.nvim_create_augroup("nviq.util.futures.proc", { clear = true })
 vim.api.nvim_create_autocmd("VimLeavePre", {
+  group = augroup,
   callback = function()
     for _, handle in ipairs(handles) do
       if not handle:kill() then
