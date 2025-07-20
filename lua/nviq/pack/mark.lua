@@ -60,7 +60,7 @@ if vim.fn.executable("deno") == 1 then
   -- won't be triggered if it was in the `later` block.
   local au_peek = vim.api.nvim_create_augroup("nviq.pack.mark.peek", { clear = true })
   vim.api.nvim_create_autocmd("Filetype", {
-    pattern = "markdown",
+    pattern = { "markdown", "vimwiki.markdown" },
     callback = function(event)
       vim.b[event.buf].nviq_handler_preview_toggle = function()
         local has_peek, peek = pcall(require, "peek")

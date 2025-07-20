@@ -145,7 +145,7 @@ local function surround_toggle(lhs, pair, pattern, opts)
 end
 
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "markdown",
+  pattern = { "markdown", "vimwiki.markdown" },
   callback = function(event)
     local opts = { buffer = event.buf }
     surround_toggle("<M-P>", "`", [[\v(markdown|Vimwiki)Code|raw]], opts)
