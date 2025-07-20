@@ -22,7 +22,7 @@ lib.new_keymap("i", "<CR>", function(fallback)
 end, { remap = false })
 lib.new_keymap("i", "<Tab>", function(fallback)
   if vim.fn.pumvisible() ~= 0 or
-      vim.regex("\\v[a-z_\\u4e00-\\u9fa5]$"):match_str(lib.get_half_line(-1).b) then
+      vim.regex("\\v[A-Za-z_\\u4e00-\\u9fa5]$"):match_str(lib.get_half_line(-1).b) then
     lib.feedkeys("<C-N>", "n", true)
   else
     fallback()

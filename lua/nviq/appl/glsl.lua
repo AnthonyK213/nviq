@@ -124,12 +124,12 @@ end
 ---@return integer|string[]
 function M.omnifunc(findstart, base)
   if findstart == 1 then
-    local line = vim.api.nvim_get_current_line()
     local start = vim.api.nvim_win_get_cursor(0)[2]
-    while start > 0 and line:sub(start, start):match("[%a_]") do
-      start = start - 1
-    end
-    return start
+    if start == 0 then return -2 end
+    local back = lib.get_half_line(-1).b
+    local match = back:match("[%a_]+$")
+    if not match then return -2 end
+    return start - match:len()
   else
     local base_ = base:lower()
     return vim.tbl_filter(function(item)

@@ -264,6 +264,10 @@ vim.api.nvim_create_autocmd("Filetype", {
   pattern = "glsl",
   callback = function(event)
     vim.bo[event.buf].omnifunc = "v:lua.require('nviq.appl.glsl').omnifunc"
+    -- WORKAROUND: `omnifunc` cannot handle `v:lua` with `require`, the module
+    -- must be global, or the omnifunc-completion won't work with `i_CTRL-X_CTRL-O`.
+    -- if not _G._nviq_appl_glsl then _G._nviq_appl_glsl = require("nviq.appl.glsl") end
+    -- vim.bo[event.buf].omnifunc = "v:lua._nviq_appl_glsl.omnifunc"
     vim.b[event.buf].nviq_handler_preview_toggle = require("nviq.appl.glsl").toggle
   end,
   group = _augroup,
