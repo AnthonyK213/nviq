@@ -73,8 +73,13 @@ function M.blame_line()
     end
     local blame_info = parse_blame_info(blame:stdout_buf()[1])
     if blame_info then
+      local hash = blame_info["hash"]
+      if hash:match("^0+$") then
+        vim.print("Not Committed Yet")
+        return
+      end
       vim.print(string.format("%s %s (%s): %s",
-        blame_info["hash"]:sub(1, 8),
+        hash:sub(1, 8),
         blame_info["author"],
         os.date("%Y-%m-%d %H:%M", tonumber(blame_info["author-time"])),
         blame_info["summary"]
