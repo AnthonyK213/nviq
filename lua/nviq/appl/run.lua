@@ -158,7 +158,7 @@ function M.task_run(task, args)
       args = cmd_args,
       cwd = args.file_dir,
     })
-    build.record = true
+    build:set_record(true)
     futures.spawn(function()
       local code = build:await()
       if code == 0 then
@@ -166,7 +166,7 @@ function M.task_run(task, args)
         local run = futures.Terminal.new({ prod_path }, { cwd = args.file_dir })
         run:await()
       else
-        vim.notify(table.concat(build.stderr_buf), vim.log.levels.ERROR)
+        build:notify_err()
       end
       if futil.is_file(args.prod_name) then
         vim.fs.rm(args.prod_name)

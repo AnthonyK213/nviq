@@ -5,15 +5,15 @@ local uv_callback_index = {
 }
 
 ---@class nviq.futures.Task Represents an asynchronous operation.
----@field action function Function that represents the code to execute in the task.
----@field protected varargs nviq.util.t.Pack Arguments for `action`.
----@field protected is_async boolean|integer `action` is asynchronous or not, default `false`.
----@field callback? function Callback invoked when the task runs to complete.
----@field protected callbacks function[]
----@field no_callbacks boolean Mark the task that its `callbacks` will not be executed.
----@field protected handle? uv.luv_work_ctx_t Task handle.
----@field result table Result of the task, stored in a packed table.
----@field status 0|-1|-2 Task status, 0: Created; -1: Running; -2: RanToCompletion
+---@field protected m_action function Function that represents the code to execute in the task.
+---@field protected m_varargs nviq.util.t.Pack Arguments for `action`.
+---@field protected m_async boolean|integer Whether `m_action` is asynchronous or not, default `false`.
+---@field protected m_cb? function Callback invoked when the task runs to complete.
+---@field protected m_cb_q function[]
+---@field protected m_no_cb_q boolean Mark the task that its `m_no_cb_q` will not be executed.
+---@field protected m_handle? uv.luv_work_ctx_t Task handle.
+---@field protected m_result table Result of the task, stored in a packed table.
+---@field protected m_status 0|-1|-2 Task status, 0: Created; -1: Running; -2: RanToCompletion
 local Task = {}
 
 ---@private
@@ -27,12 +27,12 @@ Task.__index = Task
 ---@return nviq.futures.Task
 function Task.new(action, ...)
   local task = {
-    action = action,
-    is_async = false,
-    callbacks = {},
-    no_callbacks = false,
-    status = 0,
-    varargs = tutil.pack(...),
+    m_action = action,
+    m_async = false,
+    m_cb_q = {},
+    m_no_cb_q = false,
+    m_status = 0,
+    m_varargs = tutil.pack(...),
   }
   setmetatable(task, Task)
   return task
@@ -44,7 +44,7 @@ end
 ---@param is_async boolean|integer
 ---@return nviq.futures.Task
 function Task:set_async(is_async)
-  self.is_async = is_async
+  self.m_async = is_async
   return self
 end
 
@@ -63,27 +63,27 @@ end
 ---Start the task.
 ---@return boolean ok True if the thread starts successfully.
 function Task:start()
-  if self.status ~= 0 then return false end
+  if self.m_status ~= 0 then return false end
   local cb = vim.schedule_wrap(function(...)
-    self.status = -2
-    if not self.no_callbacks then
-      for _, f in ipairs(self.callbacks) do
+    self.m_status = -2
+    if not self.m_no_cb_q then
+      for _, f in ipairs(self.m_cb_q) do
         if type(f) == "function" then
           f(...)
         end
       end
     end
-    if type(self.callback) == "function" then
-      self.callback(...)
+    if type(self.m_cb) == "function" then
+      self.m_cb(...)
     end
   end)
-  self.status = -1
-  if self.is_async then
+  self.m_status = -1
+  if self.m_async then
     -- Avoid modifying the structure of table `self.varargs`.
-    local args = tutil.pack(tutil.unpack(self.varargs))
-    if type(self.is_async) == "number" then
-      if self.is_async > 0 and self.is_async <= args.n then
-        tutil.insert(args, self.is_async + 0, cb)
+    local args = tutil.pack(tutil.unpack(self.m_varargs))
+    if type(self.m_async) == "number" then
+      if self.m_async > 0 and self.m_async <= args.n then
+        tutil.insert(args, self.m_async + 0, cb)
       else
         error("Invalid `is_async`.")
       end
@@ -91,31 +91,20 @@ function Task:start()
       args[args.n + 1] = cb
       args.n = args.n + 1
     end
-    self.handle = self.action(tutil.unpack(args))
+    self.m_handle = self.m_action(tutil.unpack(args))
     return true
   end
-  self.handle = vim.uv.new_work(self.action, cb)
-  return self.handle:queue(tutil.unpack(self.varargs)) or false
+  self.m_handle = vim.uv.new_work(self.m_action, cb)
+  return self.m_handle:queue(tutil.unpack(self.m_varargs)) or false
 end
 
----Wrap a task into a callback function which will start automatically.
----@return function
-function Task:to_callback()
-  return function(...)
-    if self.varargs.n == 0 then
-      self.varargs = tutil.pack(...)
-    end
-    self:start()
-  end
-end
-
----Continue with a callback function `next`.
+---Continue with a callback function `callback`.
 ---The task will not start automatically.
----@param next function
+---@param callback function
 ---@return nviq.futures.Task self
-function Task:continue_with(next)
-  if self.status == 0 then
-    table.insert(self.callbacks, next)
+function Task:continue_with(callback)
+  if self.m_status == 0 then
+    table.insert(self.m_cb_q, callback)
   end
   return self
 end
@@ -123,20 +112,20 @@ end
 ---Await the task.
 ---@return any
 function Task:await()
-  local _co = coroutine.running()
-  if not _co or coroutine.status(_co) == "dead" then
+  local co_cur = coroutine.running()
+  if not co_cur or coroutine.status(co_cur) == "dead" then
     error("Task must await in an active async block.")
   end
-  if self.status == 0 then
-    self.callback = function(...)
-      self.result = tutil.pack(...)
-      assert(coroutine.resume(_co))
+  if self.m_status == 0 then
+    self.m_cb = function(...)
+      self.m_result = tutil.pack(...)
+      assert(coroutine.resume(co_cur))
     end
     if self:start() then
-      if self.status == -1 then
+      if self.m_status == -1 then
         coroutine.yield()
       end
-      return tutil.unpack(self.result)
+      return tutil.unpack(self.m_result)
     end
   end
 end
@@ -144,15 +133,15 @@ end
 ---Blocking wait for the task.
 ---@param timeout? integer Timeout.
 function Task:wait(timeout)
-  if self.status == 0 then
-    self.callback = function(...)
-      self.result = tutil.pack(...)
+  if self.m_status == 0 then
+    self.m_cb = function(...)
+      self.m_result = tutil.pack(...)
     end
     if self:start() then
       vim.wait(timeout or 1e8, function()
-        return self.status == -2
+        return self.m_status == -2
       end)
-      return tutil.unpack(self.result)
+      return tutil.unpack(self.m_result)
     end
   end
 end
@@ -166,12 +155,12 @@ end
 
 ---Reset the task.
 function Task:reset()
-  self.status = 0
-  self.callback = nil
-  self.callbacks = {}
-  self.no_callbacks = false
-  self.result = nil
-  self.handle = nil
+  self.m_status = 0
+  self.m_cb = nil
+  self.m_cb_q = {}
+  self.m_no_cb_q = false
+  self.m_result = nil
+  self.m_handle = nil
 end
 
 return Task

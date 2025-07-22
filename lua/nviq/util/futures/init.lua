@@ -3,6 +3,8 @@ local tutil = require("nviq.util.t")
 
 local M = {}
 
+-- Future
+
 ---@class nviq.futures.Future Represents an operation which will produce values in the future.
 ---@field private action function Function that represents the code to execute.
 ---@field private varargs table Arguments for `action`.
@@ -31,6 +33,8 @@ function Future:await()
   self.result = tutil.pack(self.action(tutil.unpack(self.varargs)))
   return tutil.unpack(self.result)
 end
+
+-- JoinHandle
 
 ---@class nviq.futures.JoinHandle
 ---@field private co thread
@@ -107,50 +111,40 @@ end
 ---@param task function|nviq.futures.Future
 function M.spawn(task)
   ---@type function
-  local _f
-  local _type = type(task)
-  local _context = coroutine.running()
+  local func
+  local task_type = type(task)
+  local co_cur = coroutine.running()
 
-  if _type == "function" then
-    if _context then
-      _f = function()
+  if task_type == "function" then
+    if co_cur then
+      func = function()
         task()
         vim.uv.new_async(function()
-          coroutine.resume(_context)
+          coroutine.resume(co_cur)
         end):send()
       end
     else
-      _f = task
+      func = task
     end
   elseif getmetatable(task) == Future then
-    if _context then
-      _f = function()
+    if co_cur then
+      func = function()
         M.await(task)
         vim.uv.new_async(function()
-          coroutine.resume(_context)
+          coroutine.resume(co_cur)
         end):send()
       end
     else
-      _f = function() M.await(task) end
+      func = function() M.await(task) end
     end
   else
     error("`task` is invalid.")
   end
 
-  local _co = coroutine.create(_f)
-  coroutine.resume(_co)
+  local co_new = coroutine.create(func)
+  coroutine.resume(co_new)
 
-  return JoinHandle.new(_co)
-end
-
----Execute the futrues one by one.
----@param fut_list nviq.futures.Process[]|nviq.futures.Task[]|nviq.futures.Terminal[] List of futrues.
-function M.queue(fut_list)
-  if not check_fut_list(fut_list) then return end
-  for i = 1, #fut_list - 1, 1 do
-    fut_list[i]:continue_with(fut_list[i + 1]:to_callback())
-  end
-  fut_list[1]:start()
+  return JoinHandle.new(co_new)
 end
 
 ---Polls multiple futures simultaneously.
@@ -166,14 +160,14 @@ function M.join(fut_list, timeout)
     return result
   end
   local fut_count = #fut_list
-  local _co = coroutine.running()
-  if _co and coroutine.status(_co) ~= "dead" then
+  local co_cur = coroutine.running()
+  if co_cur and coroutine.status(co_cur) ~= "dead" then
     for i, fut in ipairs(fut_list) do
-      fut.callback = function(...)
+      fut.m_cb = function(...)
         result[i] = tutil.pack(...)
         count = count + 1
         if count == fut_count then
-          assert(coroutine.resume(_co))
+          assert(coroutine.resume(co_cur))
         end
       end
       fut:start()
@@ -185,11 +179,11 @@ function M.join(fut_list, timeout)
         timer:start(timeout, 0, vim.schedule_wrap(function()
           timer:stop()
           timer:close()
-          if coroutine.status(_co) == "suspended" then
+          if coroutine.status(co_cur) == "suspended" then
             if count ~= fut_count then
               print("Time out")
             end
-            assert(coroutine.resume(_co))
+            assert(coroutine.resume(co_cur))
           end
         end))
       end
@@ -197,7 +191,7 @@ function M.join(fut_list, timeout)
     end
   else
     for i, fut in ipairs(fut_list) do
-      fut.callback = function(...)
+      fut.m_cb = function(...)
         result[i] = tutil.pack(...)
         count = count + 1
       end
@@ -225,15 +219,15 @@ function M.select(fut_list)
   local result
   if not check_fut_list(fut_list) then return result end
   local done = false
-  local _co = coroutine.running()
-  if _co and coroutine.status(_co) ~= "dead" then
+  local co_cur = coroutine.running()
+  if co_cur and coroutine.status(co_cur) ~= "dead" then
     for _, fut in ipairs(fut_list) do
-      fut.no_callbacks = true
-      fut.callback = function(...)
+      fut.m_no_cb_q = true
+      fut.m_cb = function(...)
         if not done then
           result = tutil.pack(...)
           done = true
-          assert(coroutine.resume(_co))
+          assert(coroutine.resume(co_cur))
         end
       end
       fut:start()
@@ -243,8 +237,8 @@ function M.select(fut_list)
     end
   else
     for _, fut in ipairs(fut_list) do
-      fut.no_callbacks = true
-      fut.callback = function(...)
+      fut.m_no_cb_q = true
+      fut.m_cb = function(...)
         if not done then
           result = tutil.pack(...)
           done = true

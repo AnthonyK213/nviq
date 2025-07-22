@@ -167,7 +167,7 @@ function M.stardict(word)
 
   if lib.has_exe("sdcv") then
     local p = futures.Process.new("sdcv", { args = { "-n", "-j", word } })
-    p.on_stdout = on_stdout
+    p:on_stdout(on_stdout)
     p:start()
   else
     local result = M:lookup(word)

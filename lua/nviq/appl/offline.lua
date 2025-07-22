@@ -36,6 +36,12 @@ lib.new_keymap("i", "<S-Tab>", function(fallback)
   end
 end, { remap = false })
 
+-- Git
+
+vim.keymap.set("n", "<leader>gb", function ()
+  require("nviq.appl.git").blame_line()
+end)
+
 -- Misc
 
 vim.keymap.set("n", "<leader>fb", ":buffer<space>")

@@ -11,6 +11,29 @@ end
 function M.get_branch()
 end
 
+---
+---@param info string
+---@return table<string, string>?
+local function parse_blame_info(info)
+  local pattern = vim.re.compile([[
+    blame <- {| head (%nl field)* (%nl) code |}
+    head <- {:hash: [0-9a-f]^40 :} %s {:lnum_origin: %d+ :} %s {:lnum_final: %d+ :} %s {:lcnt: %d+ :}
+    field <- {| {[%a-]+} (" ")? {[^%nl]*} |}
+    code <- %t {:code: ([^%nl]*) :}
+  ]], { t = "\t" })
+
+  local captures = vim.re.match(info, pattern)
+  if not captures then
+    return
+  end
+
+  for _, v in ipairs(captures --[[@as table]]) do
+    captures[v[1]] = v[2]
+  end
+
+  return captures --[[@as table<string, string>]]
+end
+
 ---To blame someone :)
 function M.blame_line()
   local lnum = vim.api.nvim_win_get_cursor(0)[1]
@@ -18,14 +41,24 @@ function M.blame_line()
   local cwd = lib.buf_dir(0)
   local range = string.format("%d,%d", lnum, lnum)
   local blame = futures.Process.new("git", {
-    args = { "blame", --[["--porcelain",]] "-L", range, file },
+    args = { "blame", "--line-porcelain", "-L", range, file },
     cwd = cwd,
   })
-  blame.record = true
+  blame:set_record(true)
   futures.spawn(function()
     local code = blame:await()
-    if code == 0 then
-      vim.notify(blame.stdout_buf[1])
+    if code ~= 0 or vim.tbl_isempty(blame:stdout_buf()) then
+      vim.notify("No one to blame...")
+      return
+    end
+    local blame_info = parse_blame_info(blame:stdout_buf()[1])
+    if blame_info then
+      vim.print(string.format("%s %s (%s): %s",
+        blame_info["hash"]:sub(1, 8),
+        blame_info["author"],
+        os.date("%Y-%m-%d %H:%M", tonumber(blame_info["author-time"])),
+        blame_info.summary
+      ))
     end
   end)
 end

@@ -79,7 +79,7 @@ local function fetch_version(channel, proxy)
   local version = nil
 
   local fetch_tag_page = futures.Process.new(CURL_CMD, { args = args })
-  fetch_tag_page.on_stdout = function(data)
+  fetch_tag_page:on_stdout(function(data)
     if version then
       return
     end
@@ -92,9 +92,9 @@ local function fetch_version(channel, proxy)
       return
     end
     version = vim.version.parse(ver_str)
-  end
+  end)
 
-  -- fetch_tag_page.record = true
+  -- fetch_tag_page:set_record(true)
   if fetch_tag_page:await() ~= 0 then
     fetch_tag_page:notify_err()
     return

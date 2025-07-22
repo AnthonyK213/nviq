@@ -58,7 +58,7 @@ function M.start(bufnr, fargs)
     cwd = lib.buf_dir(bufnr),
   }):continue_with(function() vim.notify("glslViewer: Exited") end)
 
-  viewer.on_stdout = function(data)
+  viewer:on_stdout(function(data)
     local lines = vim.split(data, "[\n\r]", {
       plain = false,
       trimempty = true,
@@ -69,7 +69,7 @@ function M.start(bufnr, fargs)
     if #output > 0 then
       vim.notify(table.concat(output, "\n"))
     end
-  end
+  end)
 
   if viewer:start() then
     M.tbl[bufnr] = viewer
