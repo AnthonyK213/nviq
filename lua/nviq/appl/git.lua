@@ -4,11 +4,31 @@ local futures = require("nviq.util.futures")
 local M = {}
 
 ---Returns the root directory of this repository.
+---@return string?
 function M.get_root()
+  return lib.find_root([[^\.git$]], {
+    item_type = "directory",
+    start_dir = lib.buf_dir(),
+  })
 end
 
----Returns the current branch.
-function M.get_branch()
+---Returns the current branch name.
+---@param git_root string The root directory of the repository.
+---@return string? result The current branch name.
+function M.get_branch(git_root)
+  local head_file = vim.fs.joinpath(git_root, "/.git/HEAD")
+
+  local file = io.open(head_file)
+  if file then
+    local gitdir_line = file:read("*l")
+    file:close()
+    if gitdir_line then
+      local branch = gitdir_line:match("^ref:%s.+/([^%s]-)$")
+      if branch and #branch > 0 then
+        return branch
+      end
+    end
+  end
 end
 
 ---
@@ -57,7 +77,7 @@ function M.blame_line()
         blame_info["hash"]:sub(1, 8),
         blame_info["author"],
         os.date("%Y-%m-%d %H:%M", tonumber(blame_info["author-time"])),
-        blame_info.summary
+        blame_info["summary"]
       ))
     end
   end)

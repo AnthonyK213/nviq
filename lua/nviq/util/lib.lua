@@ -112,6 +112,28 @@ function M.feedkeys(keys, mode, escape_ks)
   vim.api.nvim_feedkeys(k, mode, escape_ks)
 end
 
+---Finds the root directory contains file/directory matches `pattern`.
+---@param pattern string The pattern (vim regex in magic mode).
+---@param options? {item_type?:"directory"|"file", start_dir?:string}
+---@return string? result Root directory path.
+function M.find_root(pattern, options)
+  options = options or {}
+
+  local regex = vim.regex("\\v" .. pattern)
+  local result = vim.fs.find(function(name)
+    return regex:match_str(name) and true or false
+  end, {
+    path = options.start_dir,
+    upward = true,
+    type = options.item_type,
+    limit = 1,
+  })
+
+  if not vim.tbl_isempty(result) then
+    return vim.fs.dirname(result[1])
+  end
+end
+
 ---Gets the path of the dotfile (.nvimrc, etc.).
 ---Searching order: stdpath("config") -> home -> ...
 ---Uses the last one was found.

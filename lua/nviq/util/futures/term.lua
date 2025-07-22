@@ -24,7 +24,7 @@ Terminal.__index = Terminal
 function Terminal.new(cmd, option, on_exit)
   local terminal = {
     m_cmd = cmd,
-    m_opts = option and vim.deepcopy(option) or {}, -- Annoying API changes...
+    m_opts = option and vim.deepcopy(option) or {},
     m_id = -1,
     m_exited = false,
     m_valid = true,
@@ -33,7 +33,7 @@ function Terminal.new(cmd, option, on_exit)
     m_winnr = -1,
     m_bufnr = -1,
   }
-  terminal.option.term = true
+  terminal.m_opts.term = true
   setmetatable(terminal, Terminal)
   return terminal
 end
