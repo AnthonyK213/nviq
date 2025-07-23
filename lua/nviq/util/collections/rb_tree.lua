@@ -1,8 +1,10 @@
 ---@enum nviq.collections.RbNode.Color
 local Color = {
-  Red = 0,
+  Red   = 0,
   Black = 1,
 }
+
+local NIL = { color = Color.Black }
 
 ---@class nviq.collections.RbNode
 ---@field key any
@@ -11,53 +13,37 @@ local Color = {
 ---@field right nviq.collections.RbNode
 ---@field parent nviq.collections.RbNode
 ---@field color nviq.collections.RbNode.Color
-local RbNode = {}
 
----@private
-RbNode.__index = RbNode
-
----Constructor.
----@generic K
----@generic V
----@param key K
----@param value V
+---
+---@param key any
+---@param value any
 ---@return nviq.collections.RbNode
-function RbNode.new(key, value)
-  local rb_node = {
+local function rb_node_new(key, value)
+  return {
     key = key,
     value = value,
+    left = NIL,
+    right = NIL,
+    parent = NIL,
   }
-  setmetatable(rb_node, RbNode)
-  rb_node.left = RbNode.Nil()
-  rb_node.right = RbNode.Nil()
-  rb_node.parent = RbNode.Nil()
-  return rb_node
 end
 
----@type nviq.collections.RbNode
-local Nil = { color = Color.Black }
-setmetatable(Nil, RbNode)
-
----Nil.
----@return nviq.collections.RbNode
-function RbNode.Nil()
-  return Nil
-end
-
----Determine if node is `Nil`.
+---Determine whether node is a nil node or not.
+---@param node nviq.collections.RbNode
 ---@return boolean
-function RbNode:is_Nil()
-  return self == Nil
+local function rb_node_is_nil(node)
+  return node == NIL
 end
 
----@private
----To string.
+---
+---@param node nviq.collections.RbNode
 ---@return string
-function RbNode:__tostring()
-  if self == RbNode.Nil() then
+local function rb_node_to_string(node)
+  if rb_node_is_nil(node) then
     return "B[Nil]"
   end
-  return string.format("%s[%s:%s]", self.color == 1 and "B" or "R", tostring(self.key), tostring(self.value))
+  local color = node.color == Color.Black and "B" or "R"
+  return string.format("%s[%s:%s]", color, tostring(node.key), tostring(node.value))
 end
 
 ---@class nviq.collections.RbTree<K, V> : { [K]: V }
@@ -68,13 +54,17 @@ local RbTree = {}
 ---@private
 RbTree.__index = RbTree
 
-setmetatable(RbTree, { __call = function(o) return o.new() end })
+setmetatable(RbTree, {
+  __call = function(o)
+    return o.new()
+  end
+})
 
 ---Create an empty red-black tree.
 ---@return nviq.collections.RbTree
 function RbTree.new()
   local rb_tree = {
-    m_root = RbNode.Nil(),
+    m_root = NIL,
   }
   setmetatable(rb_tree, RbTree)
   return rb_tree
@@ -86,12 +76,12 @@ end
 function RbTree:_rotate_left(node)
   local right = node.right
   node.right = right.left
-  if not right.left:is_Nil() then
+  if not rb_node_is_nil(right.left) then
     right.left.parent = node
   end
   local parent = node.parent
   right.parent = parent
-  if parent:is_Nil() then
+  if rb_node_is_nil(parent) then
     self.m_root = right
   elseif node == parent.left then
     parent.left = right
@@ -108,12 +98,12 @@ end
 function RbTree:_rotate_right(node)
   local left = node.left
   node.left = left.right
-  if not left.right:is_Nil() then
+  if not rb_node_is_nil(left.right) then
     left.right.parent = node
   end
   local parent = node.parent
   left.parent = parent
-  if parent:is_Nil() then
+  if rb_node_is_nil(parent) then
     self.m_root = left
   elseif node == parent.right then
     parent.right = left
@@ -129,7 +119,7 @@ end
 ---@param u nviq.collections.RbNode
 ---@param v nviq.collections.RbNode
 function RbTree:_transplant(u, v)
-  if u.parent:is_Nil() then
+  if rb_node_is_nil(u.parent) then
     self.m_root = v
   elseif u == u.parent.left then
     u.parent.left = v
@@ -143,7 +133,7 @@ end
 ---Minimum.
 ---@param node nviq.collections.RbNode
 function RbTree:_minimum(node)
-  while not node.left:is_Nil() do
+  while not rb_node_is_nil(node.left) do
     node = node.left
   end
   return node
@@ -155,7 +145,7 @@ end
 ---@return (nviq.collections.RbNode)?
 function RbTree:_get_node(key)
   local node = self.m_root
-  while not node:is_Nil() do
+  while not rb_node_is_nil(node) do
     if key < node.key then
       node = node.left
     elseif key == node.key then
@@ -170,8 +160,8 @@ end
 ---Insert a node.
 ---@param node nviq.collections.RbNode
 function RbTree:_insert_node(node)
-  local x, y = self.m_root, RbNode.Nil()
-  while not x:is_Nil() do
+  local x, y = self.m_root, NIL
+  while not rb_node_is_nil(x) do
     y = x
     if node.key < x.key then
       x = x.left
@@ -180,15 +170,15 @@ function RbTree:_insert_node(node)
     end
   end
   node.parent = y
-  if y:is_Nil() then
+  if rb_node_is_nil(y) then
     self.m_root = node
   elseif node.key < y.key then
     y.left = node
   else
     y.right = node
   end
-  node.left = RbNode.Nil()
-  node.right = RbNode.Nil()
+  node.left = NIL
+  node.right = NIL
   node.color = Color.Red
 
   while node.parent.color == Color.Red do
@@ -234,10 +224,10 @@ end
 function RbTree:_delete_node(node)
   local x, y = nil, node
   local y_original_color = y.color
-  if node.left:is_Nil() then
+  if rb_node_is_nil(node.left) then
     x = node.right
     self:_transplant(node, node.right)
-  elseif node.right:is_Nil() then
+  elseif rb_node_is_nil(node.right) then
     x = node.left
     self:_transplant(node, node.left)
   else
@@ -324,7 +314,7 @@ end
 ---@return boolean
 function RbTree:add(key, value)
   if not self:_get_node(key) then
-    self:_insert_node(RbNode.new(key, value))
+    self:_insert_node(rb_node_new(key, value))
     return true
   end
   return false
@@ -351,6 +341,7 @@ function RbTree:__tostring()
   local deque = Deque(self.m_root)
   local result = ""
   while deque:count() > 0 do
+    ---@type nviq.collections.RbNode
     local node = deque:pop_front()
     if node.left then
       deque:push_back(node.left)
@@ -358,7 +349,7 @@ function RbTree:__tostring()
     if node.right then
       deque:push_back(node.right)
     end
-    result = result .. tostring(node) .. " "
+    result = result .. rb_node_to_string(node) .. " "
   end
   return result
 end

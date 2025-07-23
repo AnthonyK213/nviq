@@ -256,40 +256,6 @@ function M.captures_reverse_lookup(query)
   return captures
 end
 
-M.cs = {
-  ---Extract method/constructor parameter list.
-  ---@param param_list_node TSNode The `parameter_list` node.
-  ---@param bufnr integer Buffer number.
-  ---@return nviq.collections.List? param_list
-  extract_params = function(param_list_node, bufnr)
-    return TSNode.new(param_list_node)
-        :find_children("parameter")
-        :select(function(item)
-          local ident = item.node:named_child(item.node:named_child_count() - 1)
-          if not ident then return end
-          return vim.treesitter.get_node_text(ident, bufnr)
-        end)
-        :where(function(item) return item ~= nil end)
-  end,
-}
-
-M.cpp = {
-  ---Extract function parameter list.
-  ---@param param_list_node TSNode The `parameter_list` node.
-  ---@param bufnr integer Buffer number.
-  ---@return nviq.collections.List
-  extract_params = function(param_list_node, bufnr)
-    return TSNode.new(param_list_node)
-        :find_children("parameter_declaration")
-        :select(function(item)
-          local ident = item:find_first_child("identifier", { recursive = true })
-          if ident:is_nil() then return end
-          return vim.treesitter.get_node_text(ident.node, bufnr)
-        end)
-        :where(function(item) return item ~= nil end)
-  end
-}
-
 M.Syntax = Syntax
 M.TSNode = TSNode
 
