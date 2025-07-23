@@ -125,4 +125,16 @@ function M.sub(str, i, j, encoding)
   return str:sub(s + 1, e)
 end
 
+---Adds zeros (0) at the beginning of the string, until it reaches the specified
+---length.
+---@param str string The string.
+---@param len integer The length.
+---@return string
+function M.zfill(str, len)
+  if #str >= len then
+    return str
+  end
+  return string.rep("0", len - #str) .. str
+end
+
 return M

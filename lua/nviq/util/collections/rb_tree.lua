@@ -4,6 +4,7 @@ local Color = {
   Black = 1,
 }
 
+-- FIXME: This should just be `nil`...
 local NIL = { color = Color.Black }
 
 ---@class nviq.collections.RbNode
@@ -33,17 +34,6 @@ end
 ---@return boolean
 local function rb_node_is_nil(node)
   return node == NIL
-end
-
----
----@param node nviq.collections.RbNode
----@return string
-local function rb_node_to_string(node)
-  if rb_node_is_nil(node) then
-    return "B[Nil]"
-  end
-  local color = node.color == Color.Black and "B" or "R"
-  return string.format("%s[%s:%s]", color, tostring(node.key), tostring(node.value))
 end
 
 ---@class nviq.collections.RbTree<K, V> : { [K]: V }
@@ -334,24 +324,84 @@ function RbTree:remove_at(key)
 end
 
 ---@private
+---Returns the depth of the node.
+---@param node nviq.collections.RbNode
+---@return integer
+function RbTree:_node_depth(node)
+  if rb_node_is_nil(node) then
+    return -1
+  end
+
+  local depth = 0
+  while node ~= self.m_root do
+    node = node.parent
+    depth = depth + 1
+  end
+  return depth
+end
+
+---@private
 ---To string.
 ---@return string
 function RbTree:__tostring()
-  local Deque = require("nviq.util.collections.deque")
-  local deque = Deque(self.m_root)
-  local result = ""
-  while deque:count() > 0 do
-    ---@type nviq.collections.RbNode
-    local node = deque:pop_front()
-    if node.left then
-      deque:push_back(node.left)
+  ---@type integer[][]
+  local layout = {}
+
+  local right_stack = require("nviq.util.collections.stack")(self.m_root)
+
+  local node_index = 1
+
+  ---@type nviq.collections.RbNode[]
+  local node_list = {}
+
+  ---@type integer[]
+  local path_cur = {}
+
+  local node_cur = self.m_root
+
+  while not rb_node_is_nil(node_cur) or right_stack:count() > 0 do
+    if rb_node_is_nil(node_cur) then
+      node_cur = right_stack:pop()
+    else
+      table.insert(path_cur, node_index)
+      node_list[node_index] = node_cur
+      node_index = node_index + 1
+
+      if not rb_node_is_nil(node_cur.right) then
+        right_stack:push(node_cur.right)
+      end
+
+      node_cur = node_cur.left
+      if rb_node_is_nil(node_cur) then
+        table.insert(layout, path_cur)
+        path_cur = {}
+      end
     end
-    if node.right then
-      deque:push_back(node.right)
-    end
-    result = result .. rb_node_to_string(node) .. " "
   end
-  return result
+
+  local result = { string.format("RbTree<%p>", self) }
+
+  if node_index > 0 then
+    local node_width = #tostring(node_index - 1) + 1
+
+    for _, path in ipairs(layout) do
+      local line = {}
+      local node_first = node_list[path[1]]
+      local depth = self:_node_depth(node_first)
+      local indent = (node_width + 2) * depth
+      for _, index in ipairs(path) do
+        local color = node_list[index].color == Color.Black and "B" or "R"
+        table.insert(line, color .. require("nviq.util.s").zfill(tostring(index), node_width - 1))
+      end
+      table.insert(result, string.rep(" ", indent) .. table.concat(line, "──"))
+    end
+  end
+
+  for index, node in ipairs(node_list) do
+    table.insert(result, string.format("[%d] %s : %s", index, node.key, node.value))
+  end
+
+  return table.concat(result, "\n")
 end
 
 return RbTree
