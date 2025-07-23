@@ -82,7 +82,7 @@ end
 -------------------------------------TSNode-------------------------------------
 
 ---@class nviq.util.syntax.TSNode
----@field node TSNode
+---@field private m_node TSNode
 local TSNode = {}
 
 ---@private
@@ -93,14 +93,14 @@ TSNode.__index = TSNode
 ---@return nviq.util.syntax.TSNode
 function TSNode.new(node)
   local o = {
-    node = node,
+    m_node = node,
   }
   setmetatable(o, TSNode)
   return o
 end
 
 function TSNode:is_nil()
-  return self.node == nil
+  return self.m_node == nil
 end
 
 ---@private
@@ -144,17 +144,17 @@ local function _find_children_bfs(node, predicate, option)
     if option.recursive and depth > 1 then
       break
     end
-    local _node = deque:pop_front() --[[@as TSNode]]
-    if predicate(_node) then
+    local node_cur = deque:pop_front() --[[@as TSNode]]
+    if predicate(node_cur) then
       if result:count() >= limit then
         break
       end
-      result:add(TSNode.new(_node))
+      result:add(TSNode.new(node_cur))
     end
-    for child in _node:iter_children() do
+    for child in node_cur:iter_children() do
       deque:push_back(child)
     end
-    if _node == last then
+    if node_cur == last then
       depth = depth + 1
       if deque:count() > 0 then
         last = deque:get_back()
@@ -225,7 +225,7 @@ function TSNode:find_children(predicate, option)
   if self:is_nil() or not p then return List.new() end
   return (option.type == "bfs"
     and _find_children_bfs
-    or _find_children_dfs)(self.node, p, option)
+    or _find_children_dfs)(self.m_node, p, option)
 end
 
 ---Find the first appeared ancestor by `predicate`.
@@ -234,7 +234,7 @@ end
 function TSNode:find_ancestor(predicate)
   local p = _check_predicate(predicate)
   if not self:is_nil() and p then
-    local current = self.node:parent()
+    local current = self.m_node:parent()
     while current do
       if p(current) then
         return TSNode.new(current)

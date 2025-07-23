@@ -4,7 +4,8 @@ local uv_callback_index = {
   fs_opendir = 2,
 }
 
----@class nviq.futures.Task Represents an asynchronous operation.
+---Represents an asynchronous operation.
+---@class nviq.futures.Task
 ---@field protected m_action function Function that represents the code to execute in the task.
 ---@field protected m_varargs nviq.util.t.Pack Arguments for `action`.
 ---@field protected m_async boolean|integer Whether `m_action` is asynchronous or not, default `false`.

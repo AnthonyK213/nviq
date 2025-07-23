@@ -7,9 +7,9 @@ local function _swap(list, i, j) list[i], list[j] = list[j], list[i] end
 ---@param comparer? "max"|"min"|fun(a: any, b: any):boolean
 ---@return fun(a: any, b: any):boolean
 local function _get_comparer(comparer)
-  if not comparer or "max" == comparer then
+  if not comparer or comparer == "max" then
     return _max
-  elseif "min" == comparer then
+  elseif comparer == "min" then
     return _min
   elseif not vim.is_callable(comparer) then
     error("Invalid comparer")
@@ -19,15 +19,20 @@ local function _get_comparer(comparer)
 end
 
 ---@class nviq.collections.PriorityQueue
----@field private _data any[]
----@field private _size integer
----@field private _comparer fun(a: any, b: any):boolean
+---@field private m_data any[]
+---@field private m_size integer
+---@field private m_comp fun(a: any, b: any):boolean
 ---@operator call:nviq.collections.PriorityQueue
 local PriorityQueue = {}
 
 ---@private
 PriorityQueue.__index = PriorityQueue
-setmetatable(PriorityQueue, { __call = function(o, ...) return o.new(...) end })
+
+setmetatable(PriorityQueue, {
+  __call = function(o, ...)
+    return o.new(...)
+  end
+})
 
 ---Initializes a new instance of the `PriorityQueue` with the specified custom
 ---priority comparer.
@@ -35,9 +40,9 @@ setmetatable(PriorityQueue, { __call = function(o, ...) return o.new(...) end })
 ---@return nviq.collections.PriorityQueue
 function PriorityQueue.new(comparer)
   local pq = {
-    _data = {},
-    _size = 0,
-    _comparer = _get_comparer(comparer),
+    m_data = {},
+    m_size = 0,
+    m_comp = _get_comparer(comparer),
   }
   setmetatable(pq, PriorityQueue)
   return pq
@@ -50,21 +55,24 @@ end
 ---@return nviq.collections.PriorityQueue
 function PriorityQueue.from(iterable, comparer)
   local data = {}
-  local length = 0
+  local size = 0
   for i, v in Iterator(iterable):consume() do
     data[i] = v
-    length = length + 1
+    size = size + 1
   end
-  comparer = _get_comparer(comparer)
+
+  ---@type nviq.collections.PriorityQueue
   local pq = {
-    _data = data,
-    _size = length,
-    _comparer = comparer,
+    m_data = data,
+    m_size = size,
+    m_comp = _get_comparer(comparer),
   }
   setmetatable(pq, PriorityQueue)
-  for i = bit.rshift(length, 1), 1, -1 do
+
+  for i = bit.rshift(size, 1), 1, -1 do
     pq:_heapify(i)
   end
+
   return pq
 end
 
@@ -87,42 +95,42 @@ end
 function PriorityQueue:_heapify(i)
   local l = self:_left(i)
   local r = self:_right(i)
-  local w = l <= self._size and self._comparer(self._data[l], self._data[i]) and l or i
-  if r <= self._size and self._comparer(self._data[r], self._data[w]) then
+  local w = l <= self.m_size and self.m_comp(self.m_data[l], self.m_data[i]) and l or i
+  if r <= self.m_size and self.m_comp(self.m_data[r], self.m_data[w]) then
     w = r
   end
   if w ~= i then
-    _swap(self._data, i, w)
+    _swap(self.m_data, i, w)
     self:_heapify(w)
   end
 end
 
----Gets the priority comparer used by the `PriorityQueue`.
+---Returns the priority comparer used by the `PriorityQueue`.
 ---@return fun(a: any, b: any):boolean
-function PriorityQueue:get_comparer()
-  return self._comparer
+function PriorityQueue:comparer()
+  return self.m_comp
 end
 
----Gets the number of elements contained in the `PriorityQueue`.
+---Returns the number of elements contained in the `PriorityQueue`.
 ---@return integer
 function PriorityQueue:count()
-  return self._size
+  return self.m_size
 end
 
 ---Removes all items from the `PriorityQueue`.
 function PriorityQueue:clear()
-  self._size = 0
+  self.m_size = 0
 end
 
 ---Removes and returns the minimal element from the `PriorityQueue` - that is,
 ---the element with the lowest priority value.
 function PriorityQueue:dequeue()
-  if self._size < 1 then
+  if self.m_size < 1 then
     error("Heap underflow")
   end
-  local peek = self._data[1]
-  self._data[1] = self._data[self._size]
-  self._size = self._size - 1
+  local peek = self.m_data[1]
+  self.m_data[1] = self.m_data[self.m_size]
+  self.m_size = self.m_size - 1
   self:_heapify(1)
   return peek
 end
@@ -130,12 +138,12 @@ end
 ---Adds the specified element to the `PriorityQueue`.
 ---@param item any
 function PriorityQueue:enqueue(item)
-  self._size = self._size + 1
-  local i = self._size
-  self._data[i] = item
+  self.m_size = self.m_size + 1
+  local i = self.m_size
+  self.m_data[i] = item
   local p = self:_parent(i)
-  while i > 1 and self._comparer(self._data[i], self._data[p]) do
-    _swap(self._data, i, p)
+  while i > 1 and self.m_comp(self.m_data[i], self.m_data[p]) do
+    _swap(self.m_data, i, p)
     i = p
     p = self:_parent(i)
   end
@@ -161,8 +169,8 @@ end
 ---Returns the minimal element from the `PriorityQueue` without removing it.
 ---@return any
 function PriorityQueue:peek()
-  if self._size > 0 then
-    return self._data[1]
+  if self.m_size > 0 then
+    return self.m_data[1]
   end
 end
 

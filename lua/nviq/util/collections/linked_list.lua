@@ -1,15 +1,19 @@
----@class nviq.collections.LinkedListNode : nviq.collections.Iterable
----@field private _data any
----@field private _list? nviq.collections.LinkedList
----@field private _prev? nviq.collections.LinkedListNode
----@field private _next? nviq.collections.LinkedListNode
+---@class nviq.collections.LinkedListNode
+---@field private m_data any
+---@field private m_list? nviq.collections.LinkedList
+---@field private m_prev? nviq.collections.LinkedListNode
+---@field private m_next? nviq.collections.LinkedListNode
 ---@operator call:nviq.collections.LinkedListNode
 local LinkedListNode = {}
 
 ---@private
 LinkedListNode.__index = LinkedListNode
 
-setmetatable(LinkedListNode, { __call = function(o, v) return o.new(v) end })
+setmetatable(LinkedListNode, {
+  __call = function(o, v)
+    return o.new(v)
+  end
+})
 
 ---Create a node which contains `value`.
 ---The created node does not belong to any `LinkedList`.
@@ -17,7 +21,7 @@ setmetatable(LinkedListNode, { __call = function(o, v) return o.new(v) end })
 ---@return nviq.collections.LinkedListNode
 function LinkedListNode.new(value)
   local node = {
-    _data = value,
+    m_data = value,
   }
   setmetatable(node, LinkedListNode)
   return node
@@ -26,74 +30,78 @@ end
 ---Get the node value it contains.
 ---@return any
 function LinkedListNode:value()
-  return self._data
+  return self.m_data
 end
 
 ---Get the `LinkedList` which owns the node.
----@return nviq.collections.LinkedList|nil
+---@return nviq.collections.LinkedList?
 function LinkedListNode:list()
-  return self._list
+  return self.m_list
 end
 
 ---Get previous node.
----@return nviq.collections.LinkedListNode|nil
+---@return nviq.collections.LinkedListNode?
 function LinkedListNode:prev()
-  return self._prev
+  return self.m_prev
 end
 
 ---Get next node.
----@return nviq.collections.LinkedListNode|nil
+---@return nviq.collections.LinkedListNode?
 function LinkedListNode:next()
-  return self._next
+  return self.m_next
 end
 
 ---@private
 ---Returns a string that represents the current object.
 ---@return string
 function LinkedListNode:__tostring()
-  return string.format("Node(%s)", require("nviq.util.collections.util").to_string(self._data))
+  return string.format("Node(%s)", require("nviq.util.collections.util").to_string(self.m_data))
 end
 
 --------------------------------------------------------------------------------
 
----@class nviq.collections.LinkedList
----@field private _length integer
----@field private _first nviq.collections.LinkedListNode|nil
----@field private _last nviq.collections.LinkedListNode|nil
+---@class nviq.collections.LinkedList : nviq.collections.Iterable
+---@field private m_size integer
+---@field private m_first nviq.collections.LinkedListNode?
+---@field private m_last nviq.collections.LinkedListNode?
 ---@operator call:nviq.collections.LinkedList
 local LinkedList = {}
 
 ---@private
 LinkedList.__index = LinkedList
 
-setmetatable(LinkedList, { __call = function(o) return o.new() end })
+setmetatable(LinkedList, {
+  __call = function(o)
+    return o.new()
+  end
+})
 
----Creat an empty linked list.
+---Constructs an empty linked list.
 ---@return nviq.collections.LinkedList
 function LinkedList.new()
   local linked_list = {
-    _length = 0,
+    m_size = 0,
   }
   setmetatable(linked_list, LinkedList)
   return linked_list
 end
 
----Gets the number of nodes actually contained in the `LinkedList`.
+---Returns the number of nodes actually contained in the `LinkedList`.
 ---@return integer
 function LinkedList:count()
-  return self._length
+  return self.m_size
 end
 
----Gets the first node of the `LinkedList`.
----@return nviq.collections.LinkedListNode|nil
+---Returns the first node of the `LinkedList`.
+---@return nviq.collections.LinkedListNode?
 function LinkedList:first()
-  return self._first
+  return self.m_first
 end
 
----Gets the first node of the `LinkedList`.
----@return nviq.collections.LinkedListNode|nil
+---Returns the first node of the `LinkedList`.
+---@return nviq.collections.LinkedListNode?
 function LinkedList:last()
-  return self._last
+  return self.m_last
 end
 
 ---@private
@@ -106,13 +114,13 @@ function LinkedList:_add_check(item)
       node = item
     elseif item:list() == nil then
       node = item
-      rawset(node, "_list", self)
+      rawset(node, "m_list", self)
     else
       error("The node is owned by another `LinkedList`")
     end
   else
     node = LinkedListNode(item)
-    rawset(node, "_list", self)
+    rawset(node, "m_list", self)
   end
 
   return node
@@ -128,7 +136,7 @@ function LinkedList:_contains_node(node)
   if not self:_owns_node(node) then
     return false
   end
-  local c = self._first
+  local c = self.m_first
   while c do
     if rawequal(c, node) then
       return true
@@ -141,7 +149,7 @@ end
 ---Determines whether any loops in the `LinkedList`
 ---@return boolean
 function LinkedList:has_loop()
-  local fast, slow = self._first, self._first
+  local fast, slow = self.m_first, self.m_first
 
   while fast and slow do
     slow = slow:next()
@@ -165,15 +173,15 @@ function LinkedList:add_after(node, item)
   assert(self:_contains_node(node), "LinkedList does not contain the `node`")
   local new_node = self:_add_check(item)
   local next = node:next()
-  rawset(new_node, "_next", next)
-  rawset(new_node, "_prev", node)
-  rawset(node, "_next", new_node)
+  rawset(new_node, "m_next", next)
+  rawset(new_node, "m_prev", node)
+  rawset(node, "m_next", new_node)
   if next then
-    rawset(next, "_prev", new_node)
+    rawset(next, "m_prev", new_node)
   else
-    self._last = new_node
+    self.m_last = new_node
   end
-  self._length = self._length + 1
+  self.m_size = self.m_size + 1
 end
 
 ---Adds a new node or value before an existing node in the `LinkedList`.
@@ -183,62 +191,61 @@ function LinkedList:add_before(node, item)
   assert(self:_contains_node(node), "LinkedList does not contain the `node`")
   local new_node = self:_add_check(item)
   local prev = node:prev()
-  rawset(new_node, "_prev", prev)
-  rawset(new_node, "_next", node)
-  rawset(node, "_prev", new_node)
+  rawset(new_node, "m_prev", prev)
+  rawset(new_node, "m_next", node)
+  rawset(node, "m_prev", new_node)
   if prev then
-    rawset(prev, "_next", new_node)
+    rawset(prev, "m_next", new_node)
   else
-    self._first = new_node
+    self.m_first = new_node
   end
-  self._length = self._length + 1
+  self.m_size = self.m_size + 1
 end
 
 ---Adds a new node or value at the start of the `LinkedList`.
 ---@param item any
 function LinkedList:add_first(item)
   local node = self:_add_check(item)
-  local first = self._first
-  rawset(node, "_next", first)
-  rawset(node, "_prev", nil)
+  local first = self.m_first
+  rawset(node, "m_next", first)
+  rawset(node, "m_prev", nil)
   if first then
-    rawset(first, "_prev", node)
+    rawset(first, "m_prev", node)
   else
-    self._last = node
+    self.m_last = node
   end
-  self._first = node
-  self._length = self._length + 1
+  self.m_first = node
+  self.m_size = self.m_size + 1
 end
 
 ---Adds a new node at the end of the `LinkedList`.
 ---@param item any
 function LinkedList:add_last(item)
   local node = self:_add_check(item)
-  local last = self._last
-  rawset(node, "_prev", last)
-  rawset(node, "_next", nil)
+  local last = self.m_last
+  rawset(node, "m_prev", last)
+  rawset(node, "m_next", nil)
   if last then
-    rawset(last, "_next", node)
+    rawset(last, "m_next", node)
   else
-    self._first = node
+    self.m_first = node
   end
-  self._last = node
-  self._length = self._length + 1
+  self.m_last = node
+  self.m_size = self.m_size + 1
 end
 
 ---Removes all nodes from the `LinkedList`.
 function LinkedList:clear()
-  local node = self._first
+  local node = self.m_first
   while node do
-    rawset(node, "_prev", nil)
-    node = node:next()
-    if node then
-      node:prev().next = nil
-    end
+    local node_next = node:next()
+    rawset(node, "m_prev", nil)
+    rawset(node, "m_next", nil)
+    node = node_next
   end
-  self._first = nil
-  self._last = nil
-  self._length = 0
+  self.m_first = nil
+  self.m_last = nil
+  self.m_size = 0
 end
 
 ---Determines whether a value is in the `LinkedList`.
@@ -257,7 +264,7 @@ end
 ---@return fun():integer?, any iterator
 function LinkedList:iter()
   local index = 0
-  local node = self._first
+  local node = self.m_first
   return function()
     index = index + 1
     if node then
@@ -275,59 +282,59 @@ function LinkedList:remove(node)
   local prev = node:prev()
   local next = node:next()
   if prev then
-    rawset(prev, "_next", next)
+    rawset(prev, "m_next", next)
   else
-    self._first = next
+    self.m_first = next
   end
   if next then
-    rawset(next, "_prev", prev)
+    rawset(next, "m_prev", prev)
   else
-    self._last = prev
+    self.m_last = prev
   end
-  rawset(node, "_prev", nil)
-  rawset(node, "_next", nil)
-  self._length = self._length - 1
+  rawset(node, "m_prev", nil)
+  rawset(node, "m_next", nil)
+  self.m_size = self.m_size - 1
 end
 
 ---Removes the node at the start of the `LinkedList`.
 function LinkedList:remove_first()
-  local first = self._first
+  local first = self.m_first
   if not first then
     return
   end
   local next = first:next()
-  self._first = next
+  self.m_first = next
   if next then
-    rawset(next, "_prev", nil)
+    rawset(next, "m_prev", nil)
   else
-    self._last = nil
+    self.m_last = nil
   end
-  rawset(first, "_next", nil)
-  self._length = self._length - 1
+  rawset(first, "m_next", nil)
+  self.m_size = self.m_size - 1
 end
 
 ---Removes the node at the end of the `LinkedList`.
 function LinkedList:remove_last()
-  local last = self._last
+  local last = self.m_last
   if not last then
     return
   end
   local prev = last:prev()
   if prev then
-    rawset(prev, "_next", nil)
+    rawset(prev, "m_next", nil)
   else
-    self._first = nil
+    self.m_first = nil
   end
-  self._last = prev
-  rawset(last, "_prev", nil)
-  self._length = self._length - 1
+  self.m_last = prev
+  rawset(last, "m_prev", nil)
+  self.m_size = self.m_size - 1
 end
 
 ---Finds the first node that contains the specified value.
 ---@param value any
----@return nviq.collections.LinkedListNode|nil
+---@return nviq.collections.LinkedListNode?
 function LinkedList:find(value)
-  local node = self._first
+  local node = self.m_first
   while node do
     if node:value() == value then
       return node
@@ -338,9 +345,9 @@ end
 
 ---Finds the last node that contains the specified value.
 ---@param value any
----@return nviq.collections.LinkedListNode|nil
+---@return nviq.collections.LinkedListNode?
 function LinkedList:find_last(value)
-  local node = self._last
+  local node = self.m_last
   while node do
     if node:value() == value then
       return node
@@ -354,7 +361,7 @@ end
 ---@return string
 function LinkedList:__tostring()
   assert(not self:has_loop(), "Loop found")
-  return require("nviq.util.collections.util").iter_inspect(self, LinkedList, "LinkedList", " <-> ")
+  return require("nviq.util.collections.util").iter_inspect(self, LinkedList, "LinkedList")
 end
 
 return {

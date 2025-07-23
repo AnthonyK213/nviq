@@ -67,7 +67,8 @@ function ProcessHandle:kill(signum)
   return code
 end
 
----@class nviq.futures.Process Provides access and control to local processes.
+---Provides access and control to local processes.
+---@class nviq.futures.Process
 ---@field protected m_path string Path to the system local executable.
 ---@field protected m_opts table See `vim.uv.spawn()`.
 ---@field protected m_cb? fun(proc: nviq.futures.Process, code: integer, signal: integer) Callback invoked when the process exits.

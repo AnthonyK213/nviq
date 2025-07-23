@@ -1,22 +1,21 @@
 local Iterator = require("nviq.util.collections.iter")
 
----@class nviq.collections.List : nviq.collections.Iterable Represents a list of
----objects that can be accessed by index. Provides methods to search, sort, and
----manipulate lists.
----@field private _data any[]
----@field private _length integer
+---Represents a list of objects that can be accessed by index. Provides methods
+---to search, sort, and manipulate lists.
+---@class nviq.collections.List<T> : { [integer]: T }, nviq.collections.Iterable
+---@field private m_data any[]
+---@field private m_size integer
 ---@operator call:nviq.collections.List
 ---@operator add(any[]|nviq.collections.Iterable):nviq.collections.List
 local List = {}
 
 ---@private
-List.__index = function(o, key)
-  if type(key) == "number" then
-    o:boundary_check(key)
-    return o._data[key]
-  elseif List[key] then
-    return List[key]
+List.__index = function(list, index)
+  if type(index) == "number" then
+    list:boundary_check(index)
+    return list.m_data[index]
   end
+  return List[index]
 end
 
 setmetatable(List, { __call = function(o, ...) return o.new(...) end })
@@ -26,8 +25,8 @@ setmetatable(List, { __call = function(o, ...) return o.new(...) end })
 ---@return nviq.collections.List
 function List.new(...)
   local list = {
-    _data = { ... },
-    _length = select("#", ...),
+    m_data = { ... },
+    m_size = select("#", ...),
   }
   setmetatable(list, List)
   return list
@@ -44,8 +43,8 @@ function List.from(iterable)
     data[index] = v
   end
   local list = {
-    _data = data,
-    _length = index,
+    m_data = data,
+    m_size = index,
   }
   setmetatable(list, List)
   return list
@@ -66,26 +65,26 @@ function List:boundary_check(index, count, min, max, backward)
     if math.floor(count) ~= count then
       error("Count must be an integer")
     elseif count < 0
-        or (backward and index < count or index + count > self._length + 1) then
+        or (backward and index < count or index + count > self.m_size + 1) then
       error("Count out of bounds")
     end
   end
-  if index < (min or 1) or index > (max or self._length) then
+  if index < (min or 1) or index > (max or self.m_size) then
     error("Index out of bounds")
   end
 end
 
----Gets the number of elements contained in the `List`.
+---Returns the number of elements contained in the `List`.
 ---@return integer
 function List:count()
-  return self._length
+  return self.m_size
 end
 
 ---Adds an object to the end of the `List`.
 ---@param item any The object to be added to the end of the `List`.
 function List:add(item)
-  self._length = self._length + 1
-  self._data[self._length] = item
+  self.m_size = self.m_size + 1
+  self.m_data[self.m_size] = item
 end
 
 ---Determines whether an element is in the `List`.
@@ -104,12 +103,12 @@ end
 ---@param index integer The one-based index at which item should be inserted.
 ---@param item any The object to insert.
 function List:insert(index, item)
-  self:boundary_check(index, nil, 1, self._length + 1)
-  for i = self._length, index, -1 do
-    self._data[i + 1] = self._data[i]
+  self:boundary_check(index, nil, 1, self.m_size + 1)
+  for i = self.m_size, index, -1 do
+    self.m_data[i + 1] = self.m_data[i]
   end
-  self._data[index] = item
-  self._length = self._length + 1
+  self.m_data[index] = item
+  self.m_size = self.m_size + 1
 end
 
 ---Removes and returns the element at the specified index of the `List`.
@@ -117,20 +116,20 @@ end
 ---@return any item The removed item.
 function List:remove_at(index)
   self:boundary_check(index)
-  local item = self._data[index]
-  for i = index, self._length - 1, 1 do
-    self._data[i] = self._data[i + 1]
+  local item = self.m_data[index]
+  for i = index, self.m_size - 1, 1 do
+    self.m_data[i] = self.m_data[i + 1]
   end
-  self._data[self._length] = nil
-  self._length = self._length - 1
+  self.m_data[self.m_size] = nil
+  self.m_size = self.m_size - 1
   return item
 end
 
 ---Performs the specified action on each element of the `List`.
 ---@param action fun(item: any, index?: integer) The action to perform on each element of the `List`.
 function List:for_each(action)
-  for i = 1, self._length, 1 do
-    action(self._data[i], i)
+  for i = 1, self.m_size, 1 do
+    action(self.m_data[i], i)
   end
 end
 
@@ -139,8 +138,8 @@ end
 ---@return nviq.collections.List
 function List:select(selector)
   local result = List.new()
-  for i = 1, self._length, 1 do
-    result:add(selector(self._data[i], i))
+  for i = 1, self.m_size, 1 do
+    result:add(selector(self.m_data[i], i))
   end
   return result
 end
@@ -150,9 +149,9 @@ end
 ---@return nviq.collections.List
 function List:where(predicate)
   local result = List.new()
-  for i = 1, self._length, 1 do
-    if predicate(self._data[i], i) then
-      result:add(self._data[i])
+  for i = 1, self.m_size, 1 do
+    if predicate(self.m_data[i], i) then
+      result:add(self.m_data[i])
     end
   end
   return result
@@ -160,10 +159,10 @@ end
 
 ---Removes all elements from the `List`.
 function List:clear()
-  for i = 1, self._length, 1 do
-    self._data[i] = nil
+  for i = 1, self.m_size, 1 do
+    self.m_data[i] = nil
   end
-  self._length = 0
+  self.m_size = 0
 end
 
 ---Returns the elements from the given `List`.
@@ -171,14 +170,14 @@ end
 ---@param j? integer
 ---@return ...
 function List:unpack(i, j)
-  return unpack(self._data, i or 1, j or self._length)
+  return unpack(self.m_data, i or 1, j or self.m_size)
 end
 
 ---Sort the elements in the entire `List` using the specified `comparison`.
 ---@generic T
 ---@param comparer? fun(a: T, b: T):boolean The function to use when comparing elements.
 function List:sort(comparer)
-  table.sort(self._data, comparer)
+  table.sort(self.m_data, comparer)
 end
 
 ---Get the iterator of the `List`.
@@ -187,8 +186,8 @@ function List:iter()
   local index = 0
   return function()
     index = index + 1
-    if index <= self._length then
-      return index, self._data[index]
+    if index <= self.m_size then
+      return index, self.m_data[index]
     end
   end
 end
@@ -200,9 +199,9 @@ end
 function List:get_range(index, count)
   local list = List()
   for i = 1, count, 1 do
-    list._data[i] = self[index + i - 1]
+    list.m_data[i] = self[index + i - 1]
   end
-  list._length = count
+  list.m_size = count
   return list
 end
 
@@ -212,33 +211,33 @@ function List:add_range(iterable)
   local i = 0
   for _, v in Iterator.get(iterable):consume() do
     i = i + 1
-    self._data[self._length + i] = v
+    self.m_data[self.m_size + i] = v
   end
 
-  self._length = self._length + i
+  self.m_size = self.m_size + i
 end
 
 ---Inserts the elements of a collection into the `List` at the specified index.
 ---@param index integer The one-based index at which the new elements should be inserted.
 ---@param iterable any[]|nviq.collections.Iterable The collection whose elements should be inserted into the `List`.
 function List:insert_range(index, iterable)
-  self:boundary_check(index, nil, 1, self._length + 1)
+  self:boundary_check(index, nil, 1, self.m_size + 1)
 
   local buf = {}
-  for i = index, self._length, 1 do
-    buf[i] = self._data[i]
+  for i = index, self.m_size, 1 do
+    buf[i] = self.m_data[i]
   end
 
   local j = 0
   for _, v in Iterator.get(iterable):consume() do
-    self._data[index + j] = v
+    self.m_data[index + j] = v
     j = j + 1
   end
 
-  self._length = self._length + j
+  self.m_size = self.m_size + j
 
-  for i = index + j, self._length, 1 do
-    self._data[i] = buf[i - j]
+  for i = index + j, self.m_size, 1 do
+    self.m_data[i] = buf[i - j]
   end
 end
 
@@ -249,17 +248,17 @@ function List:remove_range(index, count)
   self:boundary_check(index, count)
   if count == 0 then return end
 
-  local c = self._length - count
+  local c = self.m_size - count
 
-  for i = index, self._length, 1 do
+  for i = index, self.m_size, 1 do
     if i <= c then
-      self._data[i] = self[i + count]
+      self.m_data[i] = self[i + count]
     else
-      self._data[i] = nil
+      self.m_data[i] = nil
     end
   end
 
-  self._length = c
+  self.m_size = c
 end
 
 ---Reverses the order of the elements in the `List` or a portion of it.
@@ -271,7 +270,7 @@ function List:reverse(index, count)
   end
 
   index = index or 1
-  count = count or self._length
+  count = count or self.m_size
 
   self:boundary_check(index, count)
   if count < 2 then return end
@@ -306,10 +305,10 @@ function List:find_index(match, startIndex, count)
   else
     startIndex = 1
   end
-  local endIndex = count and startIndex + count - 1 or self._length
+  local endIndex = count and startIndex + count - 1 or self.m_size
 
   for i = startIndex, endIndex, 1 do
-    if match(self._data[i]) then
+    if match(self.m_data[i]) then
       return i
     end
   end
@@ -328,12 +327,12 @@ function List:find_last_index(match, startIndex, count)
   if startIndex then
     self:boundary_check(startIndex, count, nil, nil, true)
   else
-    startIndex = self._length
+    startIndex = self.m_size
   end
   local endIndex = count and startIndex - count + 1 or 1
 
   for i = startIndex, endIndex, -1 do
-    if match(self._data[i]) then
+    if match(self.m_data[i]) then
       return i
     end
   end
@@ -345,9 +344,9 @@ end
 ---@return nviq.collections.List result A `List` containing all the elements that match the conditions defined by the specified predicate, if found; otherwise, an empty `List`.
 function List:find_all(match)
   local result = List()
-  for i = 1, self._length, 1 do
-    if match(self._data[i]) then
-      result:add(self._data[i])
+  for i = 1, self.m_size, 1 do
+    if match(self.m_data[i]) then
+      result:add(self.m_data[i])
     end
   end
   return result
@@ -356,7 +355,7 @@ end
 ---Determines whether a `List` contains any elements.
 ---@return boolean
 function List:any()
-  return self._length > 0
+  return self.m_size > 0
 end
 
 ---Removes all the elements that match the conditions defined by the specified predicate.
@@ -364,8 +363,8 @@ end
 ---@return integer count The number of elements removed from the `List`.
 function List:remove_all(match)
   local count = 0
-  for i = self._length, 1, -1 do
-    if match(self._data[i]) then
+  for i = self.m_size, 1, -1 do
+    if match(self.m_data[i]) then
       self:remove_at(i)
       count = count + 1
     end
@@ -386,7 +385,7 @@ end
 ---@return integer position The one-based index of item in the sorted `List`, if item is found; otherwise, a negative number that is the bitwise complement of the index of the next element that is larger than item or, if there is no larger element, the bitwise complement of Count.
 function List:binary_search(item, index, count, comparer)
   index = index or 1
-  count = count or self._length
+  count = count or self.m_size
   comparer = comparer or function(x, y)
     if x < y then
       return -1
@@ -443,7 +442,7 @@ end
 ---@param collection any The collection whose elements should be added to the end of the `List`.
 ---@return nviq.collections.List
 function List:__add(collection)
-  local result = self:get_range(1, self._length)
+  local result = self:get_range(1, self.m_size)
   result:add_range(collection)
   return result
 end
@@ -465,12 +464,20 @@ function List:__eq(list)
 end
 
 ---@private
+---Returns the number of elements contained in the `List`.
+---Only available with 5.2+ :(
+---@return integer
+function List:__len()
+  return self.m_size
+end
+
+---@private
 ---Set the element at the specified index of the `List`.
 ---@param index integer
 ---@param value any
 function List:__newindex(index, value)
   self:boundary_check(index)
-  self._data[index] = value
+  self.m_data[index] = value
 end
 
 ---@private

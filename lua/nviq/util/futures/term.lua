@@ -1,6 +1,7 @@
 local lib = require("nviq.util.lib")
 
----@class nviq.futures.Terminal Represents a neovim terminal.
+---Represents a neovim terminal.
+---@class nviq.futures.Terminal
 ---@field protected m_cmd string[] Command with arguments.
 ---@field protected m_opts table See `jobstart()`.
 ---@field protected m_cb? fun(term: nviq.futures.Terminal, job_id: integer, data: integer, event: string) Callback invoked when the terminal process exits.

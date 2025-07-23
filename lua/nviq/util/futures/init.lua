@@ -5,10 +5,11 @@ local M = {}
 
 -- Future
 
----@class nviq.futures.Future Represents an operation which will produce values in the future.
----@field private action function Function that represents the code to execute.
----@field private varargs table Arguments for `action`.
----@field private result any[] Result of the `Future`, stored in a list.
+---Represents an operation which will produce values in the future.
+---@class nviq.futures.Future
+---@field private m_action function Function that represents the code to execute.
+---@field private m_varargs table Arguments for `action`.
+---@field private m_result any[] Result of the `Future`, stored in a list.
 local Future = {}
 
 ---@private
@@ -21,8 +22,8 @@ Future.__index = Future
 ---@return nviq.futures.Future
 function Future.new(action, ...)
   local future = {
-    action = action,
-    varargs = tutil.pack(...)
+    m_action = action,
+    m_varargs = tutil.pack(...)
   }
   setmetatable(future, Future)
   return future
@@ -30,14 +31,14 @@ end
 
 ---Poll the future.
 function Future:await()
-  self.result = tutil.pack(self.action(tutil.unpack(self.varargs)))
-  return tutil.unpack(self.result)
+  self.m_result = tutil.pack(self.m_action(tutil.unpack(self.m_varargs)))
+  return tutil.unpack(self.m_result)
 end
 
 -- JoinHandle
 
 ---@class nviq.futures.JoinHandle
----@field private co thread
+---@field private m_co thread
 local JoinHandle = {}
 
 ---@private
@@ -49,7 +50,7 @@ JoinHandle.__index = JoinHandle
 ---@return nviq.futures.JoinHandle
 function JoinHandle.new(co)
   local handle = {
-    co = co,
+    m_co = co,
   }
   setmetatable(handle, JoinHandle)
   return handle
@@ -59,9 +60,9 @@ end
 function JoinHandle:join()
   if not coroutine.running() then
     vim.wait(1e8, function()
-      return coroutine.status(self.co) == "dead"
+      return coroutine.status(self.m_co) == "dead"
     end)
-    self.co = nil
+    self.m_co = nil
   else
     self:await()
   end
@@ -74,10 +75,10 @@ function JoinHandle:await()
     print("Not in any asynchronous block")
     return
   end
-  while coroutine.status(self.co) ~= "dead" do
+  while coroutine.status(self.m_co) ~= "dead" do
     coroutine.yield()
   end
-  self.co = nil
+  self.m_co = nil
 end
 
 ---Check `fut_list` for `futures.join` & `futures.select`.

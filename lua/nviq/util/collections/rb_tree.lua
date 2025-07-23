@@ -60,8 +60,8 @@ function RbNode:__tostring()
   return string.format("%s[%s:%s]", self.color == 1 and "B" or "R", tostring(self.key), tostring(self.value))
 end
 
----@class nviq.collections.RbTree<K, V>
----@field private root nviq.collections.RbNode
+---@class nviq.collections.RbTree<K, V> : { [K]: V }
+---@field private m_root nviq.collections.RbNode
 ---@operator call:nviq.collections.RbTree
 local RbTree = {}
 
@@ -74,7 +74,7 @@ setmetatable(RbTree, { __call = function(o) return o.new() end })
 ---@return nviq.collections.RbTree
 function RbTree.new()
   local rb_tree = {
-    root = RbNode.Nil(),
+    m_root = RbNode.Nil(),
   }
   setmetatable(rb_tree, RbTree)
   return rb_tree
@@ -92,7 +92,7 @@ function RbTree:_rotate_left(node)
   local parent = node.parent
   right.parent = parent
   if parent:is_Nil() then
-    self.root = right
+    self.m_root = right
   elseif node == parent.left then
     parent.left = right
   else
@@ -114,7 +114,7 @@ function RbTree:_rotate_right(node)
   local parent = node.parent
   left.parent = parent
   if parent:is_Nil() then
-    self.root = left
+    self.m_root = left
   elseif node == parent.right then
     parent.right = left
   else
@@ -130,7 +130,7 @@ end
 ---@param v nviq.collections.RbNode
 function RbTree:_transplant(u, v)
   if u.parent:is_Nil() then
-    self.root = v
+    self.m_root = v
   elseif u == u.parent.left then
     u.parent.left = v
   else
@@ -154,7 +154,7 @@ end
 ---@param key any
 ---@return (nviq.collections.RbNode)?
 function RbTree:_get_node(key)
-  local node = self.root
+  local node = self.m_root
   while not node:is_Nil() do
     if key < node.key then
       node = node.left
@@ -170,7 +170,7 @@ end
 ---Insert a node.
 ---@param node nviq.collections.RbNode
 function RbTree:_insert_node(node)
-  local x, y = self.root, RbNode.Nil()
+  local x, y = self.m_root, RbNode.Nil()
   while not x:is_Nil() do
     y = x
     if node.key < x.key then
@@ -181,7 +181,7 @@ function RbTree:_insert_node(node)
   end
   node.parent = y
   if y:is_Nil() then
-    self.root = node
+    self.m_root = node
   elseif node.key < y.key then
     y.left = node
   else
@@ -225,7 +225,7 @@ function RbTree:_insert_node(node)
     end
   end
 
-  self.root.color = Color.Black
+  self.m_root.color = Color.Black
 end
 
 ---@private
@@ -257,7 +257,7 @@ function RbTree:_delete_node(node)
     y.color = node.color
   end
   if y_original_color == Color.Black then
-    while x ~= self.root and x.color == Color.Black do
+    while x ~= self.m_root and x.color == Color.Black do
       if x == x.parent.left then
         local w = x.parent.right
         if w.color == Color.Red then
@@ -278,7 +278,7 @@ function RbTree:_delete_node(node)
           x.parent.color = Color.Black
           w.right.color = Color.Black
           self:_rotate_left(x.parent)
-          x = self.root
+          x = self.m_root
         end
       else
         local w = x.parent.left
@@ -300,7 +300,7 @@ function RbTree:_delete_node(node)
           x.parent.color = Color.Black
           w.left.color = Color.Black
           self:_rotate_right(x.parent)
-          x = self.root
+          x = self.m_root
         end
       end
     end
@@ -348,17 +348,17 @@ end
 ---@return string
 function RbTree:__tostring()
   local Deque = require("nviq.util.collections.deque")
-  local deque = Deque(self.root)
+  local deque = Deque(self.m_root)
   local result = ""
   while deque:count() > 0 do
-    local n = deque:pop_front()
-    if n.left then
-      deque:push_back(n.left)
+    local node = deque:pop_front()
+    if node.left then
+      deque:push_back(node.left)
     end
-    if n.right then
-      deque:push_back(n.right)
+    if node.right then
+      deque:push_back(node.right)
     end
-    result = result .. tostring(n) .. ", "
+    result = result .. tostring(node) .. " "
   end
   return result
 end

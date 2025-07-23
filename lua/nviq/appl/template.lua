@@ -5,10 +5,10 @@ local futures = require("nviq.util.futures")
 local _template_dir = vim.fs.joinpath(vim.fn.stdpath("config"), "template")
 
 ---@class nviq.appl.template.Template
----@field private name string
----@field private args string[]
----@field private dirs string[]
----@field private files table<string, string>
+---@field private m_name string
+---@field private m_args string[]
+---@field private m_dirs string[]
+---@field private m_files table<string, string>
 local Template = {}
 
 ---@private
@@ -34,12 +34,12 @@ function Template.new(temp_obj)
   return temp_obj
 end
 
-function Template:get_name()
-  return self.name
+function Template:name()
+  return self.m_name
 end
 
-function Template:get_args()
-  return self.args
+function Template:args()
+  return self.m_args
 end
 
 ---Applies the arguments to the template.
@@ -49,7 +49,7 @@ end
 function Template:apply_args(str, args)
   local result = str
 
-  for _, arg in ipairs(self.args) do
+  for _, arg in ipairs(self.m_args) do
     result = result:gsub(vim.pesc("#{" .. arg .. "}"), args[arg])
   end
 
@@ -60,7 +60,7 @@ end
 ---@param args table<string, string>
 ---@return boolean
 function Template:create_project(args)
-  for _, dir in ipairs(self.dirs) do
+  for _, dir in ipairs(self.m_dirs) do
     local dir_esc = self:apply_args(dir, args)
     if futil.is_dir(dir_esc) then
       lib.warn(string.format("Directory %s already exists", dir_esc))
@@ -71,7 +71,7 @@ function Template:create_project(args)
     end
   end
 
-  for fname, content in pairs(self.files) do
+  for fname, content in pairs(self.m_files) do
     local fname_esc = self:apply_args(fname, args)
 
     if futil.is_file(fname_esc) then
@@ -115,7 +115,7 @@ function M:init(reset)
   for _, temp_obj in ipairs(temp_json) do
     local temp = Template.new(temp_obj)
     if temp then
-      self.templates[temp:get_name()] = temp
+      self.templates[temp:name()] = temp
     end
   end
 
@@ -140,7 +140,7 @@ function M:create_project()
     local template = self.templates[name]
     local args = {}
 
-    for _, arg in ipairs(template:get_args()) do
+    for _, arg in ipairs(template:args()) do
       local val = futures.ui.input { prompt = arg .. ": " }
       if not val then
         return

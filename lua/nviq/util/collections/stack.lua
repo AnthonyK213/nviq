@@ -1,6 +1,6 @@
 ---@class nviq.collections.Stack : nviq.collections.Iterable
----@field private _data table
----@field private _top integer
+---@field private m_data table
+---@field private m_top integer
 ---@operator call:nviq.collections.Stack
 local Stack = {}
 
@@ -13,8 +13,8 @@ setmetatable(Stack, { __call = function(o) return o.new() end })
 ---@return nviq.collections.Stack
 function Stack.new()
   local stack = {
-    _top = 0,
-    _data = {},
+    m_top = 0,
+    m_data = {},
   }
   setmetatable(stack, Stack)
   return stack
@@ -22,52 +22,52 @@ end
 
 ---Removes all objects from the `Stack`.
 function Stack:clear()
-  for i = 1, self._top, 1 do
-    self._data[i] = nil
+  for i = 1, self.m_top, 1 do
+    self.m_data[i] = nil
   end
-  self._top = 0
+  self.m_top = 0
 end
 
 ---Gets the number of elements contained in the `Stack`.
 ---@return integer
 function Stack:count()
-  return self._top
+  return self.m_top
 end
 
 ---Returns the object at the top of the Stack without removing it.
 ---@return any
 function Stack:peek()
-  if self._top == 0 then
+  if self.m_top == 0 then
     error("Stack is empty")
   end
-  return self._data[self._top]
+  return self.m_data[self.m_top]
 end
 
 ---Removes and returns the object at the top of the `Stack`.
 ---@return any
 function Stack:pop()
-  if self._top == 0 then
+  if self.m_top == 0 then
     error("Stack is empty")
   end
-  local item = self._data[self._top]
-  self._data[self._top] = nil
-  self._top = self._top - 1
+  local item = self.m_data[self.m_top]
+  self.m_data[self.m_top] = nil
+  self.m_top = self.m_top - 1
   return item
 end
 
 ---Inserts an object at the top of the `Stack`.
 ---@param item any
 function Stack:push(item)
-  self._top = self._top + 1
-  self._data[self._top] = item
+  self.m_top = self.m_top + 1
+  self.m_data[self.m_top] = item
 end
 
 ---Determines whether an element is in the `Stack`.
 ---@param item any
 ---@return boolean
 function Stack:contains(item)
-  for i = 1, self._top, 1 do
-    if self._data[i] == item then
+  for i = 1, self.m_top, 1 do
+    if self.m_data[i] == item then
       return true
     end
   end
@@ -80,8 +80,8 @@ function Stack:iter()
   local index = 0
   return function()
     index = index + 1
-    if index <= self._top then
-      return index, self._data[index]
+    if index <= self.m_top then
+      return index, self.m_data[index]
     end
   end
 end

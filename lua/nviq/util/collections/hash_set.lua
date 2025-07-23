@@ -2,27 +2,29 @@ local Iterator = require("nviq.util.collections.iter")
 local util = require("nviq.util.collections.util")
 
 -- For key in Lua table cannot be `nil`.
-if not _G.NULL then
-  _G.NULL = {}
-end
+local NIL = {}
 
 ---@class nviq.collections.HashSet : nviq.collections.Iterable
----@field private _length integer
----@field private _data table
+---@field private m_length integer
+---@field private m_data table
 ---@operator call:nviq.collections.HashSet
 local HashSet = {}
 
 ---@private
 HashSet.__index = HashSet
 
-setmetatable(HashSet, { __call = function(o, ...) return o.new(...) end })
+setmetatable(HashSet, {
+  __call = function(o, ...)
+    return o.new(...)
+  end
+})
 
 ---Constructor.
 ---@return nviq.collections.HashSet
 function HashSet.new(...)
   local hash_set = {
-    _length = 0,
-    _data = {},
+    m_length = 0,
+    m_data = {},
   }
   setmetatable(hash_set, HashSet)
   for i = 1, select("#", ...), 1 do
@@ -48,22 +50,22 @@ end
 ---@return boolean ok `true` if the element is added to the `HashSet`; false if the element is already present.
 function HashSet:add(item)
   if item == nil then
-    item = NULL
+    item = NIL
   end
-  if self._data[item] ~= nil then
+  if self.m_data[item] ~= nil then
     return false
   end
-  self._data[item] = true
-  self._length = self._length + 1
+  self.m_data[item] = true
+  self.m_length = self.m_length + 1
   return true
 end
 
 ---Removes all elements from a `HashSet`.
 function HashSet:clear()
-  for v, _ in pairs(self._data) do
+  for v, _ in pairs(self.m_data) do
     self[v] = nil
   end
-  self._length = 0
+  self.m_length = 0
 end
 
 ---Determines whether a `HashSet` contains the specified element.
@@ -71,15 +73,15 @@ end
 ---@return boolean exists `true` if the HashSet contains the specified element; otherwise, false.
 function HashSet:contains(item)
   if item == nil then
-    item = NULL
+    item = NIL
   end
-  return self._data[item] ~= nil
+  return self.m_data[item] ~= nil
 end
 
 ---Gets the number of elements that are contained in a set.
 ---@return integer
 function HashSet:count()
-  return self._length
+  return self.m_length
 end
 
 ---Removes all elements in the specified collection from the current `HashSet`.
@@ -97,9 +99,9 @@ function HashSet:iter()
   local v
   return function()
     index = index + 1
-    v = next(self._data, v)
+    v = next(self.m_data, v)
     if v ~= nil then
-      if v == NULL then
+      if v == NIL then
         return index, nil
       else
         return index, v
@@ -116,16 +118,16 @@ function HashSet:intersect_with(iterable)
   if not contains then
     return
   end
-  for v, _ in pairs(self._data) do
+  for v, _ in pairs(self.m_data) do
     local u
-    if v == NULL then
+    if v == NIL then
       u = nil
     else
       u = v
     end
     if not contains(iterable, u) then
-      self._data[v] = nil
-      self._length = self._length - 1
+      self.m_data[v] = nil
+      self.m_length = self.m_length - 1
     end
   end
 end
@@ -149,9 +151,9 @@ function HashSet:_is_subset_of(iterable, proper)
   if not contains then
     return false
   end
-  for v, _ in pairs(self._data) do
+  for v, _ in pairs(self.m_data) do
     local u
-    if v == NULL then
+    if v == NIL then
       u = nil
     else
       u = v
@@ -247,13 +249,13 @@ end
 ---@return boolean ok `true` if the element is successfully found and removed; otherwise, `false`. This method returns false if item is not found in the `HashSet`.
 function HashSet:remove(item)
   if item == nil then
-    item = NULL
+    item = NIL
   end
-  if self._data[item] == nil then
+  if self.m_data[item] == nil then
     return false
   end
-  self._data[item] = nil
-  self._length = self._length - 1
+  self.m_data[item] = nil
+  self.m_length = self.m_length - 1
   return true
 end
 
@@ -263,23 +265,24 @@ end
 ---@return integer count The number of elements that were removed from the `HashSet`.
 function HashSet:remove_where(match)
   local count = 0
-  for v, _ in pairs(self._data) do
+  for v, _ in pairs(self.m_data) do
     local u
-    if v == NULL then
+    if v == NIL then
       u = nil
     else
       u = v
     end
     if match(u) then
       count = count + 1
-      self._data[v] = nil
-      self._length = self._length - 1
+      self.m_data[v] = nil
+      self.m_length = self.m_length - 1
     end
   end
   return count
 end
 
----Modifies the current `HashSet` to contain only elements that are present either in that object or in the specified collection, but not both.
+---Modifies the current `HashSet` to contain only elements that are present
+---either in that object or in the specified collection, but not both.
 ---@param iterable any[]|nviq.collections.Iterable The collection to compare to the current `HashSet`.
 function HashSet:symmetric_except_with(iterable)
   for _, v in Iterator(iterable):consume() do
@@ -291,7 +294,8 @@ function HashSet:symmetric_except_with(iterable)
   end
 end
 
----Modifies the current `HashSet` to contain all elements that are present in itself, the specified collection, or both.
+---Modifies the current `HashSet` to contain all elements that are present in
+---itself, the specified collection, or both.
 ---@param iterable any[]|nviq.collections.Iterable The collection to compare to the current `HashSet`.
 function HashSet:union_with(iterable)
   for _, v in Iterator(iterable):consume() do
