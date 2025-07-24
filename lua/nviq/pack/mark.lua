@@ -149,6 +149,11 @@ mini_deps.later(function()
   vim.g.vimwiki_folding = "syntax"
   vim.g.vimwiki_filetypes = { "markdown" }
   vim.g.vimwiki_ext2syntax = { [".markdown"] = "markdown" }
+  vim.g.vimwiki_key_mappings = {
+    table_format   = 0,
+    table_mappings = 0,
+    lists_return   = 0,
+  }
 
   mini_deps.add {
     source = "vimwiki/vimwiki",
