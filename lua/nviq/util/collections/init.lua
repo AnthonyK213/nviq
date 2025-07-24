@@ -6,6 +6,5 @@ return {
   LinkedListNode = require("nviq.util.collections.linked_list").LinkedListNode,
   List           = require("nviq.util.collections.list"),
   PriorityQueue  = require("nviq.util.collections.priority_queue"),
-  RbTree         = require("nviq.util.collections.rb_tree"),
   Stack          = require("nviq.util.collections.stack"),
 }
