@@ -64,8 +64,6 @@
           "type": "string",
           "enum": [
             "default",
-            "gruvbox",
-            "nanovim",
             "nightfox"
           ]
         },

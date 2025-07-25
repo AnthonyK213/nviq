@@ -8,9 +8,66 @@ if _G.NVIQ.settings.tui.devicons then
   end)
 end
 
---------------------------------indent-blankline--------------------------------
+------------------------------------nightfox------------------------------------
 
 mini_deps.now(function()
+  if _G.NVIQ.settings.tui.scheme ~= "nightfox" then return end
+
+  mini_deps.add { source = "EdenEast/nightfox.nvim" }
+
+  require("nightfox").setup {
+    options = {
+      compile_path = vim.fs.joinpath(vim.fn.stdpath("data"), "nightfox"),
+      compile_file_suffix = "_compiled",
+      transparent = _G.NVIQ.settings.tui.transparent,
+      dim_inactive = _G.NVIQ.settings.tui.auto_dim,
+    },
+  }
+
+  local style_table = {
+    night  = { theme = "dark", inverse = "day" },
+    day    = { theme = "light", inverse = "night" },
+    dawn   = { theme = "light", inverse = "dusk" },
+    dusk   = { theme = "dark", inverse = "dawn" },
+    nord   = { theme = "dark", inverse = "day" },
+    tera   = { theme = "dark", inverse = "dawn" },
+    carbon = { theme = "dark", inverse = "dawn" },
+  }
+
+  _G.NVIQ.handlers.set_theme = function(theme)
+    local fox_loaded = true
+    local colors_name, colors_info
+
+    if vim.g.colors_name then
+      colors_name = vim.g.colors_name:match("(.+)fox")
+      colors_info = style_table[colors_name]
+    else
+      fox_loaded = false
+    end
+
+    if not colors_info or not fox_loaded then
+      fox_loaded = false
+      colors_name = _G.NVIQ.settings.tui.style
+      colors_info = style_table[colors_name]
+    end
+
+    if not colors_info then return end
+
+    if theme == colors_info.theme then
+      if not fox_loaded then
+        vim.cmd.colorscheme(colors_name .. "fox")
+      end
+    else
+      vim.cmd.colorscheme(colors_info.inverse .. "fox")
+    end
+  end
+
+  require("nviq.appl.theme").set_theme(_G.NVIQ.settings.tui.theme)
+end)
+
+--------------------------------indent-blankline--------------------------------
+
+mini_deps.later(function()
   mini_deps.add { source = "lukas-reineke/indent-blankline.nvim" }
 
   require("ibl").setup {
