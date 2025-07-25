@@ -58,8 +58,8 @@ if vim.fn.executable("deno") == 1 then
 
   -- WORKAROUND: When openning a mardown file with neovim directly, this autocmd
   -- won't be triggered if it was in the `later` block.
-  local au_peek = vim.api.nvim_create_augroup("nviq.pack.mark.peek", { clear = true })
   vim.api.nvim_create_autocmd("Filetype", {
+    group = vim.api.nvim_create_augroup("nviq.pack.mark.peek", { clear = true }),
     pattern = { "markdown", "vimwiki.markdown" },
     callback = function(event)
       vim.b[event.buf].nviq_handler_preview_toggle = function()
@@ -72,7 +72,6 @@ if vim.fn.executable("deno") == 1 then
         end
       end
     end,
-    group = au_peek
   })
 else
   vim.api.nvim_create_user_command("PeekOpen", [[echo "deno was not found"]], {})
@@ -127,11 +126,10 @@ mini_deps.now(function()
 
   mini_deps.add { source = "lervag/vimtex" }
 
-  local augroup = vim.api.nvim_create_augroup("nviq.pack.mark.vimtex", { clear = true })
   vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("nviq.pack.mark.vimtex", { clear = true }),
     pattern = "tex",
     command = [[nn <leader>mv <Cmd>VimtexTocToggle<CR>]],
-    group = augroup,
   })
 end)
 

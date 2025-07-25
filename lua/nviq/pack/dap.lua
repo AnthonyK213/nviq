@@ -147,8 +147,8 @@ mini_deps.later(function()
   require("overseer").enable_dap()
 
   -- dap-repl
-  local augroup = vim.api.nvim_create_augroup("nviq.pack.dap", { clear = true })
   vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("nviq.pack.dap", { clear = true }),
     pattern = "dap-repl",
     callback = function(event)
       require("dap.ext.autocompl").attach()
@@ -157,7 +157,6 @@ mini_deps.later(function()
       vim.keymap.set("i", "<S-Tab>", "<C-P>", opts)
       vim.keymap.set({ "n", "i" }, "<M-d>", "<C-\\><C-N><Cmd>bd!<CR>", opts)
     end,
-    group = augroup,
   })
 end)
 

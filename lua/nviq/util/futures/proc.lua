@@ -1,19 +1,5 @@
 local lib = require("nviq.util.lib")
 
--- ---@type nviq.futures.ProcessHandle[]
--- local _handles = {}
--- local _augroup = vim.api.nvim_create_augroup("nviq.util.futures.proc", { clear = true })
--- vim.api.nvim_create_autocmd("VimLeavePre", {
---   group = _augroup,
---   callback = function()
---     for _, handle in ipairs(_handles) do
---       if not handle:kill() then
---         handle:kill(vim.uv.constants.SIGKILL)
---       end
---     end
---   end
--- })
-
 ---@class nviq.futures.ProcessHandle
 ---@field private m_data uv.uv_process_t Process handle.
 ---@field private m_pid integer Process ID.
@@ -197,9 +183,6 @@ function Process:start()
   if not handle then return false end
 
   self.m_handle = ProcessHandle.new(handle, pid)
-  -- if not self.m_opts.detached then
-  --   table.insert(_handles, self.m_handle)
-  -- end
 
   self.m_stdout:read_start(vim.schedule_wrap(function(err, data)
     assert(not err, err)

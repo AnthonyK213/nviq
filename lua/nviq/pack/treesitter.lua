@@ -35,15 +35,14 @@ local function enable_parsers(parsers)
     end
   end
 
-  local augroup = vim.api.nvim_create_augroup("nviq.pack.treesitter", { clear = true })
   vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("nviq.pack.treesitter", { clear = true }),
     pattern = ft_list,
     callback = function()
       vim.treesitter.start()
       vim.wo.foldexpr = [[v:lua.vim.treesitter.foldexpr()]]
       vim.bo.indentexpr = [[v:lua.require("nvim-treesitter").indentexpr()]]
     end,
-    group = augroup,
   })
 end
 

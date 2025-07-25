@@ -282,9 +282,8 @@ function M.nvim_upgrade(channel)
       return
     end
 
-    local augroup = vim.api.nvim_create_augroup("nviq.appl.upgrade", { clear = true })
     vim.api.nvim_create_autocmd("VimLeave", {
-      group = augroup,
+      group = vim.api.nvim_create_augroup("nviq.appl.upgrade", { clear = true }),
       callback = function()
         local cmd = {
           upgrader,

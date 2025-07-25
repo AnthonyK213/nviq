@@ -145,6 +145,7 @@ local function surround_toggle(lhs, pair, pattern, opts)
 end
 
 vim.api.nvim_create_autocmd("FileType", {
+  group = _augroup,
   pattern = { "markdown", "vimwiki.markdown" },
   callback = function(event)
     local opts = { buffer = event.buf }
@@ -154,10 +155,10 @@ vim.api.nvim_create_autocmd("FileType", {
     surround_toggle("<M-M>", "***", [[\v(markdown|Vimwiki)BoldItalic|strong|italic]], opts)
     surround_toggle("<M-U>", "<u>", [[\v(html|Vimwiki)Underline]], opts)
   end,
-  group = _augroup,
 })
 
 vim.api.nvim_create_autocmd("FileType", {
+  group = _augroup,
   pattern = "tex",
   callback = function(event)
     local opts = { buffer = event.buf }
@@ -165,8 +166,14 @@ vim.api.nvim_create_autocmd("FileType", {
     surround_toggle("<M-B>", { "\\textbf{", "}" }, [[\vtexStyleBo(ld|th)]], opts)
     surround_toggle("<M-M>", { "\\textrm{", "}" }, [[\vtex(StyleArgConc|MathTextConcArg)]], opts)
   end,
-  group = _augroup,
 })
+
+-- Bigfile
+
+require("nviq.appl.bigfile").setup {
+  max_size        = 1.5 * 1024 * 1024,
+  max_line_length = 1024,
+}
 
 -- Markdown
 
@@ -261,6 +268,7 @@ end, { desc = "Evaluate lisp expression" })
 -- GLSL
 
 vim.api.nvim_create_autocmd("Filetype", {
+  group = _augroup,
   pattern = "glsl",
   callback = function(event)
     vim.bo[event.buf].omnifunc = "v:lua.require('nviq.appl.glsl').omnifunc"
@@ -270,7 +278,6 @@ vim.api.nvim_create_autocmd("Filetype", {
     -- vim.bo[event.buf].omnifunc = "v:lua._nviq_appl_glsl.omnifunc"
     vim.b[event.buf].nviq_handler_preview_toggle = require("nviq.appl.glsl").toggle
   end,
-  group = _augroup,
 })
 
 vim.api.nvim_create_user_command("GlslViewer", function(tbl)
