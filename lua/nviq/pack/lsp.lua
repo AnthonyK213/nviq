@@ -20,39 +20,38 @@ end)
 
 -------------------------------------vim.lsp------------------------------------
 
-local float_opts = {
+local _float_opts = {
   border = _G.NVIQ.settings.tui.border,
   max_width = 80,
 }
 
 -- Attaches.
 local function custom_attach(_, bufnr)
-  local kbd = vim.keymap.set
-  local kbd_opts = { noremap = true, silent = true, buffer = bufnr }
+  local opts = { noremap = true, silent = true, buffer = bufnr }
   local picker = require("telescope.builtin")
 
-  kbd("n", "<F12>", picker.lsp_definitions, kbd_opts)
-  kbd("n", "<F2>", vim.lsp.buf.rename, kbd_opts)
-  kbd("n", "<S-F12>", picker.lsp_references, kbd_opts)
-  kbd("n", "<F24>", picker.lsp_references, kbd_opts)
-  kbd("n", "<C-F12>", picker.lsp_implementations, kbd_opts)
-  kbd("n", "<F36>", picker.lsp_implementations, kbd_opts)
+  vim.keymap.set("n", "<F12>", picker.lsp_definitions, opts)
+  vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, opts)
+  vim.keymap.set("n", "<S-F12>", picker.lsp_references, opts)
+  vim.keymap.set("n", "<F24>", picker.lsp_references, opts)
+  vim.keymap.set("n", "<C-F12>", picker.lsp_implementations, opts)
+  vim.keymap.set("n", "<F36>", picker.lsp_implementations, opts)
 
-  kbd("n", "K", function() vim.lsp.buf.hover(float_opts) end, kbd_opts)
-  kbd("n", "<leader>l0", vim.lsp.buf.document_symbol, kbd_opts)
-  kbd("n", "<leader>la", vim.lsp.buf.code_action, kbd_opts)
-  kbd("n", "<leader>ld", vim.lsp.buf.declaration, kbd_opts)
-  kbd("n", "<leader>lf", vim.lsp.buf.definition, kbd_opts)
-  kbd("n", "<leader>lh", vim.lsp.buf.signature_help, kbd_opts)
-  kbd("n", "<leader>li", vim.lsp.buf.implementation, kbd_opts)
-  kbd("n", "<leader>lm", function() vim.lsp.buf.format { async = false } end, kbd_opts)
-  kbd("n", "<leader>ln", vim.lsp.buf.rename, kbd_opts)
-  kbd("n", "<leader>lr", vim.lsp.buf.references, kbd_opts)
-  kbd("n", "<leader>lt", vim.lsp.buf.type_definition, kbd_opts)
-  kbd("n", "<leader>lw", vim.lsp.buf.workspace_symbol, kbd_opts)
-  kbd("n", "<leader>lk", function() vim.diagnostic.open_float(float_opts) end, kbd_opts)
-  kbd("n", "<leader>l[", function() vim.diagnostic.jump { count = -1, float = float_opts } end, kbd_opts)
-  kbd("n", "<leader>l]", function() vim.diagnostic.jump { count = 1, float = float_opts } end, kbd_opts)
+  vim.keymap.set("n", "K", function() vim.lsp.buf.hover(_float_opts) end, opts)
+  vim.keymap.set("n", "<leader>l0", vim.lsp.buf.document_symbol, opts)
+  vim.keymap.set("n", "<leader>la", vim.lsp.buf.code_action, opts)
+  vim.keymap.set("n", "<leader>ld", vim.lsp.buf.declaration, opts)
+  vim.keymap.set("n", "<leader>lf", vim.lsp.buf.definition, opts)
+  vim.keymap.set("n", "<leader>lh", vim.lsp.buf.signature_help, opts)
+  vim.keymap.set("n", "<leader>li", vim.lsp.buf.implementation, opts)
+  vim.keymap.set("n", "<leader>lm", function() vim.lsp.buf.format { async = false } end, opts)
+  vim.keymap.set("n", "<leader>ln", vim.lsp.buf.rename, opts)
+  vim.keymap.set("n", "<leader>lr", vim.lsp.buf.references, opts)
+  vim.keymap.set("n", "<leader>lt", vim.lsp.buf.type_definition, opts)
+  vim.keymap.set("n", "<leader>lw", vim.lsp.buf.workspace_symbol, opts)
+  vim.keymap.set("n", "<leader>lk", function() vim.diagnostic.open_float(_float_opts) end, opts)
+  vim.keymap.set("n", "<leader>l[", function() vim.diagnostic.jump { count = -1, float = _float_opts } end, opts)
+  vim.keymap.set("n", "<leader>l]", function() vim.diagnostic.jump { count = 1, float = _float_opts } end, opts)
 end
 
 -- Modify or overwrite the config of a server.
@@ -134,5 +133,5 @@ vim.diagnostic.config {
   underline        = true,
   update_in_insert = false,
   severity_sort    = false,
-  float            = float_opts,
+  float            = _float_opts,
 }

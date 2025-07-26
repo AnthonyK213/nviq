@@ -1,113 +1,178 @@
 local lib = require("nviq.util.lib")
 
----Sets a new key mapping.
----@param desc string The description.
----@param mode string|table Mode short-name.
----@param lhs string Left-hand side {lhs} of the mapping.
----@param rhs string|function Right-hand side {rhs} of the mapping.
----@param opts? vim.keymap.set.Opts Options.
-local function kbd(desc, mode, lhs, rhs, opts)
-  local options = { noremap = true, silent = true }
-  if opts then
-    options = vim.tbl_extend("force", options, opts)
+vim.keymap.set("t", "<ESC>", "<C-\\><C-N>", {
+  desc = "Switch to normal mode in terminal"
+})
+
+vim.keymap.set("t", "<M-d>", "<C-\\><C-N><Cmd>bd!<CR>", {
+  desc = "Close the terminal"
+})
+
+vim.keymap.set("n", "<M-g>", ":%s/", {
+  desc = "Find and replace",
+})
+
+vim.keymap.set("v", "<M-g>", ":s/", {
+  desc = "Find and replace",
+})
+
+vim.keymap.set("n", "<leader>bh", "<Cmd>noh<CR>", {
+  desc = "Stop the search highlighting"
+})
+
+vim.keymap.set("n", "<leader>cs", "<Cmd>setlocal spell! spelllang=en_us<CR>", {
+  desc = "Toggle spell check"
+})
+
+vim.keymap.set({ "n", "i" }, "<C-S>", function()
+  if vim.bo.bt == "" then
+    vim.cmd.write()
   end
-  if desc then
-    options.desc = desc
+end, { desc = "Write the whole buffer to the current file" })
+
+vim.keymap.set("v", "<M-c>", [["+y]], {
+  desc = "Copy to system clipboard"
+})
+
+vim.keymap.set("v", "<M-x>", [["+x]], {
+  desc = "Cut to system clipboard"
+})
+
+vim.keymap.set({ "n", "v" }, "<M-v>", [["+p]], {
+  desc = "Paste from system clipboard"
+})
+
+vim.keymap.set("i", "<M-v>", "<C-R>=@+<CR>", {
+  desc = "Paste from system clipboard"
+})
+
+vim.keymap.set("n", "<M-a>", "ggVG", {
+  desc = "Select all lines in buffer"
+})
+
+vim.keymap.set("n", "<M-,>", function()
+  local exists, opt_file = lib.get_dotfile("nvimrc")
+  local cfg_dir = vim.fn.stdpath("config")
+  if exists and opt_file then
+    lib.edit_file(opt_file, false)
+    vim.api.nvim_set_current_dir(cfg_dir)
+  elseif opt_file then
+    vim.cmd.new(opt_file)
+    local schema_uri = vim.uri_from_fname(vim.fs.joinpath(cfg_dir, "schema.json"))
+    vim.api.nvim_buf_set_lines(0, 0, 1, true, {
+      "{",
+      string.format([[  "$schema": "%s"]], schema_uri),
+      "}",
+    })
+  else
+    vim.notify("Configuration directory not found")
   end
-  vim.keymap.set(mode, lhs, rhs, options)
+end, { desc = "Open nvimrc" })
+
+for dir, key in pairs { h = "left", j = "down", k = "up", l = "right" } do
+  vim.keymap.set("n", "<M-" .. dir .. ">", function()
+    lib.feedkeys("<C-W>" .. dir, "nx", false)
+  end, { desc = "Move cursor to window: " .. key })
 end
 
-kbd("Switch to normal mode in terminal", "t", "<ESC>", "<C-\\><C-N>")
-kbd("Close the terminal", "t", "<M-d>", "<C-\\><C-N><Cmd>bd!<CR>")
-kbd("Find and replace", "n", "<M-g>", ":%s/", { silent = false })
-kbd("Find and replace", "v", "<M-g>", ":s/", { silent = false })
-kbd("Stop the search highlighting", "n", "<leader>bh", "<Cmd>noh<CR>")
-kbd("Toggle spell check", "n", "<leader>cs", "<Cmd>setlocal spell! spelllang=en_us<CR>")
----@format disable-next
-kbd("Write the whole buffer to the current file", { "n", "i" }, "<C-S>", function() if vim.bo.bt == "" then vim.cmd.write() end end, { silent = false })
-kbd("Copy to system clipboard", "v", "<M-c>", '"+y')
-kbd("Cut to system clipboard", "v", "<M-x>", '"+x')
-kbd("Paste from system clipboard", { "n", "v" }, "<M-v>", '"+p')
-kbd("Paste from system clipboard", "i", "<M-v>", "<C-R>=@+<CR>")
-kbd("Select all lines in buffer", "n", "<M-a>", "ggVG")
-kbd("Open nvimrc", "n", "<M-,>", function() require("nviq.util.misc").open_nvimrc() end)
-for dir, desc in pairs { h = "left", j = "down", k = "up", l = "right" } do
-  kbd("Move cursor to window: " .. desc, "n", "<M-" .. dir .. ">", function()
-    lib.feedkeys("<C-W>" .. dir, "nx", false)
-  end)
-end
-kbd("Toggle background theme", "n", "<leader>bg", function()
+vim.keymap.set("n", "<leader>bg", function()
   if vim.is_callable(_G.NVIQ.handlers.set_theme) then
     local theme = vim.o.background == "dark" and "light" or "dark"
     _G.NVIQ.handlers.set_theme(theme)
   end
-end)
-
--- Emacs
-kbd("Move cursor to the beginning", "c", "<C-A>", "<C-B>", { silent = false })
-kbd("Move cursor by one char to the left", "c", "<C-B>", "<LEFT>", { silent = false })
-kbd("Move cursor by one char to the right", "c", "<C-F>", "<RIGHT>", { silent = false })
-kbd("Move cursor by one WORD to the left", "c", "<M-b>", "<C-LEFT>", { silent = false })
-kbd("Move cursor by one WORD to the right", "c", "<M-f>", "<C-RIGHT>", { silent = false })
-kbd("Delete the word before the cursor", "c", "<M-BS>", "<C-W>", { silent = false })
-kbd("Switch to command-line mode", "n", "<M-x>", ":", { silent = false })
-kbd("Switch to command-line mode", "i", "<M-x>", "<C-\\><C-O>:", { silent = false })
-kbd("Move cursor by one word to the left", "i", "<M-b>", "<C-\\><C-O>b")
-kbd("Move cursor by one word to the right", "i", "<M-f>", "<C-\\><C-O>e<Right>")
-kbd("Move cursor by one word to the left", "n", "<M-b>", "b")
-kbd("Move cursor by one word to the right", "n", "<M-f>", "e")
-kbd("Move cursor to the first character of the screen line", "i", "<C-A>", "<C-\\><C-O>g0")
-kbd("Move cursor to the last character of the screen line", "i", "<C-E>", "<C-\\><C-O>g$")
-kbd("Kill text until the end of the line", "i", "<C-K>", "<C-\\><C-O>D")
----@format disable-next
-kbd("Move cursor to the left", "i", "<C-B>", [[col(".") == 1 ? "<C-\><C-O>-<C-\><C-O>$" : "]] .. lib.dir_key("l") .. '"', { expr = true, replace_keycodes = false })
----@format disable-next
-kbd("Move cursor to the right", "i", "<C-F>", [[col(".") >= col("$") ? "<C-\><C-O>+<C-\><C-O>0" : "]] .. lib.dir_key("r") .. '"', { expr = true, replace_keycodes = false })
-kbd("Kill text until the end of the word", "i", "<M-d>", "<C-\\><C-O>dw")
-kbd("Move line up", "n", "<M-p>", [[<Cmd>exe "move" max([line(".") - 2, 0])<CR>]])
-kbd("Move line down", "n", "<M-n>", [[<Cmd>exe "move" min([line(".") + 1, line("$")])<CR>]])
-kbd("Move block up", "v", "<M-p>", [[:<C-U>exe "'<,'>move" max([line("'<") - 2, 0])<CR>gv]])
-kbd("Move block down", "v", "<M-n>", [[:<C-U>exe "'<,'>move" min([line("'>") + 1, line("$")])<CR>gv]])
-kbd("Move cursor down", { "n", "v", "i" }, "<C-N>", function() vim.cmd.normal("gj") end)
-kbd("Move cursor up", { "n", "v", "i" }, "<C-P>", function() vim.cmd.normal("gk") end)
+end, { desc = "Toggle background theme" })
 
 -- Buffer
-kbd("Next buffer", "n", "<leader>bn", "<Cmd>bn<CR>")
-kbd("Previous buffer", "n", "<leader>bp", "<Cmd>bp<CR>")
-kbd("Change cwd to current buffer", "n", "<leader>bc", function()
+
+vim.keymap.set("n", "<leader>bc", function()
   vim.api.nvim_set_current_dir(lib.buf_dir())
   vim.cmd.pwd()
-end, { silent = false })
-kbd("Delete current buffer", "n", "<leader>bd", function() require("nviq.util.misc").del_cur_buf() end)
+end, { desc = "Change cwd to current buffer" })
+
+vim.keymap.set("n", "<leader>bd", function()
+  local bufs = lib.buf_listed()
+  local sp = vim.list_contains({ "acwrite", "help", "terminal", "quickfix", "nofile" }, vim.bo.bt)
+  local handle = vim.api.nvim_get_current_buf()
+
+  if (#bufs == 1 and vim.bo[handle].buflisted)
+      or (#bufs == 0 and not vim.bo[handle].buflisted) then
+    table.insert(bufs, vim.api.nvim_create_buf(true, false))
+  end
+
+  if #bufs >= 2 and not sp then
+    local index = require("nviq.util.t").find_first(bufs, handle)
+    vim.api.nvim_set_current_buf(bufs[index + (index == 1 and 1 or -1)])
+  end
+
+  vim.bo[handle].buflisted = false
+
+  local ok = pcall(vim.api.nvim_buf_delete, handle, {
+    force  = false,
+    unload = vim.o.hidden
+  })
+
+  if not ok then
+    lib.warn("Failed to delete buffer")
+  end
+end, { desc = "Delete current buffer" })
+
+vim.keymap.set("n", "<leader>bn", "<Cmd>bn<CR>", {
+  desc = "Next buffer"
+})
+
+vim.keymap.set("n", "<leader>bp", "<Cmd>bp<CR>", {
+  desc = "Previous buffer"
+})
 
 -- Open
-kbd("Open file manager", "n", "<leader>oe", function()
-  local buf_dir = lib.buf_dir()
-  require("nviq.util.misc").open(buf_dir)
-end)
-kbd("Open terminal", "n", "<leader>ot", function()
-  local ok = require("nviq.util.misc").terminal()
-  if ok then
+
+vim.keymap.set("n", "<leader>oe", function()
+  lib.open(lib.buf_dir())
+end, { desc = "Open file manager" })
+
+vim.keymap.set("n", "<leader>ot", function()
+  local exec
+  local shell = _G.NVIQ.settings.general.shell
+
+  if type(shell) == "table" and #shell > 0 then
+    exec = shell[1]
+  elseif type(shell) == "string" then
+    exec = shell
+  else
+    lib.warn("The shell is invalid, please check out user settings.")
+    return
+  end
+
+  if vim.fn.executable(exec) ~= 1 then
+    lib.warn(exec .. " is not a valid shell.")
+    return
+  end
+
+  local args = vim.iter({ shell }):flatten():totable()
+  local term = require("nviq.util.futures").Terminal.new(args)
+
+  if term:start() then
     vim.api.nvim_feedkeys("i", "n", true)
   end
-end)
-kbd("Open URL or path under the cursor", "n", "<leader>ou", function()
-  local misc = require("nviq.util.misc")
-  local path = misc.match_url_or_path()
+end, { desc = "Open terminal" })
+
+vim.keymap.set("n", "<leader>ou", function()
+  local path = lib.get_url_or_path()
   if not path then
     lib.warn("Path not found")
     return
   end
-  misc.open(path)
-end)
+  lib.open(path)
+end, { desc = "Open URL or path under the cursor" })
 
 -- Search
+
 for key, val in pairs {
   Bing       = { "b", "https://www.bing.com/search?q=" },
   DuckDuckGo = { "d", "https://duckduckgo.com/?q=" },
   Google     = { "g", "https://www.google.com/search?q=" },
 } do
-  kbd("Search <cword>/selection with " .. key, { "n", "x" }, "<leader>h" .. val[1], function()
+  vim.keymap.set({ "n", "x" }, "<leader>h" .. val[1], function()
     local txt
     local mode = lib.get_mode()
     if mode == lib.Mode.Normal then
@@ -119,15 +184,15 @@ for key, val in pairs {
       return
     end
     vim.ui.open(val[2] .. txt)
-  end)
+  end, { desc = "Search <cword>/selection with " .. key })
 end
 
 -- Preview
 
-kbd("Toggle preview", "n", "<leader>pt", function()
+vim.keymap.set("n", "<leader>pt", function()
   if vim.is_callable(vim.b.nviq_handler_preview_toggle) then
     vim.b.nviq_handler_preview_toggle()
   else
     vim.notify("No preview available")
   end
-end)
+end, { desc = "Toggle preview" })

@@ -102,6 +102,31 @@ function M.dir_key(dir)
   return _dir_keys[dir]
 end
 
+---Open and edit a file.
+---@param path string The file path.
+---@param chdir? boolean True to change cwd to the file dir.
+function M.edit_file(path, chdir)
+  path = vim.fs.normalize(path)
+
+  if not futil.is_file(path) then return end
+
+  if vim.api.nvim_buf_get_name(0) == "" then
+    vim.cmd.edit {
+      args = { path },
+      mods = { silent = true }
+    }
+  else
+    vim.cmd.tabnew {
+      args = { path },
+      mods = { silent = true }
+    }
+  end
+
+  if chdir then
+    vim.api.nvim_set_current_dir(vim.fs.dirname(path))
+  end
+end
+
 ---Escapes the terminal codes, feeds them to nvim.
 ---@see vim.api.nvim_feedkeys
 ---@param keys string To be typed.
@@ -178,9 +203,7 @@ function M.get_gv()
   local a_bak = vim.fn.getreg("a", 1)
   vim.cmd.normal {
     (mode == M.Mode.Visual and "" or "gv") .. [["ay]],
-    mods = {
-      silent = true
-    }
+    mods = { silent = true }
   }
   local a_val = vim.fn.getreg("a")
   vim.fn.setreg("a", a_bak)
@@ -237,7 +260,7 @@ function M.get_mode()
   return _mode_map[mode]
 end
 
----Get the word and its position under the cursor.
+---Gets the word and its position under the cursor.
 ---@return string word Word under the cursor.
 ---@return integer start_column Start index of the line (0-based, inclusive).
 ---@return integer end_column End index of the line (0-based, exclusive).
@@ -259,6 +282,25 @@ function M.get_word()
     p_b = word
   end
   return word, #b - #p_a, #b + #p_b
+end
+
+---Gets URL or path under the cursor.
+---@return string?
+function M.get_url_or_path()
+  local url = M.url_match(vim.fn.expand("<cWORD>"))
+  if url then
+    return url
+  end
+
+  local path = vim.fn.expand("<cfile>")
+  if futil.is_relative(path) then
+    path = vim.fs.joinpath(M.buf_dir(), path)
+    path = vim.fs.normalize(path)
+  end
+
+  if futil.exist(path) then
+    return path
+  end
 end
 
 ---Checks whether `exe` exists in path.
@@ -448,6 +490,21 @@ function M.new_split(position, option)
     vim.api.nvim_win_set_height(0, term_size)
   end
   return true, vim.api.nvim_get_current_win(), vim.api.nvim_get_current_buf()
+end
+
+---The same as `vim.ui.open`, but uses `start` on Windows.
+---@param path string Path or URL to open.
+function M.open(path)
+  if M.has_win() then
+    local handle
+    handle = vim.uv.spawn("cmd", {
+      args = { "/c", "start", [[""]], path }
+    }, vim.schedule_wrap(function()
+      handle:close()
+    end))
+  else
+    vim.ui.open(path)
+  end
 end
 
 ---Locates surrounding pair in direction `dir`. Returns -1 when not found.

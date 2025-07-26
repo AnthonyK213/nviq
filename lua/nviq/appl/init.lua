@@ -2,7 +2,12 @@ local lib = require("nviq.util.lib")
 
 local _augroup = vim.api.nvim_create_augroup("nviq.appl", { clear = true })
 
+-- Emacs
+
+require("nviq.appl.emacs")
+
 -- Autopair
+
 require("nviq.appl.autopair").setup {
   pairs = {
     ["()"] = { left = "(", right = ")" },
