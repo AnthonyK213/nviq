@@ -41,7 +41,7 @@ mini_deps.later(function()
     nerd_font = false,
     highlight_closest = false,
     on_attach = function(bufnr)
-      local opt = { noremap = true, silent = true, buffer = bufnr }
+      local opt = { buffer = bufnr }
       vim.keymap.set("n", "{", require("aerial").prev, opt)
       vim.keymap.set("n", "}", require("aerial").next, opt)
       vim.keymap.set("n", "[[", require("aerial").prev_up, opt)
@@ -168,14 +168,37 @@ mini_deps.later(function()
     }
   }
 
+  require("nviq.appl.lsp").register_client_on_attach(function(_, bufnr)
+    ---@type vim.keymap.set.Opts
+    local opt = { buffer = bufnr }
+    local picker = require("telescope.builtin")
+
+    vim.keymap.set("n", "<F12>", picker.lsp_definitions, opt)
+    vim.keymap.set("n", "<S-F12>", picker.lsp_references, opt)
+    vim.keymap.set("n", "<F24>", picker.lsp_references, opt)
+    vim.keymap.set("n", "<C-F12>", picker.lsp_implementations, opt)
+    vim.keymap.set("n", "<F36>", picker.lsp_implementations, opt)
+  end)
+
   require("telescope").load_extension("aerial")
   require("telescope").load_extension("ui-select")
   require("telescope").load_extension("undo")
 
-  vim.keymap.set("n", "<leader>fb", function() require("telescope.builtin").buffers() end, { desc = "Pick buffers" })
-  vim.keymap.set("n", "<leader>ff", function() require("telescope.builtin").find_files() end, { desc = "Find files" })
-  vim.keymap.set("n", "<leader>fg", function() require("telescope.builtin").live_grep() end, { desc = "Live grep" })
-  vim.keymap.set("n", "<leader>fu", function() require("telescope").extensions.undo.undo() end, { desc = "Undo tree" })
+  vim.keymap.set("n", "<leader>fb", function()
+    require("telescope.builtin").buffers()
+  end, { desc = "Pick buffers" })
+
+  vim.keymap.set("n", "<leader>ff", function()
+    require("telescope.builtin").find_files()
+  end, { desc = "Find files" })
+
+  vim.keymap.set("n", "<leader>fg", function()
+    require("telescope.builtin").live_grep()
+  end, { desc = "Live grep" })
+
+  vim.keymap.set("n", "<leader>fu", function()
+    require("telescope").extensions.undo.undo()
+  end, { desc = "Undo tree" })
 end)
 
 -----------------------------neovim-session-manager-----------------------------

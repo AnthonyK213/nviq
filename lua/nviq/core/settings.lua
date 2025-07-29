@@ -3,7 +3,6 @@ local putil = require("nviq.util.p")
 
 ---@class nviq.core.settings.LspSpec
 ---@field load boolean
----@field disable_semantic_tokens? boolean
 ---@field settings? table
 
 local settings = {

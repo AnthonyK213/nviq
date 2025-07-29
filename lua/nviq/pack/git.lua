@@ -159,7 +159,7 @@ mini_deps.later(function()
       col = 1
     },
     on_attach = function(bufnr)
-      local opt = { noremap = true, silent = true, buffer = bufnr }
+      local opt = { buffer = bufnr }
       vim.keymap.set("n", "<leader>gj", function() require("gitsigns").nav_hunk("next") end, opt)
       vim.keymap.set("n", "<leader>gk", function() require("gitsigns").nav_hunk("prev") end, opt)
       vim.keymap.set("n", "<leader>gp", require("gitsigns").preview_hunk, opt)

@@ -204,11 +204,6 @@
                   "type": "boolean",
                   "default": false
                 },
-                "disable_semantic_tokens": {
-                  "description": "Disable semantic tokens if it doesn't work well",
-                  "type": "boolean",
-                  "default": false
-                },
                 "settings": {
                   "description": "Extra settings, LSP specific",
                   "type": "object",

@@ -152,10 +152,10 @@ mini_deps.later(function()
     pattern = "dap-repl",
     callback = function(event)
       require("dap.ext.autocompl").attach()
-      local opts = { noremap = true, silent = true, buffer = event.buf }
-      vim.keymap.set("i", "<Tab>", "<C-N>", opts)
-      vim.keymap.set("i", "<S-Tab>", "<C-P>", opts)
-      vim.keymap.set({ "n", "i" }, "<M-d>", "<C-\\><C-N><Cmd>bd!<CR>", opts)
+      local opt = { buffer = event.buf }
+      vim.keymap.set("i", "<Tab>", "<C-N>", opt)
+      vim.keymap.set("i", "<S-Tab>", "<C-P>", opt)
+      vim.keymap.set({ "n", "i" }, "<M-d>", "<C-\\><C-N><Cmd>bd!<CR>", opt)
     end,
   })
 end)

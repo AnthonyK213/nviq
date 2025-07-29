@@ -3,8 +3,6 @@ local sutil = require("nviq.util.s")
 
 local M = {}
 
-local kopt = { noremap = true, expr = false, silent = true }
-
 ---@enum nviq.appl.autopair.ActionType
 local ActionType = {
   Open      = 0,
@@ -218,7 +216,7 @@ function Keymap:action()
 end
 
 function Keymap:set()
-  vim.keymap.set("i", self.m_key, function() self:action() end, kopt)
+  vim.keymap.set("i", self.m_key, function() self:action() end)
 end
 
 ---@type table<string, nviq.appl.autopair.Pair>
@@ -315,9 +313,9 @@ function M.setup(config)
     keymap:set()
   end
 
-  vim.keymap.set("i", "<CR>", action_enter, kopt)
-  vim.keymap.set("i", "<BS>", action_backs, kopt)
-  vim.keymap.set("i", "<M-BS>", action_supbs, kopt)
+  vim.keymap.set("i", "<CR>", action_enter)
+  vim.keymap.set("i", "<BS>", action_backs)
+  vim.keymap.set("i", "<M-BS>", action_supbs)
 end
 
 return M

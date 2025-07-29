@@ -19,7 +19,8 @@ lib.new_keymap("i", "<CR>", function(fallback)
   else
     fallback()
   end
-end, { remap = false })
+end)
+
 lib.new_keymap("i", "<Tab>", function(fallback)
   if vim.fn.pumvisible() ~= 0 or
       vim.regex("\\v[A-Za-z_\\u4e00-\\u9fa5]$"):match_str(lib.get_half_line(-1).b) then
@@ -27,18 +28,19 @@ lib.new_keymap("i", "<Tab>", function(fallback)
   else
     fallback()
   end
-end, { remap = false })
+end)
+
 lib.new_keymap("i", "<S-Tab>", function(fallback)
   if vim.fn.pumvisible() ~= 0 then
     lib.feedkeys("<C-P>", "n", true)
   else
     fallback()
   end
-end, { remap = false })
+end)
 
 -- Git
 
-vim.keymap.set("n", "<leader>gb", function ()
+vim.keymap.set("n", "<leader>gb", function()
   require("nviq.appl.git").blame_line()
 end)
 

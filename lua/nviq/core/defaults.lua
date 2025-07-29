@@ -55,6 +55,20 @@ vim.o.confirm = true
 
 vim.g.mapleader = " "
 
+-- Diagnostics
+
+vim.diagnostic.config {
+  virtual_text     = true,
+  signs            = true,
+  underline        = true,
+  update_in_insert = false,
+  severity_sort    = false,
+  float            = {
+    border    = _G.NVIQ.settings.tui.border,
+    max_width = 80,
+  },
+}
+
 -- Register handlers.
 
 ---@type fun():string,integer,integer Handler to get <cword> which returns the word, start pos (0-based, inclusive) and end pos (0-based, exclusive).

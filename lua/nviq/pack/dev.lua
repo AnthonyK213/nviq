@@ -40,11 +40,7 @@ mini_deps.later(function()
     lsp = {
       enabled = true,
       on_attach = function(_, bufnr)
-        vim.keymap.set("n", "K", crates.show_popup, {
-          noremap = true,
-          silent = true,
-          buffer = bufnr
-        })
+        vim.keymap.set("n", "K", crates.show_popup, { buffer = bufnr })
       end,
       actions = true,
       completion = true,
