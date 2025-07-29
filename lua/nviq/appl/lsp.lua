@@ -1,12 +1,12 @@
-local _float_opts = {
-  border = _G.NVIQ.settings.tui.border,
-  max_width = 80,
-}
-
 ---@alias nviq.appl.lsp.OnAttach fun(client:vim.lsp.Client,bufnr:integer)
 
 ---@type nviq.appl.lsp.OnAttach[]
 local _client_on_attach_queue = {}
+
+local _float_opts = {
+  border = _G.NVIQ.settings.tui.border,
+  max_width = 80,
+}
 
 ---Callback invoked when client attaches to a buffer.
 ---@param client vim.lsp.Client

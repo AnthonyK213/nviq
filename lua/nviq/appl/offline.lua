@@ -7,6 +7,7 @@ vim.g.netrw_banner = 0
 vim.g.netrw_winsize = 80
 vim.g.netrw_liststyle = 3
 vim.g.netrw_browse_split = 4
+
 vim.keymap.set("n", "<leader>op", "<Cmd>20Lexplore<CR>")
 
 -- LSP
@@ -33,24 +34,40 @@ vim.lsp.config("clangd", {
   },
 })
 
-vim.lsp.config("lua_ls", {
-  cmd = { "lua-language-server" },
-  filetypes = { "lua" },
-  root_markers = {
-    ".luarc.json",
-    ".luarc.jsonc",
-    ".luacheckrc",
-    ".stylua.toml",
-    "stylua.toml",
-    "selene.toml",
-    "selene.yml",
-    ".git",
-  },
-})
-
 -- Completion
 
-vim.o.completeopt = "menu,menuone,noselect"
+---
+---@param client vim.lsp.Client
+---@return string[]?
+local function get_trigger_chars(client)
+  local server_capabilities = client.server_capabilities
+  if not server_capabilities then return end
+  local completion_provider = server_capabilities.completionProvider
+  if not completion_provider then return end
+  return completion_provider.triggerCharacters
+end
+
+---
+---@param clients vim.lsp.Client[]
+---@param context string
+local function after_trigger_char(clients, context)
+  if context:len() == 0 then
+    return false
+  end
+  for _, client in ipairs(clients) do
+    local trigger_chars = get_trigger_chars(client)
+    if trigger_chars then
+      for _, char in ipairs(trigger_chars) do
+        if vim.endswith(context, char) then
+          return true
+        end
+      end
+    end
+  end
+  return false
+end
+
+vim.o.completeopt = "fuzzy,menu,menuone,noinsert,popup"
 
 require("nviq.appl.lsp").register_client_on_attach(function(client, bufnr)
   vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
@@ -67,20 +84,38 @@ end)
 lib.new_keymap("i", "<Tab>", function(fallback)
   if vim.fn.pumvisible() ~= 0 then
     lib.feedkeys("<C-N>", "n", true)
-  elseif vim.regex("\\v[A-Za-z_\\u4e00-\\u9fa5]$"):match_str(lib.get_half_line(-1).b) then
-    if vim.tbl_isempty(vim.lsp.get_clients { bufnr = 0 }) then
+    return
+  end
+
+  if vim.snippet.active { direction = 1 } then
+    vim.snippet.jump(1)
+    return
+  end
+
+  local clients = vim.lsp.get_clients { bufnr = 0 }
+  local context = lib.get_half_line(-1)
+
+  if #clients == 0 then
+    if vim.regex("\\v[A-Za-z_\\u4e00-\\u9fa5]$"):match_str(context.b) then
       lib.feedkeys("<C-N>", "n", true)
-    else
-      vim.lsp.completion.get()
+      return
     end
   else
-    fallback()
+    if vim.regex("\\v\\h$"):match_str(context.b) or
+        after_trigger_char(clients, context.b) then
+      vim.lsp.completion.get()
+      return
+    end
   end
+
+  fallback()
 end)
 
 lib.new_keymap("i", "<S-Tab>", function(fallback)
   if vim.fn.pumvisible() ~= 0 then
     lib.feedkeys("<C-P>", "n", true)
+  elseif vim.snippet.active { direction = -1 } then
+    vim.snippet.jump(-1)
   else
     fallback()
   end
