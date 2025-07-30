@@ -123,7 +123,7 @@
       }
     },
     "gui": {
-      "description": "GUI settings (Neovim Qt | FVim | Neovide | VimR)",
+      "description": "GUI settings (Neovim Qt, VimR)",
       "type": "object",
       "properties": {
         "theme": {

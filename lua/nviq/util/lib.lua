@@ -397,42 +397,67 @@ end
 ---@param new_rhs fun(fallback: function) New `rhs`.
 ---@param opts? vim.keymap.set.Opts Optional parameters map.
 function M.new_keymap(mode, lhs, new_rhs, opts)
-  opts = opts or {}
+  opts = vim.deepcopy(opts or {})
 
-  local kbd_table
+  local keymaps
   local buf = opts.buffer
   if type(buf) == "number" then
     if not vim.api.nvim_buf_is_valid(buf) then
       return
     end
-    kbd_table = vim.api.nvim_buf_get_keymap(buf, mode)
+    keymaps = vim.api.nvim_buf_get_keymap(buf, mode)
   elseif type(buf) == "boolean" and buf then
     error("Should provide buffer number for a buffer specific keymap.")
   else
-    kbd_table = vim.api.nvim_get_keymap(mode)
+    keymaps = vim.api.nvim_get_keymap(mode)
   end
 
+  ---@type vim.api.keyset.get_keymap
+  local maparg
   local fallback
 
-  for _, val in ipairs(kbd_table) do
-    if val.lhs == lhs then
-      if val.rhs then
-        fallback = function()
-          M.feedkeys(val.rhs, "n", true)
-        end
-      elseif val.callback then
-        fallback = val.callback
-      end
+  for _, map in ipairs(keymaps) do
+    if map.lhs == lhs then
+      maparg = map
       break
     end
   end
 
-  if fallback == nil then
+  if maparg then
+    local m = (maparg.noremap == 1) and "in" or "im"
+    local rhs
+    if maparg.expr == 1 then
+      if maparg.rhs then
+        rhs = maparg.rhs --[[@as string]]
+        fallback = function()
+          -- FIXME: Annoying escapes...
+          M.feedkeys(vim.api.nvim_eval(rhs), m, true)
+        end
+      elseif maparg.callback then
+        rhs = maparg.callback --[[@as function]]
+        fallback = function()
+          M.feedkeys(rhs(), m, true)
+        end
+      end
+    else
+      if maparg.rhs then
+        rhs = maparg.rhs --[[@as string]]
+        fallback = function()
+          M.feedkeys(rhs, m, true)
+        end
+      elseif maparg.callback then
+        fallback = maparg.callback
+      end
+    end
+  end
+
+  if not fallback then
     fallback = function()
       M.feedkeys(lhs, "n", true)
     end
   end
 
+  opts.expr = false
   vim.keymap.set(mode, lhs, function() new_rhs(fallback) end, opts)
 end
 

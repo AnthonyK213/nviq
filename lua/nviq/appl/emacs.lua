@@ -1,5 +1,3 @@
-local lib = require("nviq.util.lib")
-
 vim.keymap.set("c", "<C-A>", "<C-B>", {
   desc = "Move cursor to the beginning",
 })
@@ -48,23 +46,25 @@ vim.keymap.set("i", "<C-K>", "<C-\\><C-O>D", {
   desc = "Kill text until the end of the line"
 })
 
-vim.keymap.set("i", "<C-B>", [[col(".") == 1 ? "<C-\><C-O>-<C-\><C-O>$" : "]] .. lib.dir_key("l") .. '"', {
+vim.keymap.set("i", "<C-B>", [[col(".") == 1 ? "<C-\><C-O>-<C-\><C-O>$" : "<C-G>U\<Left\>"]], {
   expr = true,
-  replace_keycodes = false,
+  silent = true,
   desc = "Move cursor to the left"
 })
 
-vim.keymap.set("i", "<C-F>", [[col(".") >= col("$") ? "<C-\><C-O>+<C-\><C-O>0" : "]] .. lib.dir_key("r") .. '"', {
+vim.keymap.set("i", "<C-F>", [[col(".") >= col("$") ? "<C-\><C-O>+<C-\><C-O>0" : "<C-G>U\<Right\>"]], {
   expr = true,
-  replace_keycodes = false,
+  silent = true,
   desc = "Move cursor to the right"
 })
 
 vim.keymap.set("i", "<C-N>", "<C-\\><C-O>gj", {
+  silent = true,
   desc = "Move cursor down"
 })
 
 vim.keymap.set("i", "<C-P>", "<C-\\><C-O>gk", {
+  silent = true,
   desc = "Move cursor up"
 })
 
@@ -77,17 +77,21 @@ vim.keymap.set("n", "<M-x>", ":", {
 })
 
 vim.keymap.set("n", "<M-p>", [[<Cmd>exe "move" max([line(".") - 2, 0])<CR>]], {
+  silent = true,
   desc = "Move line up"
 })
 
 vim.keymap.set("n", "<M-n>", [[<Cmd>exe "move" min([line(".") + 1, line("$")])<CR>]], {
+  silent = true,
   desc = "Move line down"
 })
 
 vim.keymap.set("v", "<M-p>", [[:<C-U>exe "'<,'>move" max([line("'<") - 2, 0])<CR>gv]], {
+  silent = true,
   desc = "Move lines up"
 })
 
 vim.keymap.set("v", "<M-n>", [[:<C-U>exe "'<,'>move" min([line("'>") + 1, line("$")])<CR>gv]], {
+  silent = true,
   desc = "Move lines down"
 })

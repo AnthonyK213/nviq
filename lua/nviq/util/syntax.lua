@@ -205,7 +205,7 @@ end
 function TSNode:find_first_child(predicate, option)
   local p = _check_predicate(predicate)
   if p then
-    local option_ = vim.deepcopy(option) or {}
+    local option_ = vim.deepcopy(option or {})
     option_.limit = 1
     local list = self:find_children(p, option_)
     if list:any() then

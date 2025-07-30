@@ -1,7 +1,6 @@
 -- GUI configurations.
 -- Adapted GUIs:
 -- - [Neovim Qt](https://github.com/equalsraf/neovim-qt)
--- - [Neovide](https://github.com/neovide/neovide)
 -- - [VimR](https://github.com/qvacua/vimr)
 
 local lib = require("nviq.util.lib")
@@ -64,41 +63,6 @@ local function nvim_qt_setup(settings, handlers)
   end
 end
 
-------------------------------------Neovide-------------------------------------
-
-local function has_neovide()
-  return vim.g.neovide == true
-end
-
----
----@param settings nviq.appl.gui.Settings
----@param _ nviq.appl.gui.Handlers
-local function neovide_setup(settings, _)
-  vim.o.linespace = math.floor(settings.line_space)
-  vim.g.neovide_padding_top = 13
-  vim.g.neovide_padding_bottom = 13
-  vim.g.neovide_padding_right = 13
-  vim.g.neovide_padding_left = 13
-  vim.g.neovide_theme = settings.theme
-  vim.g.neovide_opacity = settings.opacity
-  vim.g.neovide_floating_blur_amount_x = 2.0
-  vim.g.neovide_floating_blur_amount_y = 2.0
-
-  local augroup = vim.api.nvim_create_augroup("nviq.appl.gui.neovide", { clear = true })
-
-  vim.api.nvim_create_autocmd("InsertEnter", {
-    pattern = "*",
-    callback = function(_) vim.g.neovide_input_ime = true end,
-    group = augroup,
-  })
-
-  vim.api.nvim_create_autocmd({ "InsertLeave", "CmdlineEnter" }, {
-    pattern = "*",
-    callback = function(_) vim.g.neovide_input_ime = false end,
-    group = augroup,
-  })
-end
-
 -------------------------------------VimR---------------------------------------
 
 local function has_vimr()
@@ -122,8 +86,8 @@ end
 
 -------------------------------------Setup--------------------------------------
 
-if has_neovide() then
-  require("nviq")
+if vim.g.neovide then
+  return
 end
 
 local _gui_settings = _G.NVIQ.settings.gui
@@ -181,15 +145,11 @@ end
 
 if has_nvim_qt() then
   nvim_qt_setup(_gui_settings, _gui_handlers)
-elseif has_neovide() then
-  neovide_setup(_gui_settings, _gui_handlers)
 elseif has_vimr() then
   vimr_setup(_gui_settings, _gui_handlers)
 end
 
-if not has_neovide() then
-  require("nviq.appl.theme").set_theme(_gui_settings.theme)
-end
+require("nviq.appl.theme").set_theme(_gui_settings.theme)
 
 set_font(_gui_settings.font_half, _gui_settings.font_wide, _gui_settings.font_size)
 
