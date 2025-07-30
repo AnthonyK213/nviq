@@ -1,4 +1,5 @@
 local lib = require("nviq.util.lib")
+local kutil = require("nviq.util.k")
 
 -- netrw
 
@@ -73,17 +74,17 @@ require("nviq.appl.lsp").register_client_on_attach(function(client, bufnr)
   vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
 end)
 
-lib.new_keymap("i", "<CR>", function(fallback)
+kutil.new_keymap("i", "<CR>", function(fallback)
   if vim.fn.pumvisible() ~= 0 then
-    lib.feedkeys("<C-Y>", "n", true)
+    kutil.feedkeys("<C-Y>", "in", true)
   else
     fallback()
   end
 end)
 
-lib.new_keymap("i", "<Tab>", function(fallback)
+kutil.new_keymap("i", "<Tab>", function(fallback)
   if vim.fn.pumvisible() ~= 0 then
-    lib.feedkeys("<C-N>", "n", true)
+    kutil.feedkeys("<C-N>", "in", true)
     return
   end
 
@@ -97,7 +98,7 @@ lib.new_keymap("i", "<Tab>", function(fallback)
 
   if #clients == 0 then
     if vim.regex("\\v[A-Za-z_\\u4e00-\\u9fa5]$"):match_str(context.b) then
-      lib.feedkeys("<C-N>", "n", true)
+      kutil.feedkeys("<C-N>", "in", true)
       return
     end
   else
@@ -111,9 +112,9 @@ lib.new_keymap("i", "<Tab>", function(fallback)
   fallback()
 end)
 
-lib.new_keymap("i", "<S-Tab>", function(fallback)
+kutil.new_keymap("i", "<S-Tab>", function(fallback)
   if vim.fn.pumvisible() ~= 0 then
-    lib.feedkeys("<C-P>", "n", true)
+    kutil.feedkeys("<C-P>", "in", true)
   elseif vim.snippet.active { direction = -1 } then
     vim.snippet.jump(-1)
   else

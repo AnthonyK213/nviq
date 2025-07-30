@@ -22,12 +22,6 @@ M.Mode = {
 
 local _p_word_first_half = [[\v([\]] .. [[u4e00-\]] .. [[u9fff0-9a-zA-Z_-]+)$]]
 local _p_word_last_half = [[\v^([\]] .. [[u4e00-\]] .. [[u9fff0-9a-zA-Z_-])+]]
-local _dir_keys = {
-  l = "<C-G>U<Left>",
-  r = "<C-G>U<Right>",
-  u = "<C-G>U<Up>",
-  d = "<C-G>U<Down>",
-}
 
 ---@type table<string, nviq.util.lib.Mode>
 local _mode_map = {
@@ -95,13 +89,6 @@ function M.bufnr(bufnr)
   return bufnr
 end
 
----Returns the key code of direction that won't break the history.
----@param dir "l"|"r"|"u"|"d" Left/Right/Up/Down.
----@return string key_code
-function M.dir_key(dir)
-  return _dir_keys[dir]
-end
-
 ---Open and edit a file.
 ---@param path string The file path.
 ---@param chdir? boolean True to change cwd to the file dir.
@@ -127,16 +114,6 @@ function M.edit_file(path, chdir)
   end
 end
 
----Escapes the terminal codes, feeds them to nvim.
----@see vim.api.nvim_feedkeys
----@param keys string To be typed.
----@param mode string Behavior flags, see **feedkeys()**.
----@param escape_ks boolean If true, escape K_SPECIAL bytes in `keys`.
-function M.feedkeys(keys, mode, escape_ks)
-  local k = vim.api.nvim_replace_termcodes(keys, true, false, true)
-  vim.api.nvim_feedkeys(k, mode, escape_ks)
-end
-
 ---Finds the root directory contains file/directory matches `pattern`.
 ---@param pattern string The pattern (vim regex in magic mode).
 ---@param options? {item_type?:"directory"|"file", start_dir?:string}
@@ -159,7 +136,7 @@ function M.find_root(pattern, options)
   end
 end
 
----Gets the path of the dotfile (.nvimrc, etc.).
+---Returns the path of the dotfile (.nvimrc, etc.).
 ---Searching order: stdpath("config") -> home -> ...
 ---Uses the last one was found.
 ---@param name string Name of the dotfile (with out '.' or '\_' at the start).
@@ -232,7 +209,7 @@ function M.get_gv_mark(bufnr)
   return s_pos[1] - 1, s_pos[2], e_pos[1] - 1, e_pos[2] + d
 end
 
----Gets backward/forward part of current line around the cursor.
+---Returns backward/forward part of current line around the cursor.
 ---@param half? -1|0|1 -1: backward part; 0: both parts; 1: forward part.
 ---@return { b:string, f:string } result *b*: Half line before the cursor; *f*: Half line after the cursor.
 function M.get_half_line(half)
@@ -260,7 +237,7 @@ function M.get_mode()
   return _mode_map[mode]
 end
 
----Gets the word and its position under the cursor.
+---Returns the word and its position under the cursor.
 ---@return string word Word under the cursor.
 ---@return integer start_column Start index of the line (0-based, inclusive).
 ---@return integer end_column End index of the line (0-based, exclusive).
@@ -284,7 +261,7 @@ function M.get_word()
   return word, #b - #p_a, #b + #p_b
 end
 
----Gets URL or path under the cursor.
+---Returns URL or path under the cursor.
 ---@return string?
 function M.get_url_or_path()
   local url = M.url_match(vim.fn.expand("<cWORD>"))
@@ -391,76 +368,6 @@ function M.json_decode(path, loosely)
   return 1, nil
 end
 
----Creates new mapping with fallback.
----@param mode string Mode short-name.
----@param lhs string Left-hand-side of the mapping.
----@param new_rhs fun(fallback: function) New `rhs`.
----@param opts? vim.keymap.set.Opts Optional parameters map.
-function M.new_keymap(mode, lhs, new_rhs, opts)
-  opts = vim.deepcopy(opts or {})
-
-  local keymaps
-  local buf = opts.buffer
-  if type(buf) == "number" then
-    if not vim.api.nvim_buf_is_valid(buf) then
-      return
-    end
-    keymaps = vim.api.nvim_buf_get_keymap(buf, mode)
-  elseif type(buf) == "boolean" and buf then
-    error("Should provide buffer number for a buffer specific keymap.")
-  else
-    keymaps = vim.api.nvim_get_keymap(mode)
-  end
-
-  ---@type vim.api.keyset.get_keymap
-  local maparg
-  local fallback
-
-  for _, map in ipairs(keymaps) do
-    if map.lhs == lhs then
-      maparg = map
-      break
-    end
-  end
-
-  if maparg then
-    local m = (maparg.noremap == 1) and "in" or "im"
-    local rhs
-    if maparg.expr == 1 then
-      if maparg.rhs then
-        rhs = maparg.rhs --[[@as string]]
-        fallback = function()
-          -- FIXME: Annoying escapes...
-          M.feedkeys(vim.api.nvim_eval(rhs), m, true)
-        end
-      elseif maparg.callback then
-        rhs = maparg.callback --[[@as function]]
-        fallback = function()
-          M.feedkeys(rhs(), m, true)
-        end
-      end
-    else
-      if maparg.rhs then
-        rhs = maparg.rhs --[[@as string]]
-        fallback = function()
-          M.feedkeys(rhs, m, true)
-        end
-      elseif maparg.callback then
-        fallback = maparg.callback
-      end
-    end
-  end
-
-  if not fallback then
-    fallback = function()
-      M.feedkeys(lhs, "n", true)
-    end
-  end
-
-  opts.expr = false
-  vim.keymap.set(mode, lhs, function() new_rhs(fallback) end, opts)
-end
-
 ---Creates a new split window.
 ---@param position "aboveleft"|"belowright"|"topleft"|"botright"
 ---@param option? { split_size: integer, ratio_max: number, vertical: boolean, hide_number: boolean } Split options:
@@ -562,11 +469,6 @@ function M.set_theme(theme)
   if vim.o.background ~= theme then
     vim.o.background = theme
   end
-end
-
----Switches mode to NORMAL.
-function M.to_normal()
-  M.feedkeys("<C-\\><C-N>", "nx", false)
 end
 
 ---Try-Catch-Finally.

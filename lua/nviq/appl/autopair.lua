@@ -1,4 +1,5 @@
 local lib = require("nviq.util.lib")
+local kutil = require("nviq.util.k")
 local sutil = require("nviq.util.s")
 
 local M = {}
@@ -13,7 +14,7 @@ local ActionType = {
 ---Feeds keys to current buffer.
 ---@param str string Operation as string to feed to buffer.
 local function feed_keys(str)
-  lib.feedkeys(str, "n", true)
+  kutil.feedkeys(str, "in", true)
 end
 
 ---Determines whether a character is a numeric/alphabetic/CJK(NAC) character.
@@ -70,11 +71,11 @@ function Pair:right()
 end
 
 function Pair:_open()
-  feed_keys(self.m_left .. self.m_right .. string.rep(lib.dir_key("l"), self.m_right:len()))
+  feed_keys(self.m_left .. self.m_right .. string.rep(kutil.dir_key("l"), self.m_right:len()))
 end
 
 function Pair:_close()
-  feed_keys(string.rep(lib.dir_key("r"), self.m_right:len()))
+  feed_keys(string.rep(kutil.dir_key("r"), self.m_right:len()))
 end
 
 function Pair:open()
@@ -169,7 +170,7 @@ function Keymap.new(key, spec, pair_table)
     end
   elseif type(spec.pair) == "table" then
     keymap.m_pair = Pair.unset()
-    for ft, name in pairs(spec.pair) do
+    for ft, name in pairs(spec.pair --[[@as table<string,string>]]) do
       if ft == "_" then
         local default_pair = pair_table[name]
         if default_pair then
@@ -249,7 +250,7 @@ end
 local function action_backs()
   local context = lib.get_half_line()
   if is_sur(context) then
-    feed_keys(lib.dir_key("r") .. "<BS><BS>")
+    feed_keys(kutil.dir_key("r") .. "<BS><BS>")
   else
     feed_keys [[<BS>]]
   end
@@ -286,7 +287,7 @@ local function action_supbs()
     end
   end
   if res[1] then
-    feed_keys(string.rep(lib.dir_key("l"), res[2]) .. string.rep("<Del>", res[2] + res[3]))
+    feed_keys(string.rep(kutil.dir_key("l"), res[2]) .. string.rep("<Del>", res[2] + res[3]))
   elseif back:match("{%s*$") and fore:match("^%s*}") then
     feed_keys [[<C-\><C-O>"_diB]]
   else

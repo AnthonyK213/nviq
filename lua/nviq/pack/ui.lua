@@ -65,6 +65,67 @@ mini_deps.now(function()
   require("nviq.appl.theme").set_theme(_G.NVIQ.settings.tui.theme)
 end)
 
+------------------------------------lualine-------------------------------------
+
+mini_deps.now(function()
+  mini_deps.add { source = "nvim-lualine/lualine.nvim" }
+
+  require("lualine").setup {
+    options = {
+      theme                = "auto",
+      section_separators   = "",
+      component_separators = "",
+      icons_enabled        = _G.NVIQ.settings.tui.devicons,
+      globalstatus         = _G.NVIQ.settings.tui.global_statusline
+    },
+    sections = {
+      lualine_a = {
+        { "mode", fmt = function(str) return str:sub(1, 1) end }
+      },
+      lualine_b = { { "b:gitsigns_head", icon = "" }, },
+      lualine_c = {
+        { "filename", path = 3 },
+        {
+          "diff",
+          source = function()
+            local gitsigns = vim.b.gitsigns_status_dict
+            if gitsigns then
+              return {
+                added    = gitsigns.added,
+                modified = gitsigns.changed,
+                removed  = gitsigns.removed
+              }
+            end
+          end
+        }
+      },
+      lualine_x = {
+        { "diagnostics", sources = { "nvim_diagnostic" } },
+        "filetype"
+      },
+      lualine_y = { "encoding", "fileformat" },
+      lualine_z = { "progress", "location" },
+    },
+    inactive_sections = {
+      lualine_a = {},
+      lualine_b = {},
+      lualine_c = { "filename" },
+      lualine_x = { "location" },
+      lualine_y = {},
+      lualine_z = {},
+    },
+    extensions = {
+      "aerial",
+      "mason",
+      "nvim-dap-ui",
+      "oil",
+      "overseer",
+      "quickfix",
+      "toggleterm",
+    }
+  }
+end)
+
 --------------------------------indent-blankline--------------------------------
 
 mini_deps.later(function()

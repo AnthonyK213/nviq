@@ -30,7 +30,7 @@ local function kbd(mode, lhs, cmd, block)
     vim.keymap.set(mode, lhs, function() execute(cmd) end)
   elseif mode == "v" then
     vim.keymap.set(mode, lhs, function()
-      require("nviq.util.lib").to_normal()
+      require("nviq.util.k").to_normal()
       execute(cmd, {
         range = {
           vim.api.nvim_buf_get_mark(0, "<")[1] - 1,

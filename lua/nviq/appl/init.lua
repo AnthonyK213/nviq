@@ -1,4 +1,5 @@
 local lib = require("nviq.util.lib")
+local kutil = require("nviq.util.k")
 
 local _augroup = vim.api.nvim_create_augroup("nviq.appl", { clear = true })
 
@@ -101,7 +102,7 @@ vim.keymap.set("x", "<leader>ku", function() end)
 vim.keymap.set({ "n", "x" }, "<leader>sa", function()
   if not vim.bo.modifiable then return end
   local mode = lib.get_mode()
-  lib.to_normal()
+  kutil.to_normal()
   local futures = require("nviq.util.futures")
   futures.spawn(function()
     local left = futures.ui.input { prompt = "Insert surrounding: " }
@@ -143,7 +144,7 @@ local function surround_toggle(lhs, pair, pattern, opts)
     if mode == lib.Mode.Normal and pattern and require("nviq.util.syntax").Syntax.get():match(pattern) then
       require("nviq.appl.surround").delete(pair)
     else
-      lib.to_normal()
+      kutil.to_normal()
       require("nviq.appl.surround").insert(mode, pair, _G.NVIQ.handlers.get_word)
     end
   end, opts)
@@ -196,7 +197,7 @@ end
 
 vim.keymap.set("i", "<M-CR>", function()
   if not lib.has_filetype("markdown") then
-    lib.feedkeys("<C-O>o", "n", true)
+    kutil.feedkeys("<C-O>o", "in", true)
     return
   end
 
@@ -205,7 +206,7 @@ vim.keymap.set("i", "<M-CR>", function()
   local region = markdown.ListItemRegion.get(0)
 
   if not region then
-    lib.feedkeys("<C-O>o", "n", true)
+    kutil.feedkeys("<C-O>o", "in", true)
     return
   end
 
@@ -230,12 +231,11 @@ vim.keymap.set("i", "<Tab>", function()
   if lib.has_filetype("markdown") then
     local back = lib.get_half_line(-1).b
     if is_after_md_list_item(back) then
-      lib.feedkeys("<C-\\><C-O>>>", "n", true)
-      lib.feedkeys(string.rep(lib.dir_key("r"), vim.bo.tabstop), "n", true)
+      kutil.feedkeys("<C-\\><C-O>>>" .. string.rep(kutil.dir_key("r"), vim.bo.tabstop), "in", true)
       return
     end
   end
-  lib.feedkeys("<Tab>", "n", true)
+  kutil.feedkeys("<Tab>", "in", true)
 end, { desc = "Indent markdown list item rightwards" })
 
 vim.keymap.set("i", "<S-Tab>", function()
@@ -245,13 +245,13 @@ vim.keymap.set("i", "<S-Tab>", function()
       local indent = vim.fn.indent(".")
       if indent == 0 then return end
       local pos = vim.api.nvim_win_get_cursor(0)
-      lib.feedkeys("<C-\\><C-O><<", "n", true)
+      kutil.feedkeys("<C-\\><C-O><<", "in", true)
       pos[2] = pos[2] - math.min(indent, vim.bo.tabstop)
       vim.api.nvim_win_set_cursor(0, pos)
       return
     end
   end
-  lib.feedkeys("<S-Tab>", "n", true)
+  kutil.feedkeys("<S-Tab>", "in", true)
 end, { desc = "Indent markdown list item leftwards" })
 
 vim.keymap.set("n", "<leader>ml", function()

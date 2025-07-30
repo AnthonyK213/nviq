@@ -1,4 +1,5 @@
 local lib = require("nviq.util.lib")
+local kutil = require("nviq.util.k")
 
 vim.keymap.set("t", "<ESC>", "<C-\\><C-N>", {
   desc = "Switch to normal mode in terminal"
@@ -71,7 +72,7 @@ end, { desc = "Open nvimrc" })
 
 for dir, key in pairs { h = "left", j = "down", k = "up", l = "right" } do
   vim.keymap.set("n", "<M-" .. dir .. ">", function()
-    lib.feedkeys("<C-W>" .. dir, "nx", false)
+    kutil.feedkeys("<C-W>" .. dir, "nx", false)
   end, { desc = "Move cursor to window: " .. key })
 end
 
@@ -152,7 +153,7 @@ vim.keymap.set("n", "<leader>ot", function()
   local term = require("nviq.util.futures").Terminal.new(args)
 
   if term:start() then
-    vim.api.nvim_feedkeys("i", "n", true)
+    vim.api.nvim_feedkeys("i", "nx", true)
   end
 end, { desc = "Open terminal" })
 
