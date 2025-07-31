@@ -255,7 +255,7 @@ function M.get_word()
   end
   local word = p_a .. p_b
   if word == "" then
-    word = M.str_sub(f, 1, 1)
+    word = sutil.sub(f, 1, 1)
     p_b = word
   end
   return word, #b - #p_a, #b + #p_b
