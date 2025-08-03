@@ -54,24 +54,24 @@ function ProcessHandle:kill(signum)
 end
 
 ---Provides access and control to local processes.
----@class nviq.futures.Process
----@field protected m_path string Path to the system local executable.
----@field protected m_opts table See `vim.uv.spawn()`.
----@field protected m_cb? fun(proc: nviq.futures.Process, code: integer, signal: integer) Callback invoked when the process exits.
----@field protected m_handle? nviq.futures.ProcessHandle Process handle.
----@field protected m_valid boolean Whether the process is valid or not.
----@field protected m_cb_q fun(proc: nviq.futures.Process, code: integer, signal: integer)[]
----@field protected m_on_stdin? fun(data: string) Callback on standard input.
----@field protected m_on_stdout? fun(data: string) Callback on standard output.
----@field protected m_on_stderr? fun(data: string) Callbakc on standard error.
----@field protected m_stdin uv.uv_stream_t Standard input handle.
----@field protected m_stdout uv.uv_stream_t Standard output handle.
----@field protected m_stderr uv.uv_stream_t Standard error handle.
----@field protected m_stdin_buf string[] Standard input buffer.
----@field protected m_stdout_buf string[] Standard output buffer.
----@field protected m_stderr_buf string[] Standard error buffer.
----@field protected m_no_cb_q boolean Mark the process that its `m_cb_q` will not be executed.
----@field protected m_record boolean If true, `stdout` and `stderr` will be recorded into the buffer.
+---@class nviq.futures.Process : nviq.futures.Awaitable
+---@field private m_path string Path to the system local executable.
+---@field private m_opts table See `vim.uv.spawn()`.
+---@field private m_cb? fun(proc: nviq.futures.Process, code: integer, signal: integer) Callback invoked when the process exits.
+---@field private m_handle? nviq.futures.ProcessHandle Process handle.
+---@field private m_valid boolean Whether the process is valid or not.
+---@field private m_cb_q fun(proc: nviq.futures.Process, code: integer, signal: integer)[]
+---@field private m_on_stdin? fun(data: string) Callback on standard input.
+---@field private m_on_stdout? fun(data: string) Callback on standard output.
+---@field private m_on_stderr? fun(data: string) Callbakc on standard error.
+---@field private m_stdin uv.uv_stream_t Standard input handle.
+---@field private m_stdout uv.uv_stream_t Standard output handle.
+---@field private m_stderr uv.uv_stream_t Standard error handle.
+---@field private m_stdin_buf string[] Standard input buffer.
+---@field private m_stdout_buf string[] Standard output buffer.
+---@field private m_stderr_buf string[] Standard error buffer.
+---@field private m_no_cb_q boolean Mark the process that its `m_cb_q` will not be executed.
+---@field private m_record boolean If true, `stdout` and `stderr` will be recorded into the buffer.
 local Process = {}
 
 ---@private
@@ -262,7 +262,9 @@ end
 ---@param data string|string[] Data to write.
 ---@return string? err Error message.
 function Process:write_and_wait(data)
-  local task = require("nviq.util.futures.task").from_uv("write", self.m_stdin, data)
+  local task = require("nviq.util.futures.task")
+      .new(vim.uv.write, self.m_stdin, data)
+      :set_async(true)
   if coroutine.running() then
     return task:await()
   else

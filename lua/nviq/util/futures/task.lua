@@ -1,20 +1,16 @@
 local tutil = require("nviq.util.t")
 
-local uv_callback_index = {
-  fs_opendir = 2,
-}
-
 ---Represents an asynchronous operation.
----@class nviq.futures.Task
----@field protected m_action function Function that represents the code to execute in the task.
----@field protected m_varargs nviq.util.t.Pack Arguments for `action`.
----@field protected m_async boolean|integer Whether `m_action` is asynchronous or not, default `false`.
----@field protected m_cb? function Callback invoked when the task runs to complete.
----@field protected m_cb_q function[]
----@field protected m_no_cb_q boolean Mark the task that its `m_no_cb_q` will not be executed.
----@field protected m_handle? uv.luv_work_ctx_t Task handle.
----@field protected m_result table Result of the task, stored in a packed table.
----@field protected m_status 0|-1|-2 Task status, 0: Created; -1: Running; -2: RanToCompletion
+---@class nviq.futures.Task : nviq.futures.Awaitable
+---@field private m_action function Function that represents the code to execute in the task.
+---@field private m_varargs nviq.util.t.Pack Arguments for `action`.
+---@field private m_async boolean|integer Whether `m_action` is asynchronous or not, default `false`.
+---@field private m_cb? function Callback invoked when the task runs to complete.
+---@field private m_cb_q function[]
+---@field private m_no_cb_q boolean Mark the task that its `m_no_cb_q` will not be executed.
+---@field private m_handle? uv.luv_work_ctx_t Task handle.
+---@field private m_result table Result of the task, stored in a packed table.
+---@field private m_status 0|-1|-2 Task status, 0: Created; -1: Running; -2: RanToCompletion
 local Task = {}
 
 ---@private
@@ -47,18 +43,6 @@ end
 function Task:set_async(is_async)
   self.m_async = is_async
   return self
-end
-
----Create a task from a libuv async function.
----@param uv_action string Asynchronous function name from libuv.
----@param ... any Function arguments.
----@return nviq.futures.Task
-function Task.from_uv(uv_action, ...)
-  if not vim.uv[uv_action] then
-    error("Libuv has no function `" .. uv_action .. "`.")
-  end
-  return Task.new(vim.uv[uv_action], ...)
-      :set_async(uv_callback_index[uv_action] or true)
 end
 
 ---Start the task.

@@ -1,17 +1,17 @@
 local lib = require("nviq.util.lib")
 
 ---Represents a neovim terminal.
----@class nviq.futures.Terminal
----@field protected m_cmd string[] Command with arguments.
----@field protected m_opts table See `jobstart()`.
----@field protected m_cb? fun(term: nviq.futures.Terminal, job_id: integer, data: integer, event: string) Callback invoked when the terminal process exits.
----@field protected m_id integer `channel-id`
----@field protected m_valid boolean True if the terminal process is valid.
----@field protected m_exited boolean True if the terminal process has already exited.
----@field protected m_cb_q fun(term: nviq.futures.Terminal, job_id: integer, data: integer, event:string)[]
----@field protected m_no_cb_q boolean Mark the terminal process that its `m_cb_q` will not be executed.
----@field protected m_winnr integer Window number.
----@field protected m_bufnr integer Buffer number.
+---@class nviq.futures.Terminal : nviq.futures.Awaitable
+---@field private m_cmd string[] Command with arguments.
+---@field private m_opts table See `jobstart()`.
+---@field private m_cb? fun(term: nviq.futures.Terminal, job_id: integer, data: integer, event: string) Callback invoked when the terminal process exits.
+---@field private m_id integer `channel-id`
+---@field private m_valid boolean True if the terminal process is valid.
+---@field private m_exited boolean True if the terminal process has already exited.
+---@field private m_cb_q fun(term: nviq.futures.Terminal, job_id: integer, data: integer, event:string)[]
+---@field private m_no_cb_q boolean Mark the terminal process that its `m_cb_q` will not be executed.
+---@field private m_winnr integer Window number.
+---@field private m_bufnr integer Buffer number.
 local Terminal = {}
 
 ---@private
