@@ -174,10 +174,6 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- LSP
-
-require("nviq.appl.lsp").setup()
-
 -- Bigfile
 
 require("nviq.appl.bigfile").setup {

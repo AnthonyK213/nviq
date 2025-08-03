@@ -76,7 +76,7 @@ mini_deps.now(function()
       section_separators   = "",
       component_separators = "",
       icons_enabled        = _G.NVIQ.settings.tui.devicons,
-      globalstatus         = _G.NVIQ.settings.tui.global_statusline
+      globalstatus         = _G.NVIQ.settings.tui.global_status
     },
     sections = {
       lualine_a = {

@@ -12,7 +12,7 @@ mini_deps.now(function()
   }
 
   require("mason-lspconfig").setup {
-    ensure_installed = vim.tbl_keys(_G.NVIQ.settings.lsp),
+    ensure_installed = require("nviq.appl.lsp").servers_to_install(),
     automatic_enable = false,
   }
 end)

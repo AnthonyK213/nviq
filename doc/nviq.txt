@@ -28,7 +28,7 @@ directory. It's a pure text file with json syntax. Example:
         "theme": "auto",
         "border": "rounded",
         "devicons": true,
-        "global_statusline": true
+        "global_status": true
       },
       "gui": {
         "theme": "auto",
@@ -39,9 +39,12 @@ directory. It's a pure text file with json syntax. Example:
         "cursor_blink": true
       },
       "lsp": {
-        "clangd": false,
+        "clangd": {
+          "enable": true
+        },
         "lua_ls": {
-          "load": false,
+          "enable": false,
+          "install": true,
           "settings": {
             "Lua": {
               "runtime": {
@@ -69,7 +72,8 @@ directory. It's a pure text file with json syntax. Example:
           }
         },
         "pyright": {
-          "load": false,
+          "enable": false,
+          "install": true,
           "settings": {
             "python": {
               "analysis": {
@@ -81,12 +85,13 @@ directory. It's a pure text file with json syntax. Example:
               }
             }
           }
-        },
-        "rust_analyzer": false
+        }
         // And so on...
       },
       "dap": {
-        "python": false
+        "python": {
+          "enable": true
+        }
       },
       "ts": {
         "ensure_installed": [

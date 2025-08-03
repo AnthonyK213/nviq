@@ -12,6 +12,7 @@ vim.g.netrw_browse_split = 4
 vim.keymap.set("n", "<leader>op", "<Cmd>20Lexplore<CR>")
 
 -- LSP
+-- From [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
 
 vim.lsp.config("clangd", {
   cmd = { "clangd" },
@@ -71,7 +72,9 @@ end
 vim.o.completeopt = "fuzzy,menu,menuone,noinsert,popup"
 
 require("nviq.appl.lsp").register_client_on_attach(function(client, bufnr)
-  vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
+  if client:supports_method("textDocument/completion", bufnr) then
+    vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
+  end
 end)
 
 kutil.new_keymap("i", "<CR>", function(fallback)

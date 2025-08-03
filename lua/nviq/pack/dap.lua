@@ -30,14 +30,14 @@ mini_deps.later(function()
   ---@param configuration table[]
   ---@return nviq.pack.dap.Adapter
   function Adapter.new(filetype, typename, option, configuration)
-    local o = {
+    local adapter = {
       filetype = filetype,
       typename = typename,
       option = option,
       configuration = configuration,
     }
-    setmetatable(o, Adapter)
-    return o
+    setmetatable(adapter, Adapter)
+    return adapter
   end
 
   ---Setup the adapter.
@@ -46,11 +46,11 @@ mini_deps.later(function()
     for _, config in ipairs(self.configuration) do
       config.type = self.typename
     end
-    local ft = self.filetype
-    if type(ft) == "string" then
-      dap.configurations[ft] = self.configuration
-    elseif type(ft) == "table" then
-      for _, t in ipairs(ft) do
+    local filetype = self.filetype
+    if type(filetype) == "string" then
+      dap.configurations[filetype] = self.configuration
+    elseif type(filetype) == "table" then
+      for _, t in ipairs(filetype) do
         dap.configurations[t] = self.configuration
       end
     end
@@ -136,10 +136,14 @@ mini_deps.later(function()
   })
 
   -- Setup adapters.
-  for type_, load in pairs(_G.NVIQ.settings.dap or {}) do
-    local adapter = adapters[type_]
-    if load and adapter then
-      adapter:setup()
+  if type(_G.NVIQ.settings.dap) == "table" then
+    for type_, spec in pairs(_G.NVIQ.settings.dap) do
+      if spec.enable then
+        local adapter = adapters[type_]
+        if adapter then
+          adapter:setup()
+        end
+      end
     end
   end
 
@@ -171,8 +175,27 @@ mini_deps.later(function()
     }
   }
 
+  ---
+  ---@return string[]
+  local function adapters_to_install()
+    if type(_G.NVIQ.settings.dap) ~= "table" then
+      return {}
+    end
+
+    return vim.iter(_G.NVIQ.settings.dap)
+        :filter(function(_, spec)
+          -- TODO: `spec.install`
+          return type(spec) == "table" and
+              spec.enable == true
+        end)
+        :map(function(name, _)
+          return name
+        end)
+        :totable()
+  end
+
   require("mason-nvim-dap").setup {
-    ensure_installed = vim.tbl_keys(_G.NVIQ.settings.dap),
+    ensure_installed = adapters_to_install(),
     automatic_installation = false,
   }
 end)

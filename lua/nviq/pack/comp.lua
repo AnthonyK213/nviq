@@ -195,9 +195,11 @@ mini_deps.later(function()
 
   -- Set client capabilities for LSP servers in settings.
 
-  for name, _ in pairs(_G.NVIQ.settings.lsp) do
-    vim.lsp.config(name, {
-      capabilities = require("cmp_nvim_lsp").default_capabilities()
-    })
+  if type(_G.NVIQ.settings.lsp) == "table" then
+    for name, _ in pairs(_G.NVIQ.settings.lsp) do
+      vim.lsp.config(name, {
+        capabilities = require("cmp_nvim_lsp").default_capabilities()
+      })
+    end
   end
 end)

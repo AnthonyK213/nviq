@@ -60,33 +60,35 @@ end
 
 ---Setup an LSP server.
 ---@param name string Name of the language server.
----@param conf boolean|nviq.core.settings.LspSpec Server configuration from `nvimrc`.
-local function setup_server(name, conf)
-  local conf_tbl
-
-  if type(conf) == "boolean" then
-    conf_tbl = { load = conf }
-  elseif type(conf) == "table" then
-    conf_tbl = conf
-  else
-    return
-  end
+---@param spec nviq.core.settings.LspSpec Server configuration from `nvimrc`.
+local function setup_server(name, spec)
+  if type(spec) ~= "table" then return end
 
   ---@type vim.lsp.Config
   local cfg = {}
 
-  cfg.on_attach = custom_attach
+  if vim.lsp.config[name] then
+    local on_attach = vim.lsp.config[name].on_attach
+    if type(on_attach) == "function" then
+      cfg.on_attach = function(client, bufnr)
+        on_attach(client, bufnr)
+        custom_attach(client, bufnr)
+      end
+    end
+  end
+
+  cfg.on_attach = cfg.on_attach or custom_attach
 
   -- Set custom LSP configurations.
-  if type(conf_tbl.settings) == "table" then
-    cfg.settings = conf_tbl.settings
+  if type(spec.settings) == "table" then
+    cfg.settings = spec.settings
   end
 
   -- Configure the server.
   vim.lsp.config(name, cfg)
 
   -- Enable the server.
-  if conf_tbl.load then
+  if spec.enable then
     vim.lsp.enable(name)
   end
 end
@@ -95,10 +97,7 @@ local M = {}
 
 ---Setup all LSP servers.
 function M.setup()
-  if not _G.NVIQ.settings.lsp then
-    return
-  end
-
+  if type(_G.NVIQ.settings.lsp) ~= "table" then return end
   for name, conf in pairs(_G.NVIQ.settings.lsp) do
     setup_server(name, conf)
   end
@@ -108,6 +107,25 @@ end
 ---@param cb nviq.appl.lsp.OnAttach
 function M.register_client_on_attach(cb)
   table.insert(_client_on_attach_queue, cb)
+end
+
+---
+---@return string[]
+function M.servers_to_install()
+  if type(_G.NVIQ.settings.lsp) ~= "table" then
+    return {}
+  end
+
+  return vim.iter(_G.NVIQ.settings.lsp)
+      :filter(function(_, spec)
+        return type(spec) == "table" and
+            spec.enable == true and
+            spec.install == true
+      end)
+      :map(function(name, _)
+        return name
+      end)
+      :totable()
 end
 
 return M

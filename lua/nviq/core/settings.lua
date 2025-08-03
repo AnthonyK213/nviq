@@ -2,8 +2,13 @@ local lib = require("nviq.util.lib")
 local putil = require("nviq.util.p")
 
 ---@class nviq.core.settings.LspSpec
----@field load boolean
+---@field enable? boolean
+---@field install? boolean
 ---@field settings? table
+
+---@class nviq.core.settings.DapSpec
+---@field enable? boolean
+---@field install? boolean
 
 local settings = {
   general = {
@@ -23,14 +28,14 @@ local settings = {
     vimwiki = vim.fs.joinpath(vim.env.HOME, "vimwiki"),
   },
   tui = {
-    scheme            = "default",
-    theme             = "dark",
-    style             = "dark",
-    transparent       = false,
-    global_statusline = false,
-    border            = "none",
-    auto_dim          = false,
-    devicons          = false,
+    scheme        = "default",
+    theme         = "dark",
+    style         = "dark",
+    transparent   = false,
+    global_status = false,
+    border        = "none",
+    auto_dim      = false,
+    devicons      = false,
   },
   gui = {
     theme        = "dark",
@@ -45,9 +50,9 @@ local settings = {
     font_half    = "Monospace",
     font_wide    = "Monospace",
   },
-  ---@type table<string, boolean|nviq.core.settings.LspSpec>
+  ---@type table<string, nviq.core.settings.LspSpec>
   lsp = {},
-  ---@type table<string, boolean>
+  ---@type table<string, nviq.core.settings.DapSpec>
   dap = {},
   ts = {
     ---@type string[]
