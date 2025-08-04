@@ -67,37 +67,6 @@ vim.lsp.config("rust_analyzer", {
 
 -- Completion
 
----
----@param client vim.lsp.Client
----@return string[]?
-local function get_trigger_chars(client)
-  local server_capabilities = client.server_capabilities
-  if not server_capabilities then return end
-  local completion_provider = server_capabilities.completionProvider
-  if not completion_provider then return end
-  return completion_provider.triggerCharacters
-end
-
----
----@param clients vim.lsp.Client[]
----@param context string
-local function after_trigger_char(clients, context)
-  if context:len() == 0 then
-    return false
-  end
-  for _, client in ipairs(clients) do
-    local trigger_chars = get_trigger_chars(client)
-    if trigger_chars then
-      for _, char in ipairs(trigger_chars) do
-        if vim.endswith(context, char) then
-          return true
-        end
-      end
-    end
-  end
-  return false
-end
-
 vim.o.completeopt = "fuzzy,menu,menuone,noinsert,popup"
 
 require("nviq.appl.lsp").register_client_on_attach(function(client, bufnr)
@@ -134,8 +103,7 @@ kutil.new_keymap("i", "<Tab>", function(fallback)
       return
     end
   else
-    if vim.regex("\\v\\h$"):match_str(context.b) or
-        after_trigger_char(clients, context.b) then
+    if context.b:match("[%w._:]$") then
       vim.lsp.completion.get()
       return
     end

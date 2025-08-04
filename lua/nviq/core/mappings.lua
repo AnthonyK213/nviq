@@ -102,7 +102,9 @@ vim.keymap.set("n", "<leader>bd", function()
 
   if #bufs >= 2 and not sp then
     local index = require("nviq.util.t").find_first(bufs, handle)
-    vim.api.nvim_set_current_buf(bufs[index + (index == 1 and 1 or -1)])
+    if index > 0 then
+      vim.api.nvim_set_current_buf(bufs[index + (index == 1 and 1 or -1)])
+    end
   end
 
   vim.bo[handle].buflisted = false
