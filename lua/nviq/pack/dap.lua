@@ -138,7 +138,7 @@ mini_deps.later(function()
   -- Setup adapters.
   if type(_G.NVIQ.settings.dap) == "table" then
     for type_, spec in pairs(_G.NVIQ.settings.dap) do
-      if spec.enable then
+      if type(spec) == "table" and spec.enable then
         local adapter = adapters[type_]
         if adapter then
           adapter:setup()

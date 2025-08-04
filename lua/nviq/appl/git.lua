@@ -1,4 +1,5 @@
 local lib = require("nviq.util.lib")
+local futil = require("nviq.util.f")
 local futures = require("nviq.util.futures")
 
 local M = {}
@@ -6,10 +7,9 @@ local M = {}
 ---Returns the root directory of this repository.
 ---@return string?
 function M.get_root()
-  return lib.find_root([[^\.git$]], {
-    item_type = "directory",
-    start_dir = lib.buf_dir(),
-  })
+  return vim.fs.root(0, function(name, path)
+    return name == ".git" and futil.is_dir(vim.fs.joinpath(path, name))
+  end)
 end
 
 ---Returns the current branch name.
