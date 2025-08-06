@@ -1,4 +1,5 @@
 local lib = require("nviq.util.lib")
+local lsp = require("nviq.appl.lsp")
 local kutil = require("nviq.util.k")
 
 -- netrw
@@ -65,11 +66,13 @@ vim.lsp.config("rust_analyzer", {
   },
 })
 
+lsp.setup()
+
 -- Completion
 
 vim.o.completeopt = "fuzzy,menu,menuone,noinsert,popup"
 
-require("nviq.appl.lsp").register_client_on_attach(function(client, bufnr)
+lsp.register_client_on_attach(function(client, bufnr)
   if client:supports_method("textDocument/completion", bufnr) then
     vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
   end
