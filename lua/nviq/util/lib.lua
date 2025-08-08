@@ -91,25 +91,26 @@ end
 
 ---Open and edit a file.
 ---@param path string The file path.
----@param chdir? boolean True to change cwd to the file dir.
-function M.edit_file(path, chdir)
+---@param option? {chdir:boolean?, new_tab:boolean?}
+function M.edit_file(path, option)
   path = vim.fs.normalize(path)
+  option = option or {}
 
   if not futil.is_file(path) then return end
 
-  if vim.api.nvim_buf_get_name(0) == "" then
-    vim.cmd.edit {
+  if option.new_tab then
+    vim.cmd.tabnew {
       args = { path },
       mods = { silent = true }
     }
   else
-    vim.cmd.tabnew {
+    vim.cmd.edit {
       args = { path },
       mods = { silent = true }
     }
   end
 
-  if chdir then
+  if option.chdir then
     vim.api.nvim_set_current_dir(vim.fs.dirname(path))
   end
 end

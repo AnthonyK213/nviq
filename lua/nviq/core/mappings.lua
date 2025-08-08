@@ -55,7 +55,7 @@ vim.keymap.set("n", "<M-,>", function()
   local exists, opt_file = lib.get_dotfile("nvimrc")
   local cfg_dir = vim.fn.stdpath("config")
   if exists and opt_file then
-    lib.edit_file(opt_file, false)
+    lib.edit_file(opt_file)
     vim.api.nvim_set_current_dir(cfg_dir)
   elseif opt_file then
     vim.cmd.new(opt_file)

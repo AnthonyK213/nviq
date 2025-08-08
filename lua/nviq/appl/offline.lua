@@ -131,7 +131,39 @@ vim.keymap.set("n", "<leader>gb", function()
   require("nviq.appl.git").blame_line()
 end)
 
--- Misc
+-- Find buffer
 
-vim.keymap.set("n", "<leader>fb", ":buffer<space>")
-vim.keymap.set("n", "<leader>ff", ":find<space>")
+vim.keymap.set("n", "<leader>fb", ":buffer<space>", { desc = "Find buffer" })
+
+-- Find file
+
+vim.keymap.set("n", "<leader>ff", function()
+  local futures = require("nviq.util.futures")
+
+  futures.spawn(function()
+    local pattern = futures.ui.input { prompt = "Find file: " }
+    if not pattern then return end
+    pattern = pattern:lower()
+
+    local cwd = vim.fn.getcwd()
+
+    local items = vim.fs.find(function(name --[[@as string]], _)
+      return name:lower():match(pattern)
+    end, { path = cwd, type = "file", limit = 10 })
+
+    if #items == 0 then
+      vim.notify("Nothing found")
+      return
+    end
+
+    local file_path = futures.ui.select(items, {
+      prompt = "Pick file: ",
+      format_item = function(item)
+        return vim.fs.relpath(cwd, item) or item
+      end
+    })
+    if not file_path then return end
+
+    lib.edit_file(file_path)
+  end)
+end, { desc = "Find file" })
