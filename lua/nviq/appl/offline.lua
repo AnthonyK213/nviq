@@ -68,6 +68,10 @@ vim.lsp.config("rust_analyzer", {
 
 lsp.setup()
 
+-- Treesitter
+
+require("nviq.appl.treesitter").setup()
+
 -- Completion
 
 vim.o.completeopt = "fuzzy,menu,menuone,noinsert,popup"

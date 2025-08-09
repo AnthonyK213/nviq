@@ -94,7 +94,7 @@ directory. It's a pure text file with json syntax. Example:
         }
       },
       "ts": {
-        "ensure_installed": [
+        "parsers": [
           "c",
           "lua"
         ]

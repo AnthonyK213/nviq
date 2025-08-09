@@ -238,8 +238,8 @@
       "description": "Treesitter",
       "type": "object",
       "properties": {
-        "ensure_installed": {
-          "description": "Parsers to install automatically",
+        "parsers": {
+          "description": "Parsers to install and enable",
           "type": "array",
           "items": {
             "type": "string"

@@ -56,7 +56,7 @@ local settings = {
   dap = {},
   ts = {
     ---@type string[]
-    ensure_installed = {},
+    parsers = {},
   },
 }
 
