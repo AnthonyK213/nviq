@@ -1,8 +1,6 @@
 local M = {}
 
 function M.setup()
-  vim.treesitter.language.register("powershell", "ps1")
-
   ---@type string[]?
   local parsers = vim.tbl_get(_G.NVIQ.settings, "ts", "parsers")
   if not parsers then return end
