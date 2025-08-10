@@ -141,119 +141,6 @@ vim.keymap.set("n", "<leader>fb", ":buffer<space>", { desc = "Find buffer" })
 
 -- Find file
 
----@class nviq.appl.offline.find_file.LcsInfo
----@field len integer Length of the longest match.
----@field i integer
----@field j integer
-
----@type nviq.appl.offline.find_file.LcsInfo
-local LCS_NIL = { len = 0, i = 0, j = 0 }
-
----@class nviq.appl.offline.find_file.FileInfo
----@field name string The relative file path.
----@field score integer The matching score.
-
----@class nviq.appl.offline.find_file.LcsMemo
----@field private m_data nviq.appl.offline.find_file.LcsInfo[][]
-local LcsMemo = {}
-
----@private
-LcsMemo.__index = LcsMemo
-
----
----@return nviq.appl.offline.find_file.LcsMemo
-function LcsMemo.new()
-  local lcs_memo = { m_data = {} }
-  setmetatable(lcs_memo, LcsMemo)
-  return lcs_memo
-end
-
----
----@param i integer
----@param j integer
----@return nviq.appl.offline.find_file.LcsInfo
-function LcsMemo:get(i, j)
-  return vim.tbl_get(self.m_data, i, j) or LCS_NIL
-end
-
----
----@param i integer
----@param j integer
----@param info nviq.appl.offline.find_file.LcsInfo
-function LcsMemo:set(i, j, info)
-  if not self.m_data[i] then
-    self.m_data[i] = {}
-  end
-  self.m_data[i][j] = info
-end
-
----Extracts the matching position.
----@param i integer
----@param j integer
----@return integer[]
-function LcsMemo:get_pos(i, j)
-  local pos = {}
-  local info = self:get(i, j)
-  while info.len > 0 do
-    pos[info.len] = info.i
-    info = self:get(info.i - 1, info.j - 1)
-  end
-  return pos
-end
-
----
----@param target string
----@param query string[]
----@return integer[]
-local function lcs(target, query)
-  local dp = LcsMemo.new()
-
-  local n1, n2 = #target, #query
-  for i = 1, n1 do
-    for j = 1, n2 do
-      if target:sub(i, i) == query[j] then
-        dp:set(i, j, {
-          len = dp:get(i - 1, j - 1).len + 1,
-          i = i,
-          j = j,
-        })
-      else
-        local a = dp:get(i - 1, j)
-        local b = dp:get(i, j - 1)
-        dp:set(i, j, (a.len >= b.len) and a or b)
-      end
-    end
-  end
-
-  return dp:get_pos(n1, n2)
-end
-
----
----@param match integer[]
----@param target string
----@return integer
-local function match_score(match, target)
-  local score = #match
-  -- Prefers continuous matching.
-  for i = 2, #match do
-    if match[i] - match[i - 1] == 1 then
-      score = score + 2
-    end
-  end
-  -- Prefers to match end to end.
-  local front = match[1] - 1
-  local prev_char = target:sub(front, front)
-  if prev_char == "" or prev_char == "/" then
-    score = score + 1
-  end
-  local back = match[#match] + 1
-  local next_char = target:sub(back, back)
-  if next_char == "" then
-    score = score + 1
-  end
-  return score
-end
-
 ---@async
 ---@param dir string
 ---@return string[]?
@@ -292,37 +179,22 @@ vim.keymap.set("n", "<leader>ff", function()
       end
     end
 
-    ---@type nviq.appl.offline.find_file.FileInfo[]
-    local file_infos = {}
-    local query = vim.split(pattern:lower(), "")
-
-    for _, file in ipairs(files) do
-      local pos = lcs(file:lower(), query)
-      if #pos > 0 then
-        table.insert(file_infos, {
-          name  = file,
-          score = match_score(pos, file),
-        })
-      end
-    end
-
-    if #file_infos == 0 then
+    ---@type string[]
+    local files_matched = vim.fn.matchfuzzy(files, pattern)
+    if #files_matched == 0 then
       vim.notify("Nothing found")
       return
     end
 
-    table.sort(file_infos, function(a, b) return a.score > b.score end)
+    -- Only show the first 9 matches.
+    if #files_matched > 9 then
+      files_matched = vim.iter(files_matched):take(9):totable()
+    end
 
-    -- Only show the first 10 matches.
-    file_infos = vim.iter(file_infos):take(10):totable()
+    ---@type string?
+    local file = futures.ui.select(files_matched, { prompt = "Pick file: " })
+    if not file then return end
 
-    ---@type nviq.appl.offline.find_file.FileInfo
-    local info = futures.ui.select(file_infos, {
-      prompt = "Pick file: ",
-      format_item = function(item) return item.name end
-    })
-    if not info then return end
-
-    lib.edit_file(vim.fs.joinpath(cwd, info.name))
+    lib.edit_file(vim.fs.joinpath(cwd, file))
   end)
 end, { desc = "Find file" })

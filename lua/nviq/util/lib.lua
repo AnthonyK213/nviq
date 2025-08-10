@@ -91,7 +91,7 @@ end
 
 ---Open and edit a file.
 ---@param path string The file path.
----@param option? {chdir:boolean?, new_tab:boolean?}
+---@param option? {chdir:boolean?, new_tab:boolean?, silent:boolean?}
 function M.edit_file(path, option)
   path = vim.fs.normalize(path)
   option = option or {}
@@ -101,12 +101,12 @@ function M.edit_file(path, option)
   if option.new_tab then
     vim.cmd.tabnew {
       args = { path },
-      mods = { silent = true }
+      mods = { silent = (option.silent == true) }
     }
   else
     vim.cmd.edit {
       args = { path },
-      mods = { silent = true }
+      mods = { silent = (option.silent == true) }
     }
   end
 

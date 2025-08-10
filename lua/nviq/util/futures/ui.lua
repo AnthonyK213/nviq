@@ -4,6 +4,7 @@ local Task = require("nviq.util.futures.task")
 local M = {}
 
 ---Prompts the user for input.
+---@async
 ---@param opts table Additional options. See `input()`.
 ---@return string? input Content the user typed.
 function M.input(opts)
@@ -11,6 +12,7 @@ function M.input(opts)
 end
 
 ---Prompts the user to pick a single item from a collection of entries.
+---@async
 ---@param items table Arbitrary items.
 ---@param opts table Additional options. See `select()`.
 ---@return any? item The chosen item.
