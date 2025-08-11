@@ -26,7 +26,7 @@ vim.keymap.set("n", "<leader>cs", "<Cmd>setlocal spell! spelllang=en_us<CR>", {
 })
 
 vim.keymap.set({ "n", "i" }, "<C-S>", function()
-  if vim.bo.bt == "" then
+  if vim.bo.buftype == "" then
     vim.cmd.write()
   end
 end, { desc = "Write the whole buffer to the current file" })
@@ -91,32 +91,45 @@ vim.keymap.set("n", "<leader>bc", function()
 end, { desc = "Change cwd to current buffer" })
 
 vim.keymap.set("n", "<leader>bd", function()
-  local bufs = lib.buf_listed()
-  local sp = vim.list_contains({ "acwrite", "help", "terminal", "quickfix", "nofile" }, vim.bo.bt)
-  local handle = vim.api.nvim_get_current_buf()
+  local buf = vim.api.nvim_get_current_buf()
 
-  if (#bufs == 1 and vim.bo[handle].buflisted)
-      or (#bufs == 0 and not vim.bo[handle].buflisted) then
-    table.insert(bufs, vim.api.nvim_create_buf(true, false))
-  end
+  vim.api.nvim_buf_call(buf, function()
+    local no_layout = vim.list_contains({
+      "help", "terminal", "quickfix", "nofile"
+    }, vim.bo.buftype)
 
-  if #bufs >= 2 and not sp then
-    local index = require("nviq.util.t").find_first(bufs, handle)
-    if index > 0 then
-      vim.api.nvim_set_current_buf(bufs[index + (index == 1 and 1 or -1)])
+    if not no_layout then
+      for _, win in ipairs(vim.fn.win_findbuf(buf)) do
+        vim.api.nvim_win_call(win, function()
+          if not vim.api.nvim_win_is_valid(win) or
+              vim.api.nvim_win_get_buf(win) ~= buf then
+            return
+          end
+
+          -- Try using alternate buffer
+          local alt = vim.fn.bufnr("#")
+          if alt ~= buf and vim.fn.buflisted(alt) == 1 then
+            vim.api.nvim_win_set_buf(win, alt)
+            return
+          end
+
+          -- Try using previous buffer
+          local has_previous = pcall(vim.cmd.bprevious)
+          if has_previous and buf ~= vim.api.nvim_win_get_buf(win) then
+            return
+          end
+
+          -- Create new listed buffer
+          local new_buf = vim.api.nvim_create_buf(true, false)
+          vim.api.nvim_win_set_buf(win, new_buf)
+        end)
+      end
     end
-  end
 
-  vim.bo[handle].buflisted = false
-
-  local ok = pcall(vim.api.nvim_buf_delete, handle, {
-    force  = false,
-    unload = vim.o.hidden
-  })
-
-  if not ok then
-    lib.warn("Failed to delete buffer")
-  end
+    if vim.api.nvim_buf_is_valid(buf) then
+      pcall(vim.cmd.bdelete, buf)
+    end
+  end)
 end, { desc = "Delete current buffer" })
 
 vim.keymap.set("n", "<leader>bn", "<Cmd>bn<CR>", {

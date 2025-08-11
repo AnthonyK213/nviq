@@ -110,7 +110,11 @@ kutil.new_keymap("i", "<Tab>", function(fallback)
 
   if #clients == 0 then
     if vim.regex("\\v[A-Za-z_\\u4e00-\\u9fa5]$"):match_str(context.b) then
-      kutil.feedkeys("<C-N>", "in", true)
+      if vim.bo.omnifunc ~= "" then
+        kutil.feedkeys("<C-X><C-O>", "in", true)
+      else
+        kutil.feedkeys("<C-X><C-I>", "in", true)
+      end
       return
     end
   else

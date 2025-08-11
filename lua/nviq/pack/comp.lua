@@ -66,8 +66,8 @@ mini_deps.later(function()
             luasnip.jump(1)
           elseif luasnip.expandable() then
             luasnip.expand {}
-          elseif lib.get_half_line(-1).b:match("[%w._:]$")
-              and vim.bo.bt ~= "prompt" then
+          elseif lib.get_half_line(-1).b:match("[%w._:]$") and
+              vim.bo.buftype ~= "prompt" then
             cmp.complete()
           else
             fallback()
