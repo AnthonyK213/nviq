@@ -5,6 +5,7 @@ local M = {}
 
 ---Opens a text file, reads all the text in the file into a string,
 ---and then closes the file.
+---@async
 ---@param path string The file to open for reading.
 ---@return string? content A string containing all the text in the file.
 function M.read_all_text(path)

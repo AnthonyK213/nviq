@@ -144,6 +144,7 @@ mini_deps.later(function()
       ext = ".markdown"
     }
   }
+  vim.g.vimwiki_commentstring = "<!--%s-->"
   vim.g.vimwiki_folding = "syntax"
   vim.g.vimwiki_filetypes = { "markdown" }
   vim.g.vimwiki_ext2syntax = { [".markdown"] = "markdown" }

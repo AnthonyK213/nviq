@@ -2,6 +2,10 @@ local lib = require("nviq.util.lib")
 local lsp = require("nviq.appl.lsp")
 local kutil = require("nviq.util.k")
 
+-- Vim options
+
+vim.o.mouse = "nvic"
+
 -- netrw
 
 vim.g.netrw_altv = 1
@@ -186,9 +190,10 @@ vim.keymap.set("n", "<leader>ff", function()
       return
     end
 
-    -- Only show the first 9 matches.
-    if #files_matched > 9 then
-      files_matched = vim.iter(files_matched):take(9):totable()
+    -- Avoid filling the window since there is no select-ui...
+    local n_take = math.max(math.floor(vim.o.lines * 0.38) - 2, 1)
+    if #files_matched > n_take then
+      files_matched = vim.iter(files_matched):take(n_take):totable()
     end
 
     ---@type string?
