@@ -15,8 +15,6 @@ local function custom_attach(client, bufnr)
   ---@type vim.keymap.set.Opts
   local opt = { buffer = bufnr }
 
-  vim.keymap.set("n", "<F2>", vim.lsp.buf.rename, opt)
-  vim.keymap.set("n", "<leader>l0", vim.lsp.buf.document_symbol, opt)
   vim.keymap.set("n", "<leader>la", vim.lsp.buf.code_action, opt)
   vim.keymap.set("n", "<leader>ld", vim.lsp.buf.declaration, opt)
   vim.keymap.set("n", "<leader>lf", vim.lsp.buf.definition, opt)
@@ -25,7 +23,6 @@ local function custom_attach(client, bufnr)
   vim.keymap.set("n", "<leader>ln", vim.lsp.buf.rename, opt)
   vim.keymap.set("n", "<leader>lr", vim.lsp.buf.references, opt)
   vim.keymap.set("n", "<leader>lt", vim.lsp.buf.type_definition, opt)
-  vim.keymap.set("n", "<leader>lw", vim.lsp.buf.workspace_symbol, opt)
 
   vim.keymap.set("n", "K", function()
     vim.lsp.buf.hover(_float_opts)

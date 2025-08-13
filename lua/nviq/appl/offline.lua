@@ -81,7 +81,9 @@ require("nviq.appl.treesitter").setup()
 vim.o.completeopt = "fuzzy,menu,menuone,noinsert,popup"
 
 lsp.register_client_on_attach(function(client, bufnr)
-  if client:supports_method("textDocument/completion", bufnr) then
+  vim.keymap.set("n", "<leader>fa", vim.lsp.buf.document_symbol, { buffer = bufnr })
+
+  if client:supports_method(vim.lsp.protocol.Methods.textDocument_completion, bufnr) then
     vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
   end
 end)
