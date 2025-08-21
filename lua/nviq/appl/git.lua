@@ -91,6 +91,7 @@ end
 function M.pull()
   local root = M.get_root()
   if not root then return end
+  vim.print("Pulling...")
   vim.fn.jobstart({ "git", "pull" }, {
     cwd = root,
     -- To interactive with the fxxking prompt...
@@ -115,7 +116,6 @@ function M.pull()
       end
     end
   })
-  vim.print("Pulling...")
 end
 
 return M
