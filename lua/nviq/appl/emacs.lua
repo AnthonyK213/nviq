@@ -76,22 +76,22 @@ vim.keymap.set("n", "<M-x>", ":", {
   desc = "Switch to command-line mode",
 })
 
-vim.keymap.set("n", "<M-p>", [[<Cmd>exe "move" max([line(".") - 2, 0])<CR>]], {
+vim.keymap.set("n", "<M-p>", "<Cmd>m.-2<CR>", {
   silent = true,
   desc = "Move line up"
 })
 
-vim.keymap.set("n", "<M-n>", [[<Cmd>exe "move" min([line(".") + 1, line("$")])<CR>]], {
+vim.keymap.set("n", "<M-n>", "<Cmd>m.+1<CR>", {
   silent = true,
   desc = "Move line down"
 })
 
-vim.keymap.set("v", "<M-p>", [[:<C-U>exe "'<,'>move" max([line("'<") - 2, 0])<CR>gv]], {
+vim.keymap.set("x", "<M-p>", [[:<C-U>exe "'<,'>move" max([line("'<") - 2, 0])<CR>gv]], {
   silent = true,
   desc = "Move lines up"
 })
 
-vim.keymap.set("v", "<M-n>", [[:<C-U>exe "'<,'>move" min([line("'>") + 1, line("$")])<CR>gv]], {
+vim.keymap.set("x", "<M-n>", [[:<C-U>exe "'<,'>move" min([line("'>") + 1, line("$")])<CR>gv]], {
   silent = true,
   desc = "Move lines down"
 })

@@ -116,6 +116,7 @@ mini_deps.now(function()
     },
     extensions = {
       "aerial",
+      "fugitive",
       "mason",
       "nvim-dap-ui",
       "oil",
