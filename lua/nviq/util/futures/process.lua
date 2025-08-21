@@ -39,7 +39,7 @@ function ProcessHandle:close()
   self.m_exited = true
 end
 
----Sends te specified signal to the process and kill it.
+---Sends the specified signal to the process and kill it.
 ---@param signum? integer|string Signal, default `SIGTERM`.
 ---@return integer ok 0 or fail.
 function ProcessHandle:kill(signum)
@@ -59,7 +59,6 @@ end
 ---@field private m_opts table See `vim.uv.spawn()`.
 ---@field private m_cb? fun(proc: nviq.futures.Process, code: integer, signal: integer) Callback invoked when the process exits.
 ---@field private m_handle? nviq.futures.ProcessHandle Process handle.
----@field private m_valid boolean Whether the process is valid or not.
 ---@field private m_cb_q fun(proc: nviq.futures.Process, code: integer, signal: integer)[]
 ---@field private m_on_stdin? fun(data: string) Callback on standard input.
 ---@field private m_on_stdout? fun(data: string) Callback on standard output.
@@ -80,15 +79,13 @@ Process.__index = Process
 ---Constructor.
 ---@param path string Path to the system local executable.
 ---@param options? table See `vim.uv.spawn()`.
----@param on_exit? fun(proc: nviq.futures.Process, code: integer, signal: integer) Callback invoked when the process exits (discouraged, use `continue_with` instead).
 ---@return nviq.futures.Process
-function Process.new(path, options, on_exit)
+function Process.new(path, options)
   local process = {
     m_path = path,
     m_opts = options or {},
     m_handle = nil,
-    m_valid = true,
-    m_cb_q = type(on_exit) == "function" and { on_exit } or {},
+    m_cb_q = {},
     m_stdin = vim.uv.new_pipe(false),
     m_stdout = vim.uv.new_pipe(false),
     m_stderr = vim.uv.new_pipe(false),
@@ -152,8 +149,9 @@ end
 ---Run the process.
 ---@return boolean ok True if process starts successfully.
 function Process:start()
-  if not lib.has_exe(self.m_path, true) then self.m_valid = false end
-  if self:has_exited() or not self.m_valid then return false end
+  if not lib.has_exe(self.m_path, true) or self:has_exited() then
+    return false
+  end
 
   self.m_stdout_buf = {}
   self.m_stderr_buf = {}

@@ -2,7 +2,6 @@ local tutil = require("nviq.util.t")
 
 ---@class nviq.futures.Awaitable
 ---@field m_cb? function Callback invoked when the awaitable object runs to complete.
----@field m_cb_q function[]
 ---@field m_no_cb_q boolean Mark the task that its `m_no_cb_q` will not be executed.
 ---@field await fun():any
 ---@field start fun():boolean,...
@@ -189,6 +188,8 @@ function M.select(fut_list)
   end
   return result
 end
+
+M.Job = require("nviq.util.futures.job")
 
 M.Process = require("nviq.util.futures.process")
 
