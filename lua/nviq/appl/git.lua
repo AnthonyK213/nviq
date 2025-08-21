@@ -88,4 +88,34 @@ function M.blame_line()
   end)
 end
 
+function M.pull()
+  local root = M.get_root()
+  if not root then return end
+  vim.fn.jobstart({ "git", "pull" }, {
+    cwd = root,
+    -- To interactive with the fxxking prompt...
+    pty = true,
+    on_exit = function(_, code, _)
+      -- TODO: Parse the stdout from pty.
+      if code == 0 then
+        print("Pulled")
+      else
+        print("Pull operation failed")
+      end
+    end,
+    on_stdout = function(job_id, datas, _)
+      for _, data in ipairs(datas --[=[@as string[]]=]) do
+        if data:match("^Enter passphrase") or data:match("'s%spassword:") then
+          vim.fn.inputsave()
+          local prompt = data:gsub("[\n\r]", "")
+          local passphrase = vim.fn.inputsecret(prompt)
+          vim.fn.inputrestore()
+          pcall(vim.fn.chansend, job_id, passphrase .. "\r\n")
+        end
+      end
+    end
+  })
+  vim.print("Pulling...")
+end
+
 return M

@@ -19,13 +19,14 @@ mini_deps.later(function()
     keymaps = {
       disable_defaults = false,
       view = {
-        ["q"] = "<Cmd>DiffviewClose<CR>",
+        q = "<Cmd>DiffviewClose<CR>",
       },
       file_panel = {
-        ["q"] = "<Cmd>DiffviewClose<CR>",
+        p = function() require("nviq.appl.git").pull() end,
+        q = "<Cmd>DiffviewClose<CR>",
       },
       file_history_panel = {
-        ["q"] = "<Cmd>DiffviewClose<CR>",
+        q = "<Cmd>DiffviewClose<CR>",
       },
     },
   }
