@@ -151,8 +151,7 @@ mini_deps.later(function()
     exclude = {
       filetypes = {
         "aerial", "markdown", "presenting_markdown",
-        "vimwiki", "NvimTree", "mason", "lspinfo",
-        "NeogitStatus", "NeogitCommitView", "DiffviewFiles",
+        "vimwiki", "mason", "DiffviewFiles",
       },
       buftypes = {
         "help", "quickfix", "terminal", "nofile", "acwrite",

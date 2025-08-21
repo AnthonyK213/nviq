@@ -91,6 +91,11 @@ vim.keymap.set("n", "<leader>bc", function()
 end, { desc = "Change cwd to current buffer" })
 
 vim.keymap.set("n", "<leader>bd", function()
+  if vim.o.winfixbuf then
+    pcall(vim.cmd.close)
+    return
+  end
+
   local buf = vim.api.nvim_get_current_buf()
 
   vim.api.nvim_buf_call(buf, function()
