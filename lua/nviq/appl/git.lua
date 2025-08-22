@@ -91,18 +91,14 @@ end
 function M.pull()
   local root = M.get_root()
   if not root then return end
+  local stdout_buf = {}
   vim.print("Pulling...")
   vim.fn.jobstart({ "git", "pull" }, {
     cwd = root,
     -- To interactive with the fxxking prompt...
     pty = true,
-    on_exit = function(_, code, _)
-      -- TODO: Parse the stdout from pty.
-      if code == 0 then
-        print("Pulled")
-      else
-        print("Pull operation failed")
-      end
+    on_exit = function(_, _, _)
+      print(table.concat(stdout_buf, "\n"))
     end,
     on_stdout = function(job_id, datas, _)
       for _, data in ipairs(datas --[=[@as string[]]=]) do
@@ -112,6 +108,9 @@ function M.pull()
           local passphrase = vim.fn.inputsecret(prompt)
           vim.fn.inputrestore()
           pcall(vim.fn.chansend, job_id, passphrase .. "\r\n")
+        else
+          local raw_data = data:gsub("\27%[[%d;?]*[JHhlm]", "")
+          table.insert(stdout_buf, raw_data)
         end
       end
     end
