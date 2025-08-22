@@ -1,37 +1,20 @@
 local mini_deps = require("mini.deps")
 
------------------------------------differview-----------------------------------
+------------------------------------fugitive------------------------------------
 
 mini_deps.later(function()
-  mini_deps.add { source = "sindrets/diffview.nvim" }
+  mini_deps.add { source = "tpope/vim-fugitive" }
 
-  require("diffview").setup {
-    use_icons = _G.NVIQ.settings.tui.devicons,
-    icons = {
-      folder_closed = ">",
-      folder_open   = "v",
-    },
-    signs = {
-      fold_closed = ">",
-      fold_open   = "v",
-      done        = "✓",
-    },
-    keymaps = {
-      disable_defaults = false,
-      view = {
-        q = "<Cmd>DiffviewClose<CR>",
-      },
-      file_panel = {
-        p = function() require("nviq.appl.git").pull() end,
-        q = "<Cmd>DiffviewClose<CR>",
-      },
-      file_history_panel = {
-        q = "<Cmd>DiffviewClose<CR>",
-      },
-    },
-  }
+  vim.keymap.set("n", "<leader>gn", "<Cmd>Git<CR>")
 
-  vim.keymap.set("n", "<leader>gn", "<Cmd>DiffviewOpen<CR>")
+  vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("nviq.pack.git.fugitive", { clear = true }),
+    pattern = "fugitive",
+    callback = function(event)
+      local opt = { buffer = event.buf }
+      vim.keymap.set("n", "<leader>gp", require("nviq.appl.git").pull, opt)
+    end
+  })
 end)
 
 ------------------------------------gitsigns------------------------------------
@@ -85,10 +68,4 @@ mini_deps.later(function()
       vim.keymap.set("n", "<leader>gb", require("gitsigns").blame_line, opt)
     end
   }
-end)
-
-------------------------------------fugitive------------------------------------
-
-mini_deps.later(function()
-  mini_deps.add { source = "tpope/vim-fugitive" }
 end)
