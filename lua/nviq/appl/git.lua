@@ -88,17 +88,48 @@ function M.blame_line()
   end)
 end
 
+function M.commit()
+  local root = M.get_root()
+  if not root then return end
+
+  futures.spawn(function()
+    local message = futures.ui.input { prompt = "Commit message: " }
+    if not message then
+      lib.warn("Canceled")
+      return
+    end
+
+    local commit = futures.Process.new("git", {
+      args = { "commit", "-m", message },
+      cwd = root,
+    })
+    commit:set_record(true)
+
+    if commit:await() == 0 then
+      vim.notify(table.concat(commit:stdout_buf(), "\n"))
+    else
+      commit:notify_err()
+    end
+  end)
+end
+
 function M.pull()
   local root = M.get_root()
   if not root then return end
+
   local stdout_buf = {}
-  vim.print("Pulling...")
-  vim.fn.jobstart({ "git", "pull" }, {
+  vim.notify("Pulling...")
+  local job = vim.fn.jobstart({ "git", "pull" }, {
     cwd = root,
     -- To interactive with the fxxking prompt...
     pty = true,
-    on_exit = function(_, _, _)
-      print(table.concat(stdout_buf, "\n"))
+    on_exit = function(_, data, _)
+      local message = table.concat(stdout_buf, "\n")
+      if data == 0 then
+        vim.notify(message)
+      else
+        lib.warn(message)
+      end
     end,
     on_stdout = function(job_id, datas, _)
       for _, data in ipairs(datas --[=[@as string[]]=]) do
@@ -108,13 +139,27 @@ function M.pull()
           local passphrase = vim.fn.inputsecret(prompt)
           vim.fn.inputrestore()
           pcall(vim.fn.chansend, job_id, passphrase .. "\r\n")
+        elseif data:match("^\27]0;") then
+          -- Start of an Operating System Command, just ignore it.
         else
-          local raw_data = data:gsub("\27%[[%d;?]*[JHhlm]", "")
+          local raw_data = data:gsub("\27%[[%d;?]*[FGHJKhlm]", "")
           table.insert(stdout_buf, raw_data)
         end
       end
     end
   })
+  if job == 0 then
+    lib.warn("Invalid arguments.")
+  elseif job == -1 then
+    lib.warn("Executable \"git\" was not found.")
+  end
+end
+
+function M.push()
+  local root = M.get_root()
+  if not root then return end
+
+  vim.notify("Not implemented yet")
 end
 
 return M

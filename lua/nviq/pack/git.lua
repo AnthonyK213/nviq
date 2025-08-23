@@ -12,7 +12,9 @@ mini_deps.later(function()
     pattern = "fugitive",
     callback = function(event)
       local opt = { buffer = event.buf }
+      vim.keymap.set("n", "<leader>gc", require("nviq.appl.git").commit, opt)
       vim.keymap.set("n", "<leader>gp", require("nviq.appl.git").pull, opt)
+      vim.keymap.set("n", "<leader>gP", require("nviq.appl.git").push, opt)
     end
   })
 end)
