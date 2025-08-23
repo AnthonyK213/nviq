@@ -122,19 +122,23 @@ end
 local function on_pty_stdout(job, data)
   if #data == 1 and data[1] == "" then return --[[EOF]] end
   for _, d in ipairs(data --[=[@as string[]]=]) do
-    if d:match("^Enter passphrase") or d:match("'s%spassword:") then
+    local raw_data = d:gsub("\27%[[%d;?]*[FGHJKhlm]", "")
+    if raw_data:match("^Username for ") then
+      local prompt = raw_data:gsub("[\r\n]", "")
+      local username = vim.fn.input { prompt = prompt }
+      pcall(job.send, job, username .. "\n")
+    elseif raw_data:match("^Enter passphrase") or
+        raw_data:match("'s password:") or
+        raw_data:match("^Password for ") then
       vim.fn.inputsave()
-      local prompt = d:gsub("[\n\r]", "")
+      local prompt = raw_data:gsub("[\r\n]", "")
       local passphrase = vim.fn.inputsecret(prompt)
       vim.fn.inputrestore()
-      pcall(job.send, job, passphrase .. "\r\n")
+      pcall(job.send, job, passphrase .. "\n")
+    elseif raw_data:match("^\27]0;") then
+      -- Start of an Operating System Command, just ignore it.
     else
-      local raw_data = d:gsub("\27%[[%d;?]*[FGHJKhlm]", "")
-      if raw_data:match("^\27]0;") then
-        -- Start of an Operating System Command, just ignore it.
-      else
-        table.insert(job:stdout_buf(), raw_data)
-      end
+      table.insert(job:stdout_buf(), raw_data)
     end
   end
 end
