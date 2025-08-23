@@ -59,7 +59,7 @@ function M.start(bufnr)
     cwd = buf_dir,
   }):continue_with(function() vim.notify("Marp: Exited") end)
 
-  marp:on_stderr(function(data)
+  marp:on_stderr(function(_, data)
     local m = data:match("Start server listened at (http://localhost:%d+/)")
     if not m then return end
     local _, err = vim.ui.open(m)

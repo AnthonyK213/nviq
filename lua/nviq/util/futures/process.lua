@@ -60,16 +60,14 @@ end
 ---@field private m_cb? fun(proc: nviq.futures.Process, code: integer, signal: integer) Callback invoked when the process exits.
 ---@field private m_handle? nviq.futures.ProcessHandle Process handle.
 ---@field private m_cb_q fun(proc: nviq.futures.Process, code: integer, signal: integer)[]
----@field private m_on_stdin? fun(data: string) Callback on standard input.
----@field private m_on_stdout? fun(data: string) Callback on standard output.
----@field private m_on_stderr? fun(data: string) Callbakc on standard error.
+---@field private m_no_cb_q boolean Mark the process that its `m_cb_q` will not be executed.
+---@field private m_on_stdout? fun(proc: nviq.futures.Process, data: string) Callback on standard output.
+---@field private m_on_stderr? fun(proc: nviq.futures.Process, data: string) Callbakc on standard error.
 ---@field private m_stdin uv.uv_stream_t Standard input handle.
 ---@field private m_stdout uv.uv_stream_t Standard output handle.
 ---@field private m_stderr uv.uv_stream_t Standard error handle.
----@field private m_stdin_buf string[] Standard input buffer.
 ---@field private m_stdout_buf string[] Standard output buffer.
 ---@field private m_stderr_buf string[] Standard error buffer.
----@field private m_no_cb_q boolean Mark the process that its `m_cb_q` will not be executed.
 ---@field private m_record boolean If true, `stdout` and `stderr` will be recorded into the buffer.
 local Process = {}
 
@@ -89,7 +87,6 @@ function Process.new(path, options)
     m_stdin = vim.uv.new_pipe(false),
     m_stdout = vim.uv.new_pipe(false),
     m_stderr = vim.uv.new_pipe(false),
-    m_stdin_buf = {},
     m_stdout_buf = {},
     m_stderr_buf = {},
     m_no_cb_q = false,
@@ -108,6 +105,12 @@ function Process:has_exited()
   return false
 end
 
+---Returns whether the process is valid.
+---@return boolean
+function Process:is_valid()
+  return lib.has_exe(self.m_path, false)
+end
+
 ---Sets whether to record stdout and stderr.
 ---@param to_record boolean Whether to record stdout and stderr.
 function Process:set_record(to_record)
@@ -115,13 +118,13 @@ function Process:set_record(to_record)
 end
 
 ---Sets stdout callback.
----@param callback fun(data: string)
+---@param callback fun(proc: nviq.futures.Process, data: string)
 function Process:on_stdout(callback)
   self.m_on_stdout = callback
 end
 
 ---Sets stderr callback.
----@param callback fun(data: string)
+---@param callback fun(proc: nviq.futures.Process, data: string)
 function Process:on_stderr(callback)
   self.m_on_stderr = callback
 end
@@ -138,15 +141,7 @@ function Process:stderr_buf()
   return self.m_stderr_buf
 end
 
----Clone a process.
----@return nviq.futures.Process
-function Process:clone()
-  local proc = Process.new(self.m_path, vim.deepcopy(self.m_opts))
-  proc.m_cb_q = vim.deepcopy(self.m_cb_q)
-  return proc
-end
-
----Run the process.
+---Starts the process.
 ---@return boolean ok True if process starts successfully.
 function Process:start()
   if not lib.has_exe(self.m_path, true) or self:has_exited() then
@@ -189,7 +184,7 @@ function Process:start()
         table.insert(self.m_stdout_buf, data)
       end
       if type(self.m_on_stdout) == "function" then
-        self.m_on_stdout(data)
+        self.m_on_stdout(self, data)
       end
     end
   end))
@@ -201,7 +196,7 @@ function Process:start()
         table.insert(self.m_stderr_buf, data)
       end
       if type(self.m_on_stderr) == "function" then
-        self.m_on_stderr(data)
+        self.m_on_stderr(self, data)
       end
     end
   end))

@@ -90,7 +90,10 @@ end
 
 function M.commit()
   local root = M.get_root()
-  if not root then return end
+  if not root then
+    lib.warn("Not a git repository.")
+    return
+  end
 
   futures.spawn(function()
     local message = futures.ui.input { prompt = "Commit message: " }
@@ -113,53 +116,71 @@ function M.commit()
   end)
 end
 
-function M.pull()
-  local root = M.get_root()
-  if not root then return end
-
-  local stdout_buf = {}
-  vim.notify("Pulling...")
-  local job = vim.fn.jobstart({ "git", "pull" }, {
-    cwd = root,
-    -- To interactive with the fxxking prompt...
-    pty = true,
-    on_exit = function(_, data, _)
-      local message = table.concat(stdout_buf, "\n")
-      if data == 0 then
-        vim.notify(message)
+---
+---@param job nviq.futures.Job
+---@param data string[]
+local function on_pty_stdout(job, data)
+  if #data == 1 and data[1] == "" then return --[[EOF]] end
+  for _, d in ipairs(data --[=[@as string[]]=]) do
+    if d:match("^Enter passphrase") or d:match("'s%spassword:") then
+      vim.fn.inputsave()
+      local prompt = d:gsub("[\n\r]", "")
+      local passphrase = vim.fn.inputsecret(prompt)
+      vim.fn.inputrestore()
+      job:send(passphrase .. "\r\n")
+    else
+      local raw_data = d:gsub("\27%[[%d;?]*[FGHJKhlm]", "")
+      if raw_data:match("^\27]0;") then
+        -- Start of an Operating System Command, just ignore it.
       else
-        lib.warn(message)
-      end
-    end,
-    on_stdout = function(job_id, datas, _)
-      for _, data in ipairs(datas --[=[@as string[]]=]) do
-        if data:match("^Enter passphrase") or data:match("'s%spassword:") then
-          vim.fn.inputsave()
-          local prompt = data:gsub("[\n\r]", "")
-          local passphrase = vim.fn.inputsecret(prompt)
-          vim.fn.inputrestore()
-          pcall(vim.fn.chansend, job_id, passphrase .. "\r\n")
-        elseif data:match("^\27]0;") then
-          -- Start of an Operating System Command, just ignore it.
-        else
-          local raw_data = data:gsub("\27%[[%d;?]*[FGHJKhlm]", "")
-          table.insert(stdout_buf, raw_data)
-        end
+        table.insert(job:stdout_buf(), raw_data)
       end
     end
-  })
-  if job == 0 then
-    lib.warn("Invalid arguments.")
-  elseif job == -1 then
-    lib.warn("Executable \"git\" was not found.")
   end
 end
 
+---
+---@param job nviq.futures.Job
+---@param data integer
+local function on_pty_exit(job, data)
+  local message = table.concat(job:stdout_buf(), "\n")
+  if data == 0 then
+    vim.notify(message)
+  else
+    lib.warn(message)
+  end
+end
+
+---
+---@return nviq.futures.Job?
+function M.pull()
+  local root = M.get_root()
+  if not root then
+    lib.warn("Not a git repository.")
+    return
+  end
+
+  local pull_job = futures.Job.new({ "git", "pull" }, { cwd = root, pty = true })
+  pull_job:on_stdout(on_pty_stdout)
+  pull_job:continue_with(on_pty_exit)
+
+  return pull_job
+end
+
+---
+---@return nviq.futures.Job?
 function M.push()
   local root = M.get_root()
-  if not root then return end
+  if not root then
+    lib.warn("Not a git repository.")
+    return
+  end
 
-  vim.notify("Not implemented yet")
+  local push_job = futures.Job.new({ "git", "push" }, { cwd = root, pty = true })
+  push_job:on_stdout(on_pty_stdout)
+  push_job:continue_with(on_pty_exit)
+
+  return push_job
 end
 
 return M

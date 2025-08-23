@@ -12,9 +12,28 @@ mini_deps.later(function()
     pattern = "fugitive",
     callback = function(event)
       local opt = { buffer = event.buf }
-      vim.keymap.set("n", "<leader>gc", require("nviq.appl.git").commit, opt)
-      vim.keymap.set("n", "<leader>gp", require("nviq.appl.git").pull, opt)
-      vim.keymap.set("n", "<leader>gP", require("nviq.appl.git").push, opt)
+      vim.keymap.set("n", "<leader>gp", function()
+        require("nviq.util.futures").spawn(function()
+          local job = require("nviq.appl.git").pull()
+          if job then
+            vim.notify("Pulling...")
+            if job:await() == 0 then
+              vim.api.nvim_buf_call(event.buf, function() vim.cmd("Git") end)
+            end
+          end
+        end)
+      end, opt)
+      vim.keymap.set("n", "<leader>gP", function()
+        require("nviq.util.futures").spawn(function()
+          local job = require("nviq.appl.git").push()
+          if job then
+            vim.notify("Pushing...")
+            if job:await() == 0 then
+              vim.api.nvim_buf_call(event.buf, function() vim.cmd("Git") end)
+            end
+          end
+        end)
+      end, opt)
     end
   })
 end)

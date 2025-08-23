@@ -79,7 +79,7 @@ local function fetch_version(channel, proxy)
   local version = nil
 
   local fetch_tag_page = futures.Process.new(CURL_CMD, { args = args })
-  fetch_tag_page:on_stdout(function(data)
+  fetch_tag_page:on_stdout(function(_, data)
     if version then
       return
     end

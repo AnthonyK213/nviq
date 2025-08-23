@@ -58,7 +58,7 @@ function M.start(bufnr, fargs)
     cwd = lib.buf_dir(bufnr),
   }):continue_with(function() vim.notify("glslViewer: Exited") end)
 
-  viewer:on_stdout(function(data)
+  viewer:on_stdout(function(_, data)
     local lines = vim.split(data, "[\n\r]", {
       plain = false,
       trimempty = true,

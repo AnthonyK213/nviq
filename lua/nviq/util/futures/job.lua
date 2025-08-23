@@ -9,8 +9,11 @@ local lib = require("nviq.util.lib")
 ---@field private m_exited boolean
 ---@field private m_cb_q fun(job: nviq.futures.Job, data: integer)[]
 ---@field private m_no_cb_q boolean Mark the job that its `m_cb_q` will not be executed.
----@field private m_on_stdout? fun(data: string[]) Callback on standard output.
----@field private m_on_stderr? fun(data: string[]) Callbakc on standard error.
+---@field private m_on_stdout? fun(job: nviq.futures.Job, data: string[]) Callback on standard output.
+---@field private m_on_stderr? fun(job: nviq.futures.Job, data: string[]) Callbakc on standard error.
+---@field private m_stdout_buf string[] Standard output buffer.
+---@field private m_stderr_buf string[] Standard error buffer.
+---@field private m_record boolean If true, `stdout` and `stderr` will be recorded into the buffer.
 local Job = {}
 
 ---@private
@@ -27,7 +30,10 @@ function Job.new(cmd, options)
     m_id = -1,
     m_exited = false,
     m_cb_q = {},
+    m_stdout_buf = {},
+    m_stderr_buf = {},
     m_no_cb_q = false,
+    m_record = false,
   }
   setmetatable(job, Job)
   return job
@@ -45,16 +51,34 @@ function Job:is_valid()
   return lib.has_exe(self.m_cmd[1], false)
 end
 
+---Sets whether to record stdout and stderr.
+---@param to_record boolean Whether to record stdout and stderr.
+function Job:set_record(to_record)
+  self.m_record = to_record
+end
+
 ---Sets stdout callback.
----@param callback fun(data: string[])
+---@param callback fun(job: nviq.futures.Job, data: string[])
 function Job:on_stdout(callback)
   self.m_on_stdout = callback
 end
 
 ---Sets stderr callback.
----@param callback fun(data: string[])
+---@param callback fun(job: nviq.futures.Job, data: string[])
 function Job:on_stderr(callback)
   self.m_on_stderr = callback
+end
+
+---Returns the buffer of stdout.
+---@return string[]
+function Job:stdout_buf()
+  return self.m_stdout_buf
+end
+
+---Returns the buffer of stderr.
+---@return string[]
+function Job:stderr_buf()
+  return self.m_stderr_buf
 end
 
 ---Starts the job.
@@ -81,19 +105,27 @@ function Job:start()
     end
   end)
 
-  self.m_opts.on_stdout = nil
-  if type(self.m_on_stdout) == "function" then
-    self.m_opts.on_stdout = vim.schedule_wrap(function(_, data, _)
-      self.m_on_stdout(data)
-    end)
-  end
+  self.m_opts.on_stdout = vim.schedule_wrap(function(_, data, _)
+    if self.m_record then
+      for _, d in ipairs(data) do
+        table.insert(self.m_stdout_buf, d)
+      end
+    end
+    if type(self.m_on_stdout) == "function" then
+      self.m_on_stdout(self, data)
+    end
+  end)
 
-  self.m_opts.on_stderr = nil
-  if type(self.m_on_stderr) == "function" then
-    self.m_opts.on_stderr = vim.schedule_wrap(function(_, data, _)
-      self.m_on_stderr(data)
-    end)
-  end
+  self.m_opts.on_stderr = vim.schedule_wrap(function(_, data, _)
+    if self.m_record then
+      for _, d in ipairs(data) do
+        table.insert(self.m_stderr_buf, d)
+      end
+    end
+    if type(self.m_on_stderr) == "function" then
+      self.m_on_stderr(self, data)
+    end
+  end)
 
   self.m_id = vim.fn.jobstart(self.m_cmd, self.m_opts)
   if self.m_id == 0 then
