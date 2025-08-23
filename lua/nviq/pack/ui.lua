@@ -122,7 +122,6 @@ mini_deps.now(function()
       "oil",
       "overseer",
       "quickfix",
-      "toggleterm",
     }
   }
 end)

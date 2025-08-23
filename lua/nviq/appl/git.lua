@@ -127,7 +127,7 @@ local function on_pty_stdout(job, data)
       local prompt = d:gsub("[\n\r]", "")
       local passphrase = vim.fn.inputsecret(prompt)
       vim.fn.inputrestore()
-      job:send(passphrase .. "\r\n")
+      pcall(job.send, job, passphrase .. "\r\n")
     else
       local raw_data = d:gsub("\27%[[%d;?]*[FGHJKhlm]", "")
       if raw_data:match("^\27]0;") then

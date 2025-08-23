@@ -13,7 +13,6 @@
   - [tree-sitter](https://github.com/tree-sitter/tree-sitter) CLI (0.25.0 or later)
   - [ripgrep](https://github.com/BurntSushi/ripgrep) (optional)
   - [fd](https://github.com/sharkdp/fd) (optional)
-  - [Deno](https://github.com/denoland/deno/) (optional, for peek.nvim)
 
 - Clone the repository
   - Windows

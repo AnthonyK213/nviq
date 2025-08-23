@@ -2,81 +2,64 @@ local mini_deps = require("mini.deps")
 
 --------------------------------------dial--------------------------------------
 
-mini_deps.later(function()
-  mini_deps.add { source = "monaqa/dial.nvim" }
+-- mini_deps.later(function()
+--   mini_deps.add { source = "monaqa/dial.nvim" }
+--
+--   vim.keymap.set("n", "<C-A>", function() require("dial.map").manipulate("increment", "normal") end)
+--   vim.keymap.set("n", "<C-X>", function() require("dial.map").manipulate("decrement", "normal") end)
+--   vim.keymap.set("n", "g<C-A>", function() require("dial.map").manipulate("increment", "gnormal") end)
+--   vim.keymap.set("n", "g<C-X>", function() require("dial.map").manipulate("decrement", "gnormal") end)
+--   vim.keymap.set("v", "<C-A>", function() require("dial.map").manipulate("increment", "visual") end)
+--   vim.keymap.set("v", "<C-X>", function() require("dial.map").manipulate("decrement", "visual") end)
+--   vim.keymap.set("v", "g<C-A>", function() require("dial.map").manipulate("increment", "gvisual") end)
+--   vim.keymap.set("v", "g<C-X>", function() require("dial.map").manipulate("decrement", "gvisual") end)
+-- end)
 
-  vim.keymap.set("n", "<C-A>", function() require("dial.map").manipulate("increment", "normal") end)
-  vim.keymap.set("n", "<C-X>", function() require("dial.map").manipulate("decrement", "normal") end)
-  vim.keymap.set("n", "g<C-A>", function() require("dial.map").manipulate("increment", "gnormal") end)
-  vim.keymap.set("n", "g<C-X>", function() require("dial.map").manipulate("decrement", "gnormal") end)
-  vim.keymap.set("v", "<C-A>", function() require("dial.map").manipulate("increment", "visual") end)
-  vim.keymap.set("v", "<C-X>", function() require("dial.map").manipulate("decrement", "visual") end)
-  vim.keymap.set("v", "g<C-A>", function() require("dial.map").manipulate("increment", "gvisual") end)
-  vim.keymap.set("v", "g<C-X>", function() require("dial.map").manipulate("decrement", "gvisual") end)
-end)
+--------------------------------markdown-preview--------------------------------
 
---------------------------------------peek--------------------------------------
+mini_deps.now(function()
+  vim.g.mkdp_auto_start = 0
+  vim.g.mkdp_auto_close = 1
+  vim.g.mkdp_preview_options = {
+    mkit = {},
+    katex = {},
+    uml = {},
+    maid = {},
+    disable_sync_scroll = 0,
+    sync_scroll_type = "relative",
+    hide_yaml_meta = 1,
+    sequence_diagrams = {},
+    flowchart_diagrams = {},
+    content_editable = false,
+    disable_filename = 0
+  }
+  vim.g.mkdp_filetypes = {
+    "markdown",
+    "vimwiki.markdown"
+  }
 
-if vim.fn.executable("deno") == 1 then
-  mini_deps.later(function()
-    local function peek_build(args)
-      if vim.fn.executable("deno") == 0 then
-        print("deno was not found")
-        return
-      end
-      print("Building peek.nvim...")
-      vim.system({ "deno", "task", "--quiet", "build:fast" }, {
-        cwd = args.path,
-        text = true,
-      }, function(obj)
-        if obj.code == 0 then
-          print("peek.nvim was built successfully")
-        else
-          print(obj.stderr)
-        end
-      end)
-    end
-
-    mini_deps.add {
-      source = "toppair/peek.nvim",
-      hooks = {
-        post_install  = peek_build,
-        post_checkout = peek_build,
-      }
+  mini_deps.add {
+    source = "iamcco/markdown-preview.nvim",
+    hooks = {
+      post_install = function()
+        vim.cmd [[packadd markdown-preview.nvim]]
+        vim.cmd [[call mkdp#util#install()]]
+      end,
     }
+  }
 
-    local peek = require("peek")
-
-    peek.setup {
-      app = "browser",
-      filetype = { "markdown", "vimwiki.markdown" }
-    }
-
-    vim.api.nvim_create_user_command("PeekOpen", peek.open, {})
-    vim.api.nvim_create_user_command("PeekClose", peek.close, {})
-  end)
-
-  -- WORKAROUND: When openning a mardown file with neovim directly, this autocmd
-  -- won't be triggered if it was in the `later` block.
   vim.api.nvim_create_autocmd("Filetype", {
-    group = vim.api.nvim_create_augroup("nviq.pack.mark.peek", { clear = true }),
+    group = vim.api.nvim_create_augroup("nviq.pack.mark.markdown-preview", { clear = true }),
     pattern = { "markdown", "vimwiki.markdown" },
     callback = function(event)
       vim.b[event.buf].nviq_handler_preview_toggle = function()
-        local has_peek, peek = pcall(require, "peek")
-        if not has_peek then return end
-        if peek.is_open() then
-          peek.close()
-        else
-          peek.open()
+        if vim.fn.exists(":MarkdownPreviewToggle") ~= 0 then
+          vim.cmd.MarkdownPreviewToggle()
         end
       end
     end,
   })
-else
-  vim.api.nvim_create_user_command("PeekOpen", [[echo "deno was not found"]], {})
-  vim.api.nvim_create_user_command("PeekClose", [[echo "deno was not found"]], {})
-end
+end)
 
 -----------------------------------presenting-----------------------------------
 
