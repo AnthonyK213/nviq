@@ -64,6 +64,7 @@ local settings = {
 local exists, opt_file = lib.get_dotfile("nvimrc")
 if exists and opt_file then
   local code, result = lib.json_decode(opt_file, true)
+  -- TODO: Validate `result` with `schema.json`.
   if code == 0 then
     settings = vim.tbl_deep_extend("force", settings, result)
   else
