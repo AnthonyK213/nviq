@@ -63,20 +63,20 @@ end)
 
 -----------------------------------presenting-----------------------------------
 
-mini_deps.later(function()
-  mini_deps.add { source = "sotte/presenting.nvim" }
-
-  require("presenting").setup {
-    options = {
-      width = 80,
-    },
-    keep_separator = false,
-    separator = {
-      markdown             = "^%-%-%-",
-      ["vimwiki.markdown"] = "^%-%-%-",
-    }
-  }
-end)
+-- mini_deps.later(function()
+--   mini_deps.add { source = "sotte/presenting.nvim" }
+--
+--   require("presenting").setup {
+--     options = {
+--       width = 80,
+--     },
+--     keep_separator = false,
+--     separator = {
+--       markdown             = "^%-%-%-",
+--       ["vimwiki.markdown"] = "^%-%-%-",
+--     }
+--   }
+-- end)
 
 ---------------------------------vim-table-mode---------------------------------
 
@@ -112,7 +112,9 @@ mini_deps.now(function()
   vim.api.nvim_create_autocmd("FileType", {
     group = vim.api.nvim_create_augroup("nviq.pack.mark.vimtex", { clear = true }),
     pattern = "tex",
-    command = [[nn <leader>mv <Cmd>VimtexTocToggle<CR>]],
+    callback = function(event)
+      vim.keymap.set("n", "<leader>mv", "<Cmd>VimtexTocToggle<CR>", { buffer = event.buf })
+    end
   })
 end)
 
@@ -131,6 +133,7 @@ mini_deps.later(function()
   vim.g.vimwiki_folding = "syntax"
   vim.g.vimwiki_filetypes = { "markdown" }
   vim.g.vimwiki_ext2syntax = { [".markdown"] = "markdown" }
+  vim.g.vimwiki_table_auto_fmt = 0
   vim.g.vimwiki_key_mappings = {
     table_format   = 0,
     table_mappings = 0,
