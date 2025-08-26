@@ -75,5 +75,5 @@ vim.diagnostic.config {
 ---@type fun():string,integer,integer Handler to get <cword> which returns the word, start pos (0-based, inclusive) and end pos (0-based, exclusive).
 _G.NVIQ.handlers.get_word = lib.get_word
 
----@type fun(theme:string)|nil Handler to set background theme. Should be registered by colorscheme.
+---@type fun(theme:"dark"|"light")|nil Handler to set background theme. Should be registered by colorscheme.
 _G.NVIQ.handlers.set_theme = lib.set_theme

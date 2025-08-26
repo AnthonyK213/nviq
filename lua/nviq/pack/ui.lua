@@ -34,6 +34,9 @@ mini_deps.now(function()
     carbon = { theme = "dark", inverse = "dawn" },
   }
 
+  -- Memorize the previous style (which "fox").
+  local prev_style = {}
+
   _G.NVIQ.handlers.set_theme = function(theme)
     local fox_loaded = true
     local colors_name, colors_info
@@ -58,8 +61,11 @@ mini_deps.now(function()
         vim.cmd.colorscheme(colors_name .. "fox")
       end
     else
-      vim.cmd.colorscheme(colors_info.inverse .. "fox")
+      local colors_inverse = prev_style[theme] or colors_info.inverse
+      vim.cmd.colorscheme(colors_inverse .. "fox")
     end
+
+    prev_style[colors_info.theme] = colors_name
   end
 
   require("nviq.appl.theme").set_theme(_G.NVIQ.settings.tui.theme)
