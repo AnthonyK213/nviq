@@ -12,15 +12,16 @@ local putil = require("nviq.util.p")
 
 local settings = {
   general = {
-    offline = true,
-    proxy   = nil,
-    shell   = ({
+    offline  = true,
+    proxy    = nil,
+    shell    = ({
       [putil.OS.Unknown] = "bash",
       [putil.OS.Linux]   = "bash",
       [putil.OS.Windows] = { "powershell.exe", "-nologo" },
       [putil.OS.MacOS]   = "zsh",
     })[putil.os_type()],
-    upgrade = false,
+    upgrade  = false,
+    auto_ime = false,
   },
   path = {
     home    = vim.env.HOME,

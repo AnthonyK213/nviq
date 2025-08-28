@@ -34,6 +34,11 @@
           "description": "Whether to enable nviq-upgrade. It's useful when you are using official released binary archives directly rather than installers or package managers.",
           "type": "boolean",
           "default": false
+        },
+        "auto_ime": {
+          "description": "Switch IME automatically and make life better",
+          "type": "boolean",
+          "default": false
         }
       }
     },

@@ -408,3 +408,15 @@ end, {
   complete = function() return { "stable", "nightly" } end,
   desc = "Upgrade Neovim by channel"
 })
+
+-- IME
+
+if _G.NVIQ.settings.general.auto_ime then
+  vim.api.nvim_create_autocmd("InsertLeave", {
+    group = _augroup,
+    callback = function(_)
+      local ime = require("nviq.appl.ime")
+      ime.set(ime.Layout.US)
+    end
+  })
+end
