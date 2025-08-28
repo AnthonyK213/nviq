@@ -9,7 +9,7 @@ pub(crate) fn get_input_method() -> Layout {
             let current_layout = winuser::GetKeyboardLayout(thread_id) as usize;
             (current_layout & 0x0000FFFF) as Layout
         } else {
-            0
+            NVIQ_IME_LAYOUT_NONE
         }
     }
 }
