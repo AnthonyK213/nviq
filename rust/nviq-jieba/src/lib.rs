@@ -2,9 +2,9 @@ use _ffi_util::str_util;
 use jieba_rs::{Jieba, TokenizeMode};
 use std::ffi::{c_char, c_int};
 
-const ERR_NO_ERRORS: i32 = 0;
-const ERR_FAILED: i32 = 1;
-const ERR_INVALID_JB_PTR: i32 = 2;
+const NVIQ_JIEBA_ERR_NO_ERRORS: i32 = 0;
+const NVIQ_JIEBA_ERR_FAILED: i32 = 1;
+const NVIQ_JIEBA_ERR_INVALID_POINTER: i32 = 2;
 
 #[unsafe(no_mangle)]
 pub extern "C" fn nviq_jieba_new() -> Box<Jieba> {
@@ -21,12 +21,12 @@ pub extern "C" fn nviq_jieba_pos(
 ) -> c_int {
     let jb_obj = match jieba {
         Some(v) => v,
-        None => return ERR_INVALID_JB_PTR,
+        None => return NVIQ_JIEBA_ERR_INVALID_POINTER,
     };
 
     let sentence = match str_util::char_buf_to_string(line) {
         Ok(s) => s,
-        Err(_) => return ERR_FAILED,
+        Err(_) => return NVIQ_JIEBA_ERR_FAILED,
     };
 
     let tokens = jb_obj.tokenize(&sentence, TokenizeMode::Default, false);
@@ -34,12 +34,12 @@ pub extern "C" fn nviq_jieba_pos(
     for token in tokens {
         let tk_start: c_int = match token.start.try_into() {
             Ok(v) => v,
-            Err(_) => return ERR_FAILED,
+            Err(_) => return NVIQ_JIEBA_ERR_FAILED,
         };
 
         let tk_end: c_int = match token.end.try_into() {
             Ok(v) => v,
-            Err(_) => return ERR_FAILED,
+            Err(_) => return NVIQ_JIEBA_ERR_FAILED,
         };
 
         if tk_start <= pos && tk_end > pos {
@@ -48,11 +48,11 @@ pub extern "C" fn nviq_jieba_pos(
                 end.write(tk_end);
             }
 
-            return ERR_NO_ERRORS;
+            return NVIQ_JIEBA_ERR_NO_ERRORS;
         }
     }
 
-    ERR_FAILED
+    NVIQ_JIEBA_ERR_FAILED
 }
 
 #[unsafe(no_mangle)]
