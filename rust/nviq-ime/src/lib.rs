@@ -14,7 +14,8 @@ pub extern "C" fn nviq_ime_get() -> layout::Layout {
     #[cfg(target_os = "macos")]
     return macos::get_input_method();
 
-    layout::NVIQ_IME_LAYOUT_NONE;
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    return layout::NVIQ_IME_LAYOUT_NONE;
 }
 
 #[unsafe(no_mangle)]
