@@ -1,5 +1,4 @@
 local ffi = require("ffi")
-local lib = require("nviq.util.lib")
 local rsmod = require("nviq.appl.rsmod")
 
 ---FFI module.
@@ -13,7 +12,6 @@ local function init()
 
   local dylib_path = rsmod.get_dylib_path("nviq-ime")
   if not dylib_path then
-    lib.warn("Dynamic library was not found")
     return false
   end
 

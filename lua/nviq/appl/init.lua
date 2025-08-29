@@ -414,9 +414,20 @@ end, {
 if _G.NVIQ.settings.general.auto_ime then
   vim.api.nvim_create_autocmd("InsertLeave", {
     group = _augroup,
-    callback = function(_)
+    callback = function(event)
       local ime = require("nviq.appl.ime")
+      vim.b[event.buf].nviq_ime_insert_mode = ime.get()
       ime.set(ime.Layout.US)
+    end
+  })
+
+  vim.api.nvim_create_autocmd("InsertEnter", {
+    group = _augroup,
+    callback = function(event)
+      local layout = vim.b[event.buf].nviq_ime_insert_mode
+      if layout then
+        require("nviq.appl.ime").set(layout)
+      end
     end
   })
 end
