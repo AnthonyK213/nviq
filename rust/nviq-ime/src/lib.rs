@@ -4,10 +4,10 @@ mod windows;
 #[cfg(target_os = "macos")]
 mod macos;
 
-mod layout;
+mod typedef;
 
 #[unsafe(no_mangle)]
-pub extern "C" fn nviq_ime_get() -> layout::Layout {
+pub extern "C" fn nviq_ime_get() -> typedef::Method {
     #[cfg(target_os = "windows")]
     return windows::get_input_method();
 
@@ -15,14 +15,14 @@ pub extern "C" fn nviq_ime_get() -> layout::Layout {
     return macos::get_input_method();
 
     #[cfg(not(any(target_os = "windows", target_os = "macos")))]
-    return layout::NVIQ_IME_LAYOUT_NONE;
+    return typedef::NVIQ_IME_LAYOUT_NONE;
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn nviq_ime_set(layout: layout::Layout) {
+pub extern "C" fn nviq_ime_set(method: typedef::Method) {
     #[cfg(target_os = "windows")]
-    windows::set_input_method(layout);
+    windows::set_input_method(method);
 
     #[cfg(target_os = "macos")]
-    macos::set_input_method(layout);
+    macos::set_input_method(method);
 }

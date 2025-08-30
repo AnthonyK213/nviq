@@ -16,16 +16,19 @@ local function init()
   end
 
   ffi.cdef [[
+typedef uint32_t Method;
 typedef uint32_t Layout;
 
-Layout nviq_ime_get();
-void nviq_ime_set(Layout layout);
+Method nviq_ime_get();
+void nviq_ime_set(Method method);
 ]]
 
   _nviq_ime = ffi.load(dylib_path)
 
   return true
 end
+
+---@alias nviq.appl.ime.Method integer
 
 ---@enum nviq.appl.ime.Layout
 local Layout = {
@@ -41,8 +44,8 @@ local M = {}
 
 M.Layout = Layout
 
----Returns the current keyboard layout.
----@return nviq.appl.ime.Layout
+---Returns the current input method.
+---@return nviq.appl.ime.Method
 function M.get()
   if init() then
     return _nviq_ime.nviq_ime_get()
@@ -50,11 +53,11 @@ function M.get()
   return Layout.None
 end
 
----Sets the current keyboard layout.
----@param layout nviq.appl.ime.Layout
-function M.set(layout)
+---Sets the current input method.
+---@param method nviq.appl.ime.Method
+function M.set(method)
   if init() then
-    _nviq_ime.nviq_ime_set(layout)
+    _nviq_ime.nviq_ime_set(method)
   end
 end
 

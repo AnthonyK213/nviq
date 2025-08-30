@@ -1,24 +1,25 @@
-use crate::layout::*;
+use crate::typedef::*;
 use winapi::um::winuser;
 
-pub(crate) fn get_input_method() -> Layout {
+pub(crate) fn get_input_method() -> Method {
     unsafe {
         let hwnd = winuser::GetForegroundWindow();
         if !hwnd.is_null() {
             let thread_id = winuser::GetWindowThreadProcessId(hwnd, std::ptr::null_mut());
             let current_layout = winuser::GetKeyboardLayout(thread_id) as usize;
-            (current_layout & 0x0000FFFF) as Layout
+            (current_layout & 0x0000FFFF) as Method
         } else {
             NVIQ_IME_LAYOUT_NONE
         }
     }
 }
 
-pub(crate) fn set_input_method(layout: Layout) {
+pub(crate) fn set_input_method(method: Method) {
     unsafe {
         let hwnd = winuser::GetForegroundWindow();
         if !hwnd.is_null() {
-            let current_layout = winapi::shared::minwindef::LPARAM::try_from(layout);
+            let current_layout =
+                winapi::shared::minwindef::LPARAM::try_from(method & NVIQ_IME_MASK_LAYOUT);
             if let Ok(lparam) = current_layout {
                 winuser::PostMessageA(hwnd, winuser::WM_INPUTLANGCHANGEREQUEST, 0, lparam);
             }
