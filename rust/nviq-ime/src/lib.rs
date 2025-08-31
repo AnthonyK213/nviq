@@ -21,7 +21,7 @@ pub extern "C" fn nviq_ime_get() -> typedef::Source {
 #[unsafe(no_mangle)]
 pub extern "C" fn nviq_ime_set(source: typedef::Source) {
     #[cfg(target_os = "windows")]
-    windows::get_input_source(source);
+    windows::set_input_source(source);
 
     #[cfg(target_os = "macos")]
     macos::set_input_source(source);

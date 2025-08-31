@@ -37,4 +37,18 @@ mod tests {
         std::thread::sleep(std::time::Duration::from_secs(2));
         assert_eq!(NVIQ_IME_LAYOUT_US, get_input_source());
     }
+
+    #[test]
+    fn it_gets_current_input_source_multiple_times() {
+        for _ in 0..10 {
+            get_input_source();
+        }
+    }
+
+    #[test]
+    fn it_sets_current_input_source_multiple_times() {
+        for _ in 0..10 {
+            set_input_source(NVIQ_IME_LAYOUT_US);
+        }
+    }
 }
