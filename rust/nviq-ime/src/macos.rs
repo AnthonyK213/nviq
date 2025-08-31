@@ -19,35 +19,41 @@ unsafe extern "C" {
     static kTISPropertyInputSourceID: CFStringRef;
 }
 
-static SOURCE_ID_MAP: Lazy<HashMap<String, Method>> = Lazy::new(|| {
+static SOURCE_ID_MAP: Lazy<HashMap<String, Source>> = Lazy::new(|| {
     let mut map = HashMap::new();
     map.insert(
         "com.apple.keylayout.ABC".to_string(),
-        NVIQ_IME_LAYOUT_US | NVIQ_IME_SOURCE_NONE,
+        NVIQ_IME_LAYOUT_US | NVIQ_IME_METHOD_NONE,
+    );
+    map.insert(
+        "com.apple.inputmethod.SCIM.ITABC".to_string(),
+        NVIQ_IME_LAYOUT_CHINESE_SIMPLIFIED | NVIQ_IME_METHOD_PINYIN,
     );
     map.insert(
         "com.apple.inputmethod.SCIM.WBX".to_string(),
-        NVIQ_IME_LAYOUT_CHINESE_SIMPLIFIED | NVIQ_IME_SOURCE_WUBI,
+        NVIQ_IME_LAYOUT_CHINESE_SIMPLIFIED | NVIQ_IME_METHOD_WUBI,
     );
     map
 });
 
 static IME_SET_LOCK: Mutex<u32> = Mutex::new(0);
 
-fn source_id_to_method(source_id: &String) -> Method {
+fn id_to_source(source_id: &String) -> Source {
     SOURCE_ID_MAP
         .get(source_id)
-        .map_or(NVIQ_IME_LAYOUT_NONE | NVIQ_IME_SOURCE_NONE, |&v| v)
+        .map_or(NVIQ_IME_LAYOUT_NONE | NVIQ_IME_METHOD_NONE, |&v| v)
 }
 
-fn method_to_source_id(method: Method) -> Option<&'static String> {
+fn source_to_id(source: Source) -> Option<&'static String> {
     SOURCE_ID_MAP
         .iter()
-        .find_map(|(key, &val)| if val == method { Some(key) } else { None })
+        .find_map(|(key, &val)| if val == source { Some(key) } else { None })
 }
 
-pub(crate) fn get_input_method() -> Method {
+pub(crate) fn get_input_source() -> Source {
     unsafe {
+        // FIXME: The input source won't update unless calling
+        // TISSelectInputSource explicitly.
         let current_source_ref = TISCopyCurrentKeyboardInputSource();
         if current_source_ref.is_null() {
             return NVIQ_IME_LAYOUT_NONE;
@@ -60,14 +66,14 @@ pub(crate) fn get_input_method() -> Method {
 
         CFRelease(current_source_ref);
 
-        source_id_to_method(&source_id_string)
+        id_to_source(&source_id_string)
     }
 }
 
-pub(crate) fn set_input_method(method: Method) {
+pub(crate) fn set_input_source(source: Source) {
     let _lock = IME_SET_LOCK.lock();
 
-    let input_source_string = method_to_source_id(method);
+    let input_source_string = source_to_id(source);
     if input_source_string.is_none() {
         return;
     }
@@ -102,23 +108,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_sets_current_input_method_to_en_us() {
-        set_input_method(NVIQ_IME_LAYOUT_US);
+    fn it_sets_current_input_source_to_en_us() {
+        set_input_source(NVIQ_IME_LAYOUT_US);
         std::thread::sleep(std::time::Duration::from_secs(2));
-        assert_eq!(NVIQ_IME_LAYOUT_US, get_input_method());
+        assert_eq!(NVIQ_IME_LAYOUT_US, get_input_source());
     }
 
     #[test]
-    fn it_gets_current_input_method_multiple_times() {
+    fn it_gets_current_input_source_multiple_times() {
         for _ in 0..10 {
-            get_input_method();
+            get_input_source();
         }
     }
 
     #[test]
-    fn it_sets_current_input_method_multiple_times() {
+    fn it_sets_current_input_source_multiple_times() {
         for _ in 0..10 {
-            set_input_method(NVIQ_IME_LAYOUT_US);
+            set_input_source(NVIQ_IME_LAYOUT_US);
         }
     }
 }

@@ -1,4 +1,4 @@
-pub(crate) type Method = u32;
+pub(crate) type Source = u32;
 
 pub(crate) type Layout = u32;
 
@@ -11,10 +11,10 @@ pub(crate) const NVIQ_IME_LAYOUT_CHINESE_TRADITIONAL: Layout = 0x00000404;
 pub(crate) const NVIQ_IME_LAYOUT_JAPANESE: Layout = 0x00000411;
 pub(crate) const NVIQ_IME_LAYOUT_KOREAN: Layout = 0x00000412;
 
-pub(crate) type Source = u32;
+pub(crate) type Method = u32;
 
-pub(crate) const NVIQ_IME_MASK_SOURCE: u32 = 0xFFFF0000;
+pub(crate) const NVIQ_IME_MASK_METHOD: u32 = 0xFFFF0000;
 
-pub(crate) const NVIQ_IME_SOURCE_NONE: Source = 0x00000000;
-pub(crate) const NVIQ_IME_SOURCE_PINYIN: Source = 0x00000000;
-pub(crate) const NVIQ_IME_SOURCE_WUBI: Source = 0x00010000;
+pub(crate) const NVIQ_IME_METHOD_NONE: Method = 0x00000000;
+pub(crate) const NVIQ_IME_METHOD_PINYIN: Method = 0x00000000;
+pub(crate) const NVIQ_IME_METHOD_WUBI: Method = 0x00010000;

@@ -1,25 +1,25 @@
 use crate::typedef::*;
 use winapi::um::winuser;
 
-pub(crate) fn get_input_method() -> Method {
+pub(crate) fn get_input_source() -> Source {
     unsafe {
         let hwnd = winuser::GetForegroundWindow();
         if !hwnd.is_null() {
             let thread_id = winuser::GetWindowThreadProcessId(hwnd, std::ptr::null_mut());
             let current_layout = winuser::GetKeyboardLayout(thread_id) as usize;
-            (current_layout & 0x0000FFFF) as Method
+            (current_layout & 0x0000FFFF) as Source
         } else {
             NVIQ_IME_LAYOUT_NONE
         }
     }
 }
 
-pub(crate) fn set_input_method(method: Method) {
+pub(crate) fn set_input_source(source: Source) {
     unsafe {
         let hwnd = winuser::GetForegroundWindow();
         if !hwnd.is_null() {
             let current_layout =
-                winapi::shared::minwindef::LPARAM::try_from(method & NVIQ_IME_MASK_LAYOUT);
+                winapi::shared::minwindef::LPARAM::try_from(source & NVIQ_IME_MASK_LAYOUT);
             if let Ok(lparam) = current_layout {
                 winuser::PostMessageA(hwnd, winuser::WM_INPUTLANGCHANGEREQUEST, 0, lparam);
             }
@@ -32,9 +32,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_sets_current_input_method_to_en_us() {
-        set_input_method(NVIQ_IME_LAYOUT_US);
+    fn it_sets_current_input_source_to_en_us() {
+        set_input_source(NVIQ_IME_LAYOUT_US);
         std::thread::sleep(std::time::Duration::from_secs(2));
-        assert_eq!(NVIQ_IME_LAYOUT_US, get_input_method());
+        assert_eq!(NVIQ_IME_LAYOUT_US, get_input_source());
     }
 }

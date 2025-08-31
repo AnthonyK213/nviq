@@ -16,11 +16,9 @@ local function init()
   end
 
   ffi.cdef [[
-typedef uint32_t Method;
-typedef uint32_t Layout;
-
-Method nviq_ime_get();
-void nviq_ime_set(Method method);
+typedef uint32_t Source;
+Source nviq_ime_get();
+void nviq_ime_set(Source source);
 ]]
 
   _nviq_ime = ffi.load(dylib_path)
@@ -28,7 +26,7 @@ void nviq_ime_set(Method method);
   return true
 end
 
----@alias nviq.appl.ime.Method integer
+---@alias nviq.appl.ime.Source integer
 
 ---@enum nviq.appl.ime.Layout
 local Layout = {
@@ -44,8 +42,8 @@ local M = {}
 
 M.Layout = Layout
 
----Returns the current input method.
----@return nviq.appl.ime.Method
+---Returns the current input source.
+---@return nviq.appl.ime.Source
 function M.get()
   if init() then
     return _nviq_ime.nviq_ime_get()
@@ -53,11 +51,11 @@ function M.get()
   return Layout.None
 end
 
----Sets the current input method.
----@param method nviq.appl.ime.Method
-function M.set(method)
+---Sets the current input source.
+---@param source nviq.appl.ime.Source
+function M.set(source)
   if init() then
-    _nviq_ime.nviq_ime_set(method)
+    _nviq_ime.nviq_ime_set(source)
   end
 end
 

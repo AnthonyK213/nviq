@@ -7,22 +7,22 @@ mod macos;
 mod typedef;
 
 #[unsafe(no_mangle)]
-pub extern "C" fn nviq_ime_get() -> typedef::Method {
+pub extern "C" fn nviq_ime_get() -> typedef::Source {
     #[cfg(target_os = "windows")]
-    return windows::get_input_method();
+    return windows::get_input_source();
 
     #[cfg(target_os = "macos")]
-    return macos::get_input_method();
+    return macos::get_input_source();
 
     #[cfg(not(any(target_os = "windows", target_os = "macos")))]
     return typedef::NVIQ_IME_LAYOUT_NONE;
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn nviq_ime_set(method: typedef::Method) {
+pub extern "C" fn nviq_ime_set(source: typedef::Source) {
     #[cfg(target_os = "windows")]
-    windows::set_input_method(method);
+    windows::get_input_source(source);
 
     #[cfg(target_os = "macos")]
-    macos::set_input_method(method);
+    macos::set_input_source(source);
 }
