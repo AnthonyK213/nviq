@@ -151,10 +151,24 @@ vim.keymap.set("n", "<leader>fb", ":buffer<space>", { desc = "Find buffer" })
 
 -- Find file
 
+---Finds files in dir recursively.
+---@param dir string
+---@return string[] files File paths (relative).
+local function ls_files_default(dir)
+  local files = {}
+  for name, type_ in vim.fs.dir(dir, { depth = 42 }) do
+    if type_ == "file" then
+      table.insert(files, name)
+    end
+  end
+  return files
+end
+
+---Finds files in dir that managed by git.
 ---@async
 ---@param dir string
----@return string[]?
-local function git_get_files(dir)
+---@return string[]? files File paths (relative).
+local function ls_files_git(dir)
   local futures = require("nviq.util.futures")
 
   local ls_files = futures.Process.new("git", {
@@ -170,42 +184,134 @@ local function git_get_files(dir)
   end):flatten():totable()
 end
 
+---Find files in dir.
+---@async
+---@param dir string
+---@return string[]
+local function ls_files(dir)
+  return ls_files_git(dir) or ls_files_default(dir)
+end
+
 vim.keymap.set("n", "<leader>ff", function()
   local futures = require("nviq.util.futures")
 
   futures.spawn(function()
-    local pattern = futures.ui.input { prompt = "Find file: " }
-    if not pattern then return end
+    local query = futures.ui.input { prompt = "Find file: " }
+    if not query then return end
 
     local cwd = vim.fn.getcwd()
-    local files = git_get_files(cwd)
 
-    if not files then
-      files = {}
-      for name, type_ in vim.fs.dir(cwd, { depth = 42 }) do
-        if type_ == "file" then
-          table.insert(files, name)
-        end
-      end
-    end
-
-    ---@type string[]
-    local files_matched = vim.fn.matchfuzzy(files, pattern)
-    if #files_matched == 0 then
+    local files = ls_files(cwd)
+    files = vim.fn.matchfuzzy(files, query)
+    if #files == 0 then
       vim.notify("Nothing found")
       return
     end
 
+    --- Prefer vim.ui.select instead of qflist, since the qflist always jumps to
+    --- the beginning of the file even though it has been openned in a buffer.
+
     -- Avoid filling the window since there is no select-ui...
     local n_take = math.max(math.floor(vim.o.lines * 0.38) - 2, 1)
-    if #files_matched > n_take then
-      files_matched = vim.iter(files_matched):take(n_take):totable()
+    if #files > n_take then
+      files = vim.iter(files):take(n_take):totable()
     end
 
     ---@type string?
-    local file = futures.ui.select(files_matched, { prompt = "Pick file: " })
+    local file = futures.ui.select(files, { prompt = "Pick file: " })
     if not file then return end
 
     lib.edit_file(vim.fs.joinpath(cwd, file))
   end)
 end, { desc = "Find file" })
+
+-- Grep
+
+---Grep via vimgrep (fuzzy).
+---@param query string
+---@param dir string
+---@return boolean ok
+---@return any err
+local function grep_default(query, dir)
+  local files = ls_files(dir)
+  if #files == 0 then
+    return false, "Nothing found"
+  end
+
+  local pattern = string.format("/%s/fj", vim.fn.escape(query, "/"))
+  local files_arg = vim.iter(files):map(function(file)
+    return vim.fn.escape(file, " ")
+  end):join(" ")
+
+  local ok, err = pcall(vim.cmd --[[@as function]], {
+    cmd  = "vimgrep",
+    args = { pattern, files_arg },
+    bang = true,
+    mods = { silent = true }
+  })
+
+  return ok, err
+end
+
+---
+---@param query string
+---@param dir string
+---@return string
+local function _grep_rg(query, dir)
+  return vim.fn.system {
+    "rg",
+    "--vimgrep",
+    "--hidden",
+    "-g", "!.git/*",
+    query, dir
+  }
+end
+
+---Grep via ripgrep.
+---@param query string
+---@param dir string
+---@return boolean ok
+---@return any err
+local function grep_rg(query, dir)
+  if not _G._NVIQ_APPL_OFFLINE_GREP then
+    _G._NVIQ_APPL_OFFLINE_GREP = _grep_rg
+  end
+
+  local query_escaped = vim.fn.escape(query, [[\"]])
+  local dir_escaped = vim.fn.escape(dir, [[\"]])
+  local expr = string.format(
+    [[v:lua._NVIQ_APPL_OFFLINE_GREP("%s","%s")]],
+    query_escaped, dir_escaped)
+
+  local ok, err = pcall(vim.cmd --[[@as function]], {
+    cmd  = "cgetexpr",
+    args = { expr },
+    mods = { silent = true }
+  })
+
+  return ok, err
+end
+
+vim.keymap.set("n", "<leader>fg", function()
+  local futures = require("nviq.util.futures")
+
+  futures.spawn(function()
+    local query = futures.ui.input { prompt = "Grep: " }
+    if not query then return end
+
+    local cwd = vim.fn.getcwd()
+
+    local ok, err
+    if lib.has_exe("rg") then
+      ok, err = grep_rg(query, cwd)
+    else
+      ok, err = grep_default(query, cwd)
+    end
+
+    if ok then
+      vim.cmd.copen()
+    else
+      vim.notify(err, vim.log.levels.ERROR)
+    end
+  end)
+end, { desc = "Grep" })
