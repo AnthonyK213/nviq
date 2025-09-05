@@ -253,34 +253,16 @@ local function grep_default(query, dir)
   return ok, err
 end
 
----
----@param query string
----@param dir string
----@return string
-local function _grep_rg(query, dir)
-  return vim.fn.system {
-    "rg",
-    "--vimgrep",
-    "--hidden",
-    "-g", "!.git/*",
-    query, dir
-  }
-end
-
 ---Grep via ripgrep.
 ---@param query string
 ---@param dir string
 ---@return boolean ok
 ---@return any err
 local function grep_rg(query, dir)
-  if not _G._NVIQ_APPL_OFFLINE_GREP then
-    _G._NVIQ_APPL_OFFLINE_GREP = _grep_rg
-  end
-
   local query_escaped = vim.fn.escape(query, [[\"]])
   local dir_escaped = vim.fn.escape(dir, [[\"]])
   local expr = string.format(
-    [[v:lua._NVIQ_APPL_OFFLINE_GREP("%s","%s")]],
+    [[system(["rg","--vimgrep","--hidden","-g","!.git/*","-i","-e","%s","%s"])]],
     query_escaped, dir_escaped)
 
   local ok, err = pcall(vim.cmd --[[@as function]], {
