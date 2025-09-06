@@ -227,8 +227,8 @@ end, { desc = "Find file" })
 
 -- Grep
 
----Grep via vimgrep (fuzzy).
----@param query string
+---Grep via vimgrep.
+---@param query string vim regex (very magic).
 ---@param dir string
 ---@return boolean ok
 ---@return any err
@@ -238,14 +238,14 @@ local function grep_default(query, dir)
     return false, "Nothing found"
   end
 
-  local pattern = string.format("/%s/fj", vim.fn.escape(query, "/"))
-  local files_arg = vim.iter(files):map(function(file)
-    return vim.fn.escape(file, " ")
+  local query_escaped = string.format([[/\v%s/j]], vim.fn.escape(query, "/"))
+  local files_escaped = vim.iter(files):map(function(file)
+    return vim.fn.escape(file, [[\ ]])
   end):join(" ")
 
   local ok, err = pcall(vim.cmd --[[@as function]], {
     cmd  = "vimgrep",
-    args = { pattern, files_arg },
+    args = { query_escaped, files_escaped },
     bang = true,
     mods = { silent = true }
   })
