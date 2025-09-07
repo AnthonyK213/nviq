@@ -358,6 +358,36 @@ end, {
   desc = "Run code in current buffer",
 })
 
+-- Terminal
+
+vim.keymap.set("n", "<leader>on", function()
+  require("nviq.appl.terminal").new()
+end, { desc = "Open a new terminal" })
+
+vim.keymap.set("n", "<leader>ot", function()
+  require("nviq.appl.terminal").toggle()
+end, { desc = "Toggle terminals" })
+
+vim.api.nvim_create_user_command("ToggleTerm", function(tbl)
+  local args = tbl.args
+  local term = require("nviq.appl.terminal")
+  if args == "" or args == "toggle" then
+    term.toggle()
+  elseif args == "new" then
+    term.new()
+  elseif args == "close" then
+    term.close()
+  elseif args == "hide" then
+    term.hide()
+  else
+    lib.warn("Invalid argument")
+  end
+end, {
+  nargs = "?",
+  complete = function() return { "new", "toggle", "close", "hide" } end,
+  desc = "Toggle terminals",
+})
+
 -- Rust modules
 
 vim.api.nvim_create_user_command("BuildCrates", function(tbl)

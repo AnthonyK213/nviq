@@ -68,7 +68,8 @@ kbd("v", "<leader>kc", "editor.action.addCommentLine")
 kbd("v", "<leader>ku", "editor.action.removeCommentLine")
 -- Open
 kbd("n", "<leader>op", "workbench.action.toggleSidebarVisibility")
-kbd("n", "<leader>ot", "workbench.action.terminal.new")
+kbd("n", "<leader>on", "workbench.action.terminal.new")
+kbd("n", "<leader>ot", "workbench.action.terminal.focus")
 kbd("n", "<leader>ou", "editor.action.openLink")
 -- LSP
 kbd("n", "K", "editor.action.showHover")

@@ -39,6 +39,12 @@ function Job.new(cmd, options)
   return job
 end
 
+---Returns the cmd of the job.
+---@return string[]
+function Job:cmd()
+  return self.m_cmd
+end
+
 ---Returns whether the job has exited.
 ---@return boolean
 function Job:has_exited()

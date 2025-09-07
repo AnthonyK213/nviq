@@ -137,6 +137,27 @@ local function extract_cmd_arg(arg, arg_map)
 end
 
 ---
+---@param cmd string[]
+---@param options? table
+---@return nviq.futures.Terminal?
+local function term_new(cmd, options)
+  local height = vim.fn.winheight(0)
+
+  local win = vim.api.nvim_open_win(0, true, {
+    split  = "below",
+    win    = 0,
+    height = math.max(1, math.floor(height * 0.382)),
+  })
+
+  if win == 0 then
+    lib.warn("Failed to create a new window")
+    return
+  end
+
+  return futures.Terminal.new(cmd, options)
+end
+
+---
 ---@param task nviq.appl.run.TaskSpec
 ---@param args nviq.appl.run.Args
 function M.task_run(task, args)
@@ -163,8 +184,10 @@ function M.task_run(task, args)
       local code = build:await()
       if code == 0 then
         local prod_path = vim.fs.joinpath(args.file_dir, args.prod_name)
-        local run = futures.Terminal.new({ prod_path }, { cwd = args.file_dir })
-        run:await()
+        local run = term_new({ prod_path }, { cwd = args.file_dir })
+        if run then
+          run:await()
+        end
       else
         build:notify_err()
       end
@@ -182,8 +205,10 @@ function M.task_run(task, args)
     return
   end
 
-  local run = futures.Terminal.new(cmd_args, { cwd = args.file_dir })
-  run:start()
+  local run = term_new(cmd_args, { cwd = args.file_dir })
+  if run then
+    run:start()
+  end
 end
 
 return M

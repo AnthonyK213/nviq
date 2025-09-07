@@ -1,7 +1,7 @@
 local lib = require("nviq.util.lib")
 local kutil = require("nviq.util.k")
 
-vim.keymap.set("t", "<ESC>", "<C-\\><C-N>", {
+vim.keymap.set("t", "<ESC><ESC>", "<C-\\><C-N>", {
   desc = "Switch to normal mode in terminal"
 })
 
@@ -91,7 +91,7 @@ vim.keymap.set("n", "<leader>bc", function()
 end, { desc = "Change cwd to current buffer" })
 
 vim.keymap.set("n", "<leader>bd", function()
-  if vim.o.winfixbuf then
+  if vim.wo.winfixbuf then
     pcall(vim.cmd.close)
     return
   end
@@ -150,32 +150,6 @@ vim.keymap.set("n", "<leader>bp", "<Cmd>bp<CR>", {
 vim.keymap.set("n", "<leader>oe", function()
   lib.open(lib.buf_dir())
 end, { desc = "Open file manager" })
-
-vim.keymap.set("n", "<leader>ot", function()
-  local exec
-  local shell = _G.NVIQ.settings.general.shell
-
-  if type(shell) == "table" and #shell > 0 then
-    exec = shell[1]
-  elseif type(shell) == "string" then
-    exec = shell
-  else
-    lib.warn("The shell is invalid, please check out user settings.")
-    return
-  end
-
-  if vim.fn.executable(exec) ~= 1 then
-    lib.warn(exec .. " is not a valid shell.")
-    return
-  end
-
-  local args = vim.iter({ shell }):flatten():totable()
-  local term = require("nviq.util.futures").Terminal.new(args)
-
-  if term:start() then
-    vim.api.nvim_feedkeys("i", "nx", true)
-  end
-end, { desc = "Open terminal" })
 
 vim.keymap.set("n", "<leader>ou", function()
   local path = lib.get_url_or_path()
