@@ -31,18 +31,23 @@ function M.get_branch(git_root)
   end
 end
 
+---@type vim.lpeg.Pattern?
+local blame_info_pattern = nil
+
 ---
 ---@param info string
 ---@return table<string, string>?
 local function parse_blame_info(info)
-  local pattern = vim.re.compile([[
-    blame <- {| head (%nl field)* (%nl) code |}
-    head <- {:hash: [0-9a-f]^40 :} %s {:lnum_origin: %d+ :} %s {:lnum_final: %d+ :} %s {:lcnt: %d+ :}
-    field <- {| {[%a-]+} (" ")? {[^%nl]*} |}
-    code <- %t {:code: ([^%nl]*) :}
-  ]], { t = "\t" })
+  if not blame_info_pattern then
+    blame_info_pattern = vim.re.compile([[
+      blame <- {| head (%nl field)* (%nl) code |}
+      head <- {:hash: [0-9a-f]^40 :} %s {:lnum_origin: %d+ :} %s {:lnum_final: %d+ :} %s {:lcnt: %d+ :}
+      field <- {| {[%a-]+} (" ")? {[^%nl]*} |}
+      code <- %t {:code: ([^%nl]*) :}
+    ]], { t = "\t" })
+  end
 
-  local captures = vim.re.match(info, pattern)
+  local captures = vim.re.match(info, blame_info_pattern)
   if not captures then
     return
   end
@@ -118,25 +123,42 @@ end
 
 ---
 ---@param job nviq.futures.Job
+---@param data string
+local function prompt_default(job, data)
+  local prompt = data:gsub("[\r\n]", "")
+  local user_input = vim.fn.input { prompt = prompt }
+  pcall(job.send, job, user_input .. "\n")
+end
+
+---
+---@param job nviq.futures.Job
+---@param data string
+local function prompt_secret(job, data)
+  vim.fn.inputsave()
+  local prompt = data:gsub("[\r\n]", "")
+  local user_input = vim.fn.inputsecret(prompt)
+  vim.fn.inputrestore()
+  pcall(job.send, job, user_input .. "\n")
+end
+
+---
+---@param job nviq.futures.Job
 ---@param data string[]
 local function on_pty_stdout(job, data)
   if #data == 1 and data[1] == "" then return --[[EOF]] end
   for _, d in ipairs(data --[=[@as string[]]=]) do
     local raw_data = d:gsub("\27%[[%d;?]*[FGHJKhlm]", "")
     if raw_data:match("^Username for ") then
-      local prompt = raw_data:gsub("[\r\n]", "")
-      local username = vim.fn.input { prompt = prompt }
-      pcall(job.send, job, username .. "\n")
+      prompt_default(job, raw_data)
     elseif raw_data:match("^Enter passphrase") or
         raw_data:match("'s password:") or
         raw_data:match("^Password for ") then
-      vim.fn.inputsave()
-      local prompt = raw_data:gsub("[\r\n]", "")
-      local passphrase = vim.fn.inputsecret(prompt)
-      vim.fn.inputrestore()
-      pcall(job.send, job, passphrase .. "\n")
+      prompt_secret(job, raw_data)
     elseif raw_data:match("^\27]0;") then
       -- Start of an Operating System Command, just ignore it.
+    elseif raw_data:match("^Are you sure you want to continue connecting ") or
+        raw_data:match("Please type .+:") then
+      prompt_default(job, raw_data)
     else
       table.insert(job:stdout_buf(), raw_data)
     end
