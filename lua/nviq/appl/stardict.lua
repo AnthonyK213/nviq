@@ -7,12 +7,12 @@ local futures = require("nviq.util.futures")
 local _stardict_path = vim.uv.os_homedir() .. "/.stardict/dic/"
 
 ---Opened floating window.
-local _bufnr, _winnr = -1, -1
+local _bufnr, _winid = -1, -1
 
 local function try_focus()
   if vim.api.nvim_buf_is_valid(_bufnr)
-      and vim.api.nvim_win_is_valid(_winnr) then
-    vim.api.nvim_set_current_win(_winnr)
+      and vim.api.nvim_win_is_valid(_winid) then
+    vim.api.nvim_set_current_win(_winid)
     return true
   end
   return false
@@ -28,7 +28,7 @@ local function show(result)
   if vim.g.vscode then
     vim.notify(table.concat(contents, "\n"), vim.log.levels.INFO)
   else
-    _bufnr, _winnr = vim.lsp.util.open_floating_preview(contents, "markdown", {
+    _bufnr, _winid = vim.lsp.util.open_floating_preview(contents, "markdown", {
       max_height = 20,
       max_width = 50,
       wrap = true,

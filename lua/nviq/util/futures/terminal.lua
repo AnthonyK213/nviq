@@ -42,13 +42,19 @@ function Terminal:start()
     return false
   end
 
-  local win = vim.api.nvim_get_current_win()
-  local bufnr = vim.api.nvim_create_buf(true, false)
+  local winid = vim.api.nvim_get_current_win()
+  local bufnr = vim.api.nvim_create_buf(false, false)
   if bufnr == 0 then
     return false
   end
 
-  vim.api.nvim_win_set_buf(win, bufnr)
+  local ok = pcall(vim.api.nvim_win_set_buf, winid, bufnr)
+  if not ok then
+    vim.api.nvim_buf_delete(bufnr, {})
+    vim.notify("Failed to set buffer", vim.log.levels.WARN)
+    return false
+  end
+
   self.m_bufnr = bufnr
 
   return Job.start(self)
