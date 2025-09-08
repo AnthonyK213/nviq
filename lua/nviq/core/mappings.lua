@@ -1,6 +1,3 @@
-local lib = require("nviq.util.lib")
-local kutil = require("nviq.util.k")
-
 vim.keymap.set("t", "<ESC><ESC>", "<C-\\><C-N>", {
   desc = "Switch to normal mode in terminal"
 })
@@ -52,6 +49,7 @@ vim.keymap.set("n", "<M-a>", "ggVG", {
 })
 
 vim.keymap.set("n", "<M-,>", function()
+  local lib = require("nviq.util.lib")
   local exists, opt_file = lib.get_dotfile("nvimrc")
   local cfg_dir = vim.fn.stdpath("config")
   if exists and opt_file then
@@ -72,7 +70,7 @@ end, { desc = "Open nvimrc" })
 
 for dir, key in pairs { h = "left", j = "down", k = "up", l = "right" } do
   vim.keymap.set("n", "<M-" .. dir .. ">", function()
-    kutil.feedkeys("<C-W>" .. dir, "nx", false)
+    require("nviq.util.k").feedkeys("<C-W>" .. dir, "nx", false)
   end, { desc = "Move cursor to window: " .. key })
 end
 
@@ -86,7 +84,7 @@ end, { desc = "Toggle background theme" })
 -- Buffer
 
 vim.keymap.set("n", "<leader>bc", function()
-  vim.api.nvim_set_current_dir(lib.buf_dir())
+  vim.api.nvim_set_current_dir(require("nviq.util.lib").buf_dir())
   vim.cmd.pwd()
 end, { desc = "Change cwd to current buffer" })
 
@@ -148,10 +146,12 @@ vim.keymap.set("n", "<leader>bp", "<Cmd>bp<CR>", {
 -- Open
 
 vim.keymap.set("n", "<leader>oe", function()
+  local lib = require("nviq.util.lib")
   lib.open(lib.buf_dir())
 end, { desc = "Open file manager" })
 
 vim.keymap.set("n", "<leader>ou", function()
+  local lib = require("nviq.util.lib")
   local path = lib.get_url_or_path()
   if not path then
     lib.warn("Path not found")
@@ -168,6 +168,7 @@ for key, val in pairs {
   Google     = { "g", "https://www.google.com/search?q=" },
 } do
   vim.keymap.set({ "n", "x" }, "<leader>h" .. val[1], function()
+    local lib = require("nviq.util.lib")
     local txt
     local mode = lib.get_mode()
     if mode == lib.Mode.Normal then

@@ -9,6 +9,7 @@ vim.o.cursorline = true
 vim.o.cmdheight = 1
 vim.o.scrolloff = 5
 vim.o.laststatus = _G.NVIQ.settings.tui.global_status and 3 or 2
+vim.o.signcolumn = "yes:1"
 vim.o.winborder = _G.NVIQ.settings.tui.border
 vim.o.colorcolumn = "80"
 vim.opt.shortmess:append("c")
