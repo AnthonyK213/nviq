@@ -89,6 +89,18 @@ function M.bufnr(bufnr)
   return bufnr
 end
 
+---Limits a value within a range \[min_value, max_value\]
+---@generic T
+---@param value T
+---@param min_value T
+---@param max_value T
+---@return T
+function M.clamp(value, min_value, max_value)
+  if value < min_value then return min_value end
+  if value > max_value then return max_value end
+  return value
+end
+
 ---Open and edit a file.
 ---@param path string The file path.
 ---@param option? {chdir:boolean?, new_tab:boolean?, silent:boolean?}

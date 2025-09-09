@@ -46,23 +46,23 @@ end
 local function new_window()
   local height = vim.fn.winheight(0)
 
-  local ok, win = pcall(vim.api.nvim_open_win, 0, false, {
+  local ok, winid = pcall(vim.api.nvim_open_win, 0, false, {
     split  = "below",
     win    = 0,
-    height = math.max(1, math.floor(height * 0.382)),
+    height = lib.clamp(math.floor(height * 0.382), 1, 15)
   })
 
   if not ok then
-    vim.notify(win --[[@as string]], vim.log.levels.ERROR)
+    vim.notify(winid --[[@as string]], vim.log.levels.ERROR)
     return
   end
 
-  if win == 0 then
+  if winid == 0 then
     lib.warn("Failed to create a new window")
     return
   end
 
-  return win
+  return winid
 end
 
 ---
@@ -83,9 +83,9 @@ local function clean_up()
 end
 
 ---
----@param win integer
-local function focus_and_start_insert(win)
-  vim.api.nvim_set_current_win(win)
+---@param winid integer
+local function focus_and_start_insert(winid)
+  vim.api.nvim_set_current_win(winid)
   vim.cmd.startinsert()
 end
 
@@ -94,42 +94,42 @@ local function new_terminal()
   local cmd = get_default_cmd()
   if not cmd then return end
 
-  local win = find_or_new_window()
-  if not win then
+  local winid = find_or_new_window()
+  if not winid or not vim.api.nvim_win_is_valid(winid) then
     return
   end
 
   ---@type nviq.futures.Terminal
   local term
   local ok = false
-  vim.api.nvim_win_call(win, function()
+  vim.api.nvim_win_call(winid, function()
     term = futures.Terminal.new(cmd)
     ok = term:start()
   end)
 
   if ok then
     _term_table[term:bufnr()] = term
-    focus_and_start_insert(win)
+    focus_and_start_insert(winid)
   end
 end
 
 ---
+---@param winid? integer
 ---@param bufnr? integer
-local function toggle_terminal(bufnr)
-  if not bufnr then
+local function toggle_terminal(winid, bufnr)
+  if not winid or not vim.api.nvim_win_is_valid(winid) then
     return
   end
 
-  local win = find_or_new_window()
-  if not win then
+  if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) then
     return
   end
 
-  if bufnr ~= vim.api.nvim_win_get_buf(win) then
-    vim.api.nvim_win_set_buf(win, bufnr)
+  if bufnr ~= vim.api.nvim_win_get_buf(winid) then
+    vim.api.nvim_win_set_buf(winid, bufnr)
   end
 
-  focus_and_start_insert(win)
+  focus_and_start_insert(winid)
 end
 
 ---Creates a new terminal.
@@ -147,17 +147,28 @@ function M.toggle()
     new_terminal()
   elseif n_terms == 1 then
     local bufnr = next(_term_table)
-    toggle_terminal(bufnr)
+    toggle_terminal(find_or_new_window(), bufnr)
   else
     futures.spawn(function()
-      local bufnr = futures.ui.select(vim.tbl_keys(_term_table), {
+      local term_bufs = vim.tbl_keys(_term_table) ---@type integer[]
+      local winid = find_window()
+      -- If there is already an active terminal, move it to the top of the
+      -- selection list.
+      if winid then
+        local bufnr = vim.api.nvim_win_get_buf(winid)
+        local index = require("nviq.util.t").find_first(term_bufs, bufnr)
+        if index > 1 then
+          term_bufs[1], term_bufs[index] = term_bufs[index], term_bufs[1]
+        end
+      end
+      local bufnr = futures.ui.select(term_bufs, {
         prompt = "Select a terminal: ",
         format_item = function(item)
           local term = _term_table[item]
           return string.format("%s:%d", term:cmd()[1], item)
         end
       })
-      toggle_terminal(bufnr)
+      toggle_terminal(winid or new_window(), bufnr)
     end)
   end
 end

@@ -146,7 +146,7 @@ local function term_new(cmd, options)
   local win = vim.api.nvim_open_win(0, true, {
     split  = "below",
     win    = 0,
-    height = math.max(1, math.floor(height * 0.382)),
+    height = lib.clamp(math.floor(height * 0.382), 1, 15),
   })
 
   if win == 0 then
