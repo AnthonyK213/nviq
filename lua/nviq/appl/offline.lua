@@ -81,8 +81,6 @@ require("nviq.appl.treesitter").setup()
 vim.o.completeopt = "fuzzy,menu,menuone,noinsert,popup"
 
 lsp.register_client_on_attach(function(client, bufnr)
-  vim.keymap.set("n", "<leader>fa", vim.lsp.buf.document_symbol, { buffer = bufnr })
-
   if client:supports_method(vim.lsp.protocol.Methods.textDocument_completion, bufnr) then
     vim.lsp.completion.enable(true, client.id, bufnr, { autotrigger = true })
   end
@@ -143,6 +141,35 @@ end)
 
 vim.keymap.set("n", "<leader>gb", function()
   require("nviq.appl.git").blame_line()
+end)
+
+-- Find symbol
+
+local _filter_symbols_kind = {
+  Class       = true,
+  Constructor = true,
+  Enum        = true,
+  Function    = true,
+  Interface   = true,
+  Module      = true,
+  Method      = true,
+  Struct      = true,
+}
+
+---Shows a filtered local list of document symbols.
+---@param options vim.lsp.LocationOpts.OnList
+local function show_filtered_symbols(options)
+  options.items = vim.iter(options.items):filter(function(item)
+    return _filter_symbols_kind[item.kind]
+  end):totable()
+  vim.fn.setloclist(0, {}, " ", options)
+  vim.cmd.lopen()
+end
+
+lsp.register_client_on_attach(function(_, bufnr)
+  vim.keymap.set("n", "<leader>fa", function()
+    vim.lsp.buf.document_symbol { on_list = show_filtered_symbols }
+  end, { buffer = bufnr })
 end)
 
 -- Find buffer
