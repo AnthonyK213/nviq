@@ -22,6 +22,7 @@ local function custom_attach(client, bufnr)
   vim.keymap.set("n", "<leader>li", vim.lsp.buf.implementation, opt)
   vim.keymap.set("n", "<leader>ln", vim.lsp.buf.rename, opt)
   vim.keymap.set("n", "<leader>lr", vim.lsp.buf.references, opt)
+  vim.keymap.set("n", "<leader>ls", vim.lsp.buf.workspace_symbol, opt)
   vim.keymap.set("n", "<leader>lt", vim.lsp.buf.type_definition, opt)
 
   vim.keymap.set("n", "K", function()

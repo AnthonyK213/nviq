@@ -156,19 +156,54 @@ local _filter_symbols_kind = {
   Struct      = true,
 }
 
+---Returns a new list filtered by `_filter_symbols_kind`.
+---@param items table[]
+---@return table[]
+local function get_filtered_symbols(items)
+  return vim.iter(items):filter(function(item)
+    return _filter_symbols_kind[item.kind]
+  end):totable()
+end
+
 ---Shows a filtered local list of document symbols.
 ---@param options vim.lsp.LocationOpts.OnList
 local function show_filtered_symbols(options)
-  options.items = vim.iter(options.items):filter(function(item)
-    return _filter_symbols_kind[item.kind]
-  end):totable()
+  options.items = get_filtered_symbols(options.items)
   vim.fn.setloclist(0, {}, " ", options)
   vim.cmd.lopen()
 end
 
+---Finds symbol (fuzzy) with the input query.
+---@param options vim.lsp.LocationOpts.OnList
+local function find_in_filtered_symbols(options)
+  local futures = require("nviq.util.futures")
+
+  local winid = vim.api.nvim_get_current_win()
+
+  futures.spawn(function()
+    local query = futures.ui.input { prompt = "Find symbol: " }
+    if not query then return end
+
+    local new_items = get_filtered_symbols(options.items)
+    new_items = vim.fn.matchfuzzy(new_items, query, { key = "text" })
+    if #new_items == 0 then
+      vim.notify("Nothing found")
+      return
+    end
+
+    options.items = new_items
+    vim.fn.setloclist(winid, {}, " ", options)
+    vim.cmd.lopen()
+  end)
+end
+
 lsp.register_client_on_attach(function(_, bufnr)
-  vim.keymap.set("n", "<leader>fa", function()
+  vim.keymap.set("n", "<leader>mv", function()
     vim.lsp.buf.document_symbol { on_list = show_filtered_symbols }
+  end, { buffer = bufnr })
+
+  vim.keymap.set("n", "<leader>fa", function()
+    vim.lsp.buf.document_symbol { on_list = find_in_filtered_symbols }
   end, { buffer = bufnr })
 end)
 
