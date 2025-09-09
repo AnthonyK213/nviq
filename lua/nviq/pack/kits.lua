@@ -220,4 +220,8 @@ mini_deps.later(function()
     autosave_ignore_not_normal = true,
     autosave_only_in_session = false,
   }
+
+  vim.keymap.set("n", "<leader>fs", function()
+    vim.cmd.SessionManager("load_session")
+  end)
 end)
