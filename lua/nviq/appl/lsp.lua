@@ -8,6 +8,17 @@ local _float_opts = {
   max_width = 80,
 }
 
+local _filter_symbols_kind = {
+  "Class",
+  "Constructor",
+  "Enum",
+  "Function",
+  "Interface",
+  "Module",
+  "Method",
+  "Struct",
+}
+
 ---Callback invoked when client attaches to a buffer.
 ---@param client vim.lsp.Client
 ---@param bufnr integer
@@ -124,6 +135,12 @@ function M.servers_to_install()
         return name
       end)
       :totable()
+end
+
+---
+---@return string[]
+function M.filter_symbols_kind()
+  return _filter_symbols_kind
 end
 
 return M

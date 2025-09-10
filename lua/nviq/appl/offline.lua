@@ -143,34 +143,31 @@ vim.keymap.set("n", "<leader>gb", function()
   require("nviq.appl.git").blame_line()
 end)
 
--- Find symbol
+-- Find symbols
 
-local _filter_symbols_kind = {
-  Class       = true,
-  Constructor = true,
-  Enum        = true,
-  Function    = true,
-  Interface   = true,
-  Module      = true,
-  Method      = true,
-  Struct      = true,
-}
-
----Returns a new list filtered by `_filter_symbols_kind`.
+---Returns a new list filtered by symbol kind.
 ---@param items table[]
 ---@return table[]
 local function get_filtered_symbols(items)
   return vim.iter(items):filter(function(item)
-    return _filter_symbols_kind[item.kind]
+    return vim.list_contains(lsp.filter_symbols_kind(), item.kind)
   end):totable()
 end
 
----Shows a filtered local list of document symbols.
+---Shows a filtered location list of document symbols.
 ---@param options vim.lsp.LocationOpts.OnList
-local function show_filtered_symbols(options)
+local function show_filtered_symbols_in_loclist(options)
   options.items = get_filtered_symbols(options.items)
   vim.fn.setloclist(0, {}, " ", options)
   vim.cmd.lopen()
+end
+
+---Shows a filtered quickfix list of document symbols.
+---@param options vim.lsp.LocationOpts.OnList
+local function show_filtered_symbols_in_qflist(options)
+  options.items = get_filtered_symbols(options.items)
+  vim.fn.setqflist({}, " ", options --[[@as vim.fn.setqflist.what]])
+  vim.cmd.copen()
 end
 
 ---Finds symbol (fuzzy) with the input query.
@@ -181,7 +178,7 @@ local function find_in_filtered_symbols(options)
   local winid = vim.api.nvim_get_current_win()
 
   futures.spawn(function()
-    local query = futures.ui.input { prompt = "Find symbol: " }
+    local query = futures.ui.input { prompt = "Find symbols: " }
     if not query then return end
 
     local new_items = get_filtered_symbols(options.items)
@@ -199,19 +196,32 @@ end
 
 lsp.register_client_on_attach(function(_, bufnr)
   vim.keymap.set("n", "<leader>mv", function()
-    vim.lsp.buf.document_symbol { on_list = show_filtered_symbols }
+    vim.lsp.buf.document_symbol { on_list = show_filtered_symbols_in_loclist }
   end, { buffer = bufnr })
 
   vim.keymap.set("n", "<leader>fa", function()
     vim.lsp.buf.document_symbol { on_list = find_in_filtered_symbols }
   end, { buffer = bufnr })
+
+  vim.keymap.set("n", "<leader>fs", function()
+    local futures = require("nviq.util.futures")
+
+    futures.spawn(function()
+      local query = futures.ui.input { prompt = "Find workspace symbols: " }
+      if query then
+        vim.lsp.buf.workspace_symbol(query, {
+          on_list = show_filtered_symbols_in_qflist
+        })
+      end
+    end)
+  end, { buffer = bufnr, desc = "Find workspace symbols" })
 end)
 
--- Find buffer
+-- Pick buffers
 
-vim.keymap.set("n", "<leader>fb", ":buffer<space>", { desc = "Find buffer" })
+vim.keymap.set("n", "<leader>fb", ":buffer<space>", { desc = "Pick buffers" })
 
--- Find file
+-- Find files
 
 ---Finds files in dir recursively.
 ---@param dir string
@@ -258,7 +268,7 @@ vim.keymap.set("n", "<leader>ff", function()
   local futures = require("nviq.util.futures")
 
   futures.spawn(function()
-    local query = futures.ui.input { prompt = "Find file: " }
+    local query = futures.ui.input { prompt = "Find files: " }
     if not query then return end
 
     local cwd = vim.fn.getcwd()
@@ -285,7 +295,7 @@ vim.keymap.set("n", "<leader>ff", function()
 
     lib.edit_file(vim.fs.joinpath(cwd, file))
   end)
-end, { desc = "Find file" })
+end, { desc = "Find files" })
 
 -- Grep
 

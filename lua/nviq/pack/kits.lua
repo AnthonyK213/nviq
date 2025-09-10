@@ -22,22 +22,7 @@ mini_deps.later(function()
     close_automatic_events = {},
     close_on_select = false,
     manage_folds = false,
-    filter_kind = {
-      ["_"] = {
-        "Class",
-        "Constructor",
-        "Enum",
-        "Function",
-        "Interface",
-        "Module",
-        "Method",
-        "Struct",
-      },
-      lua = {
-        "Function",
-        "Method",
-      },
-    },
+    filter_kind = require("nviq.appl.lsp").filter_symbols_kind(),
     nerd_font = false,
     highlight_closest = false,
     on_attach = function(bufnr)
@@ -178,6 +163,12 @@ mini_deps.later(function()
     vim.keymap.set("n", "<F24>", picker.lsp_references, opt)
     vim.keymap.set("n", "<C-F12>", picker.lsp_implementations, opt)
     vim.keymap.set("n", "<F36>", picker.lsp_implementations, opt)
+
+    vim.keymap.set("n", "<leader>fs", function()
+      require("telescope.builtin").lsp_dynamic_workspace_symbols {
+        symbols = require("nviq.appl.lsp").filter_symbols_kind()
+      }
+    end, { buffer = bufnr, desc = "Find workspace symbols" })
   end)
 
   require("telescope").load_extension("aerial")
