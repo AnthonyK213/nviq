@@ -7,33 +7,39 @@ mini_deps.later(function()
 
   vim.keymap.set("n", "<leader>gn", "<Cmd>Git<CR>")
 
+  local function git_pull()
+    local bufnr = vim.api.nvim_get_current_buf()
+    require("nviq.util.futures").spawn(function()
+      local job = require("nviq.appl.git").pull()
+      if job then
+        vim.notify("Pulling...")
+        if job:await() == 0 then
+          vim.api.nvim_buf_call(bufnr, function() vim.cmd("Git") end)
+        end
+      end
+    end)
+  end
+
+  local function git_push()
+    local bufnr = vim.api.nvim_get_current_buf()
+    require("nviq.util.futures").spawn(function()
+      local job = require("nviq.appl.git").push()
+      if job then
+        vim.notify("Pushing...")
+        if job:await() == 0 then
+          vim.api.nvim_buf_call(bufnr, function() vim.cmd("Git") end)
+        end
+      end
+    end)
+  end
+
   vim.api.nvim_create_autocmd("FileType", {
     group = vim.api.nvim_create_augroup("nviq.pack.git.fugitive", { clear = true }),
     pattern = "fugitive",
     callback = function(event)
       local opt = { buffer = event.buf }
-      vim.keymap.set("n", "<leader>gp", function()
-        require("nviq.util.futures").spawn(function()
-          local job = require("nviq.appl.git").pull()
-          if job then
-            vim.notify("Pulling...")
-            if job:await() == 0 then
-              vim.api.nvim_buf_call(event.buf, function() vim.cmd("Git") end)
-            end
-          end
-        end)
-      end, opt)
-      vim.keymap.set("n", "<leader>gP", function()
-        require("nviq.util.futures").spawn(function()
-          local job = require("nviq.appl.git").push()
-          if job then
-            vim.notify("Pushing...")
-            if job:await() == 0 then
-              vim.api.nvim_buf_call(event.buf, function() vim.cmd("Git") end)
-            end
-          end
-        end)
-      end, opt)
+      vim.keymap.set("n", "<leader>gp", git_pull, opt)
+      vim.keymap.set("n", "<leader>gP", git_push, opt)
     end
   })
 end)
@@ -42,6 +48,14 @@ end)
 
 mini_deps.later(function()
   mini_deps.add { source = "lewis6991/gitsigns.nvim" }
+
+  local function nav_hunk_next()
+    require("gitsigns").nav_hunk("next")
+  end
+
+  local function nav_hunk_prev()
+    require("gitsigns").nav_hunk("prev")
+  end
 
   require("gitsigns").setup {
     signs = {
@@ -83,8 +97,8 @@ mini_deps.later(function()
     },
     on_attach = function(bufnr)
       local opt = { buffer = bufnr }
-      vim.keymap.set("n", "<leader>gj", function() require("gitsigns").nav_hunk("next") end, opt)
-      vim.keymap.set("n", "<leader>gk", function() require("gitsigns").nav_hunk("prev") end, opt)
+      vim.keymap.set("n", "<leader>gj", nav_hunk_next, opt)
+      vim.keymap.set("n", "<leader>gk", nav_hunk_prev, opt)
       vim.keymap.set("n", "<leader>gp", require("gitsigns").preview_hunk, opt)
       vim.keymap.set("n", "<leader>gb", require("gitsigns").blame_line, opt)
     end

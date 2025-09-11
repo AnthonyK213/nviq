@@ -153,6 +153,13 @@ mini_deps.later(function()
     }
   }
 
+  ---Find workspace symbols.
+  local function find_workspace_symbols()
+    require("telescope.builtin").lsp_dynamic_workspace_symbols {
+      symbols = require("nviq.appl.lsp").filter_symbols_kind()
+    }
+  end
+
   require("nviq.appl.lsp").register_client_on_attach(function(_, bufnr)
     ---@type vim.keymap.set.Opts
     local opt = { buffer = bufnr }
@@ -164,11 +171,10 @@ mini_deps.later(function()
     vim.keymap.set("n", "<C-F12>", picker.lsp_implementations, opt)
     vim.keymap.set("n", "<F36>", picker.lsp_implementations, opt)
 
-    vim.keymap.set("n", "<leader>fs", function()
-      require("telescope.builtin").lsp_dynamic_workspace_symbols {
-        symbols = require("nviq.appl.lsp").filter_symbols_kind()
-      }
-    end, { buffer = bufnr, desc = "Find workspace symbols" })
+    vim.keymap.set("n", "<leader>fs", find_workspace_symbols, {
+      buffer = bufnr,
+      desc = "Find workspace symbols"
+    })
   end)
 
   require("telescope").load_extension("aerial")

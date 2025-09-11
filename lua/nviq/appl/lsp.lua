@@ -19,6 +19,26 @@ local _filter_symbols_kind = {
   "Struct",
 }
 
+local function lsp_hover()
+  vim.lsp.buf.hover(_float_opts)
+end
+
+local function lsp_format()
+  vim.lsp.buf.format { async = false }
+end
+
+local function diagnostic_open_float()
+  vim.diagnostic.open_float(_float_opts)
+end
+
+local function diagnostic_jump_prev()
+  vim.diagnostic.jump { count = -1, float = _float_opts }
+end
+
+local function diagnostic_jump_next()
+  vim.diagnostic.jump { count = 1, float = _float_opts }
+end
+
 ---Callback invoked when client attaches to a buffer.
 ---@param client vim.lsp.Client
 ---@param bufnr integer
@@ -26,41 +46,20 @@ local function custom_attach(client, bufnr)
   ---@type vim.keymap.set.Opts
   local opt = { buffer = bufnr }
 
+  vim.keymap.set("n", "K", lsp_hover, opt)
+  vim.keymap.set("n", "<leader>l[", diagnostic_jump_prev, opt)
+  vim.keymap.set("n", "<leader>l]", diagnostic_jump_next, opt)
   vim.keymap.set("n", "<leader>la", vim.lsp.buf.code_action, opt)
   vim.keymap.set("n", "<leader>ld", vim.lsp.buf.declaration, opt)
   vim.keymap.set("n", "<leader>lf", vim.lsp.buf.definition, opt)
   vim.keymap.set("n", "<leader>lh", vim.lsp.buf.signature_help, opt)
   vim.keymap.set("n", "<leader>li", vim.lsp.buf.implementation, opt)
+  vim.keymap.set("n", "<leader>lk", diagnostic_open_float, opt)
+  vim.keymap.set("n", "<leader>lm", lsp_format, opt)
   vim.keymap.set("n", "<leader>ln", vim.lsp.buf.rename, opt)
   vim.keymap.set("n", "<leader>lr", vim.lsp.buf.references, opt)
   vim.keymap.set("n", "<leader>ls", vim.lsp.buf.workspace_symbol, opt)
   vim.keymap.set("n", "<leader>lt", vim.lsp.buf.type_definition, opt)
-
-  vim.keymap.set("n", "K", function()
-    vim.lsp.buf.hover(_float_opts)
-  end, opt)
-
-  vim.keymap.set("n", "<leader>lm", function()
-    vim.lsp.buf.format { async = false }
-  end, opt)
-
-  vim.keymap.set("n", "<leader>lk", function()
-    vim.diagnostic.open_float(_float_opts)
-  end, opt)
-
-  vim.keymap.set("n", "<leader>l[", function()
-    vim.diagnostic.jump {
-      count = -1,
-      float = _float_opts
-    }
-  end, opt)
-
-  vim.keymap.set("n", "<leader>l]", function()
-    vim.diagnostic.jump {
-      count = 1,
-      float = _float_opts
-    }
-  end, opt)
 
   for _, cb in ipairs(_client_on_attach_queue) do
     cb(client, bufnr)

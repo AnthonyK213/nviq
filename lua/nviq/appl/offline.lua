@@ -194,27 +194,45 @@ local function find_in_filtered_symbols(options)
   end)
 end
 
+---Show document symbols.
+local function show_document_symbols()
+  vim.lsp.buf.document_symbol { on_list = show_filtered_symbols_in_loclist }
+end
+
+---Find document symbols.
+local function find_document_symbols()
+  vim.lsp.buf.document_symbol { on_list = find_in_filtered_symbols }
+end
+
+---Find workspace symbols.
+local function find_workspace_symbols()
+  local futures = require("nviq.util.futures")
+
+  futures.spawn(function()
+    local query = futures.ui.input { prompt = "Find workspace symbols: " }
+    if query then
+      vim.lsp.buf.workspace_symbol(query, {
+        on_list = show_filtered_symbols_in_qflist
+      })
+    end
+  end)
+end
+
 lsp.register_client_on_attach(function(_, bufnr)
-  vim.keymap.set("n", "<leader>mv", function()
-    vim.lsp.buf.document_symbol { on_list = show_filtered_symbols_in_loclist }
-  end, { buffer = bufnr })
+  vim.keymap.set("n", "<leader>mv", show_document_symbols, {
+    buffer = bufnr,
+    desc = "Show document symbols"
+  })
 
-  vim.keymap.set("n", "<leader>fa", function()
-    vim.lsp.buf.document_symbol { on_list = find_in_filtered_symbols }
-  end, { buffer = bufnr })
+  vim.keymap.set("n", "<leader>fa", find_document_symbols, {
+    buffer = bufnr,
+    desc = "Find workspace symbols"
+  })
 
-  vim.keymap.set("n", "<leader>fs", function()
-    local futures = require("nviq.util.futures")
-
-    futures.spawn(function()
-      local query = futures.ui.input { prompt = "Find workspace symbols: " }
-      if query then
-        vim.lsp.buf.workspace_symbol(query, {
-          on_list = show_filtered_symbols_in_qflist
-        })
-      end
-    end)
-  end, { buffer = bufnr, desc = "Find workspace symbols" })
+  vim.keymap.set("n", "<leader>fs", find_workspace_symbols, {
+    buffer = bufnr,
+    desc = "Find workspace symbols"
+  })
 end)
 
 -- Pick buffers
