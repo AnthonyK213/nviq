@@ -103,29 +103,27 @@ vim.keymap.set("n", "<leader>bd", function()
 
     if not no_layout then
       for _, win in ipairs(vim.fn.win_findbuf(buf)) do
-        vim.api.nvim_win_call(win, function()
-          if not vim.api.nvim_win_is_valid(win) or
-              vim.api.nvim_win_get_buf(win) ~= buf then
-            return
-          end
+        if vim.api.nvim_win_is_valid(win) and
+            vim.api.nvim_win_get_buf(win) == buf then
+          vim.api.nvim_win_call(win, function()
+            -- Try using alternate buffer
+            local alt = vim.fn.bufnr("#")
+            if alt ~= buf and vim.fn.buflisted(alt) == 1 then
+              vim.api.nvim_win_set_buf(win, alt)
+              return
+            end
 
-          -- Try using alternate buffer
-          local alt = vim.fn.bufnr("#")
-          if alt ~= buf and vim.fn.buflisted(alt) == 1 then
-            vim.api.nvim_win_set_buf(win, alt)
-            return
-          end
+            -- Try using previous buffer
+            local has_previous = pcall(vim.cmd.bprevious)
+            if has_previous and buf ~= vim.api.nvim_win_get_buf(win) then
+              return
+            end
 
-          -- Try using previous buffer
-          local has_previous = pcall(vim.cmd.bprevious)
-          if has_previous and buf ~= vim.api.nvim_win_get_buf(win) then
-            return
-          end
-
-          -- Create new listed buffer
-          local new_buf = vim.api.nvim_create_buf(true, false)
-          vim.api.nvim_win_set_buf(win, new_buf)
-        end)
+            -- Create new listed buffer
+            local new_buf = vim.api.nvim_create_buf(true, false)
+            vim.api.nvim_win_set_buf(win, new_buf)
+          end)
+        end
       end
     end
 
