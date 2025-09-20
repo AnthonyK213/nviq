@@ -8,4 +8,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 _ffi_util = { path = "../_ffi_util" }
-jieba-rs = "0.7"
+jieba-rs = "0.8.1"

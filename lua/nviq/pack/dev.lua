@@ -40,7 +40,14 @@ mini_deps.later(function()
     lsp = {
       enabled = true,
       on_attach = function(_, bufnr)
-        vim.keymap.set("n", "K", crates.show_popup, { buffer = bufnr })
+        local opts = { buffer = bufnr, silent = true }
+        vim.keymap.set("n", "K", crates.show_popup, opts)
+        vim.keymap.set("n", "<leader>cu", crates.update_crate, opts)
+        vim.keymap.set("v", "<leader>cu", crates.update_crates, opts)
+        vim.keymap.set("n", "<leader>ca", crates.update_all_crates, opts)
+        vim.keymap.set("n", "<leader>cU", crates.upgrade_crate, opts)
+        vim.keymap.set("v", "<leader>cU", crates.upgrade_crates, opts)
+        vim.keymap.set("n", "<leader>cA", crates.upgrade_all_crates, opts)
       end,
       actions = true,
       completion = true,
