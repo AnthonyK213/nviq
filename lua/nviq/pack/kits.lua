@@ -63,6 +63,26 @@ mini_deps.now(function()
     ssh = {
       border = tui_border,
     },
+    keymaps = {
+      ["<C-y>"] = "actions.yank_entry",
+      ["<M-y>"] = {
+        mode = "n",
+        callback = function()
+          local oil = require("oil")
+          local entry = oil.get_cursor_entry()
+          if not entry or not entry.name then return end
+          local cwd = oil.get_current_dir()
+          if not cwd then return end
+          local path = vim.fs.joinpath(cwd, entry.name)
+          if entry.type == "directory" then
+            path = path .. "/"
+          end
+          vim.fn.setreg("+", path)
+          vim.notify("Yanked filepath to the system clipboard")
+        end,
+        desc = "Yank the filepath of the entry under the cursor to the system clipboard"
+      },
+    },
     keymaps_help = {
       border = tui_border,
     },
