@@ -109,6 +109,13 @@ function M.setup()
   for name, conf in pairs(_G.NVIQ.settings.lsp) do
     setup_server(name, conf)
   end
+
+  -- Turn off the annoying header insertion. Leave me alone!
+  local clangd_cmd = vim.lsp.config.clangd.cmd --[[@as string[] ]]
+  if clangd_cmd then
+    table.insert(clangd_cmd, "--header-insertion=never")
+    vim.lsp.config("clangd", { cmd = clangd_cmd })
+  end
 end
 
 ---
