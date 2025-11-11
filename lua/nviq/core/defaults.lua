@@ -40,7 +40,6 @@ vim.o.visualbell = false
 vim.o.winaltkeys = "no"
 vim.o.history = 500
 vim.o.timeout = false
-vim.o.ttimeoutlen = 0
 vim.o.hlsearch = true
 vim.o.incsearch = true
 vim.o.ignorecase = true
