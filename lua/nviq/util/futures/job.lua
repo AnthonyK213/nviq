@@ -52,9 +52,10 @@ function Job:has_exited()
 end
 
 ---Returns whether the job is valid.
+---@param to_warn? boolean
 ---@return boolean
-function Job:is_valid()
-  return lib.has_exe(self.m_cmd[1], false)
+function Job:is_valid(to_warn)
+  return lib.has_exe(self.m_cmd[1], to_warn)
 end
 
 ---Sets whether to record stdout and stderr.
@@ -90,7 +91,7 @@ end
 ---Starts the job.
 ---@return boolean
 function Job:start()
-  if not lib.has_exe(self.m_cmd[1], true) or self:has_exited() then
+  if not self:is_valid() or self:has_exited() then
     return false
   end
 

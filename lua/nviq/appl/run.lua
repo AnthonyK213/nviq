@@ -145,8 +145,12 @@ end
 ---@param options? table
 ---@return nviq.futures.Terminal?
 local function term_new(cmd, options)
-  local height = vim.fn.winheight(0)
+  local term = futures.Terminal.new(cmd, options)
+  if not term:is_valid(true) then
+    return
+  end
 
+  local height = vim.fn.winheight(0)
   local win = vim.api.nvim_open_win(0, true, {
     split  = "below",
     win    = 0,
@@ -158,7 +162,7 @@ local function term_new(cmd, options)
     return
   end
 
-  return futures.Terminal.new(cmd, options)
+  return term
 end
 
 ---
