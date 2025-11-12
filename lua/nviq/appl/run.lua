@@ -39,6 +39,10 @@ local _recipe_table = {
     clean = { cmd = "dotnet", args = { "clean" } },
     test = { cmd = "dotnet", args = { "test" } },
   },
+  fennel = {
+    { cmd = "fennel", args = { "${file_name}" } },
+    luajit = { cmd = "fennel", args = { "--use-bit-lib", "${file_name}" } }
+  },
   lisp = {
     {
       cmd = "sbcl",
