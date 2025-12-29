@@ -359,19 +359,16 @@ function M.json_decode(path, loosely)
   return 1, nil
 end
 
----The same as `vim.ui.open`, but uses `start` on Windows.
+---The same as `vim.ui.open`, but uses `start` on Windows by default.
 ---@param path string Path or URL to open.
-function M.open(path)
-  if M.has_win() then
-    local handle
-    handle = vim.uv.spawn("cmd", {
-      args = { "/c", "start", [[""]], path }
-    }, vim.schedule_wrap(function()
-      handle:close()
-    end))
-  else
-    vim.ui.open(path)
+---@param opt? { cmd: string[] } Options.
+---@return vim.SystemObj? object Command object, or nil if not found.
+---@return string? error Error message on failure, or nil on success.
+function M.open(path, opt)
+  if M.has_win() and not opt then
+    opt = { cmd = { "cmd", "/c", "start", [[""]] } }
   end
+  return vim.ui.open(path, opt)
 end
 
 ---Locates surrounding pair in direction `dir`. Returns -1 when not found.
