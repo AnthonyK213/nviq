@@ -366,7 +366,15 @@ end
 ---@return string? error Error message on failure, or nil on success.
 function M.open(path, opt)
   if M.has_win() and not opt then
-    opt = { cmd = { "cmd", "/c", "start", [[""]] } }
+    local option = {
+      args = { "/c", "start", "", path },
+      hide = false, -- Why is this hardcoded to true in vim.system?
+    }
+    local proc, pid
+    proc, pid = vim.uv.spawn("cmd", option, vim.schedule_wrap(function()
+      proc:close()
+    end))
+    return { cmd = "cmd", pid = pid }, nil
   end
   return vim.ui.open(path, opt)
 end
