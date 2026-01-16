@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="Neovim" src="https://raw.githubusercontent.com/neovim/neovim.github.io/master/logos/neovim-logo-300x87.png" height="80" />
+  <img alt="Neovim" src="https://raw.githubusercontent.com/neovim/neovim.github.io/master/static/logos/neovim-logo-300x87.png" height="80" />
   <p align="center">Nviq</p>
 </p>
 

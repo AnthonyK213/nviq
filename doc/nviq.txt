@@ -1,21 +1,25 @@
 *nviq.txt*
 *Nviq* *nviq*
---------------------------------------------------------------------------------
-CONTENTS                                                           *nviq-contents*
+================================================================================
+CONTENTS                                                         *nviq-contents*
 
   1. Config                                                      |nviq-config|
-  2. Mappings                                                  |nviq-mappings|
-  3. Commands                                                  |nviq-commands|
+  2. Modules                                                    |nviq-modules|
+     2.1 core                                                      |nviq-core|
+     2.2 util                                                      |nviq-util|
+     2.3 appl                                                      |nviq-appl|
+     2.4 pack                                                      |nviq-pack|
+  3. Mappings                                                  |nviq-mappings|
+  4. Commands                                                  |nviq-commands|
 
---------------------------------------------------------------------------------
-CONFIG                                                               *nviq-config*
+================================================================================
+1. Config                                                          *nviq-config*
 
 Create file `.nvimrc` (also can be `_nvimrc` on Windows) in `home` or `config`
 directory. It's a pure text file with json syntax. Example:
 
 >json
     {
-      "$schema": "https://raw.githubusercontent.com/AnthonyK213/nviq/refs/heads/main/schema.json",
       "general": {
         "shell": "zsh"
       },
@@ -102,11 +106,29 @@ directory. It's a pure text file with json syntax. Example:
     }
 <
 
---------------------------------------------------------------------------------
-MAPPINGS                                                           *nviq-mappings*
+================================================================================
+2. Modules                                                        *nviq-modules*
 
 --------------------------------------------------------------------------------
-COMMANDS                                                           *nviq-commands*
+2.1 core                                                             *nviq-core*
+
+--------------------------------------------------------------------------------
+2.2 util                                                             *nviq-util*
+
+--------------------------------------------------------------------------------
+2.3 appl                                                             *nviq-appl*
+
+--------------------------------------------------------------------------------
+2.4 pack                                                             *nviq-pack*
+
+================================================================================
+3. Mappings                                                      *nviq-mappings*
+
+================================================================================
+4. Commands                                                      *nviq-commands*
+
+*:Time*
+    Print the current time.
 
 ================================================================================
 vim:tw=80:ts=2:ft=help:norl:syntax=help:
