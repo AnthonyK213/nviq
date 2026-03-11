@@ -1,18 +1,21 @@
-local mini_deps = require("mini.deps")
+local packer = require("nviq.appl.packer")
 
-mini_deps.now(function()
-  mini_deps.add {
-    source = "nvim-treesitter/nvim-treesitter",
-    checkout = "main",
-  }
+---------------------------------nvim-treesitter--------------------------------
 
-  if vim.fn.executable("tree-sitter") == 1 then
-    ---@type string[]?
-    local parsers = vim.tbl_get(_G.NVIQ.settings, "ts", "parsers")
-    if parsers and #parsers > 0 then
-      require("nvim-treesitter").install(parsers)
+packer.add {
+  src = "https://github.com/nvim-treesitter/nvim-treesitter",
+  version = "main",
+  data = {
+    conf = function()
+      if vim.fn.executable("tree-sitter") == 1 then
+        ---@type string[]?
+        local parsers = vim.tbl_get(_G.NVIQ.settings, "ts", "parsers")
+        if parsers and #parsers > 0 then
+          require("nvim-treesitter").install(parsers)
+        end
+      end
+
+      require("nviq.appl.treesitter").setup()
     end
-  end
-
-  require("nviq.appl.treesitter").setup()
-end)
+  }
+}
