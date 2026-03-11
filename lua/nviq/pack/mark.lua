@@ -2,38 +2,38 @@ local packer = require("nviq.appl.packer")
 
 --------------------------------------dial--------------------------------------
 
-packer.add {
-  src = "https://github.com/monaqa/dial.nvim",
-  data = {
-    keymap = {
-      { modes = "n", lhs = "<C-A>", rhs = function()
-        require("dial.map").manipulate("increment", "normal")
-      end },
-      { modes = "n", lhs = "<C-X>", rhs = function()
-        require("dial.map").manipulate("decrement", "normal")
-      end },
-      { modes = "n", lhs = "g<C-A>", rhs = function()
-        require("dial.map").manipulate("increment", "gnormal")
-      end },
-      { modes = "n", lhs = "g<C-X>", rhs = function()
-        require("dial.map").manipulate("decrement", "gnormal")
-      end
-      },
-      { modes = "v", lhs = "<C-A>", rhs = function()
-        require("dial.map").manipulate("increment", "visual")
-      end },
-      { modes = "v", lhs = "<C-X>", rhs = function()
-        require("dial.map").manipulate("decrement", "visual")
-      end },
-      { modes = "v", lhs = "g<C-A>", rhs = function()
-        require("dial.map").manipulate("increment", "gvisual")
-      end },
-      { modes = "v", lhs = "g<C-X>", rhs = function()
-        require("dial.map").manipulate("decrement", "gvisual")
-      end },
-    }
-  }
-}
+-- packer.add {
+--   src = "https://github.com/monaqa/dial.nvim",
+--   data = {
+--     keymap = {
+--       { mode = "n", lhs = "<C-A>", rhs = function()
+--         require("dial.map").manipulate("increment", "normal")
+--       end },
+--       { mode = "n", lhs = "<C-X>", rhs = function()
+--         require("dial.map").manipulate("decrement", "normal")
+--       end },
+--       { mode = "n", lhs = "g<C-A>", rhs = function()
+--         require("dial.map").manipulate("increment", "gnormal")
+--       end },
+--       { mode = "n", lhs = "g<C-X>", rhs = function()
+--         require("dial.map").manipulate("decrement", "gnormal")
+--       end
+--       },
+--       { mode = "v", lhs = "<C-A>", rhs = function()
+--         require("dial.map").manipulate("increment", "visual")
+--       end },
+--       { mode = "v", lhs = "<C-X>", rhs = function()
+--         require("dial.map").manipulate("decrement", "visual")
+--       end },
+--       { mode = "v", lhs = "g<C-A>", rhs = function()
+--         require("dial.map").manipulate("increment", "gvisual")
+--       end },
+--       { mode = "v", lhs = "g<C-X>", rhs = function()
+--         require("dial.map").manipulate("decrement", "gvisual")
+--       end },
+--     }
+--   }
+-- }
 
 --------------------------------markdown-preview--------------------------------
 
@@ -87,23 +87,23 @@ packer.add {
 
 -----------------------------------presenting-----------------------------------
 
-packer.add {
-  src = "https://github.com/sotte/presenting.nvim",
-  data = {
-    conf = function()
-      require("presenting").setup {
-        options = {
-          width = 80,
-        },
-        keep_separator = false,
-        separator = {
-          markdown             = "^%-%-%-",
-          ["vimwiki.markdown"] = "^%-%-%-",
-        }
-      }
-    end
-  }
-}
+-- packer.add {
+--   src = "https://github.com/sotte/presenting.nvim",
+--   data = {
+--     conf = function()
+--       require("presenting").setup {
+--         options = {
+--           width = 80,
+--         },
+--         keep_separator = false,
+--         separator = {
+--           markdown             = "^%-%-%-",
+--           ["vimwiki.markdown"] = "^%-%-%-",
+--         }
+--       }
+--     end
+--   }
+-- }
 
 ---------------------------------vim-table-mode---------------------------------
 
@@ -111,10 +111,10 @@ packer.add {
   src = "https://github.com/dhruvasagar/vim-table-mode",
   data = {
     keymap = {
-      { modes = "n", lhs = "<leader>ta", rhs = "<Cmd>TableAddFormula<CR>" },
-      { modes = "n", lhs = "<leader>tc", rhs = "<Cmd>TableEvalFormulaLine<CR>" },
-      { modes = "n", lhs = "<leader>tf", rhs = "<Cmd>TableModeRealign<CR>" },
-      { modes = "n", lhs = "<leader>tm", rhs = "<Cmd>TableModeToggle<CR>" },
+      { mode = "n", lhs = "<leader>ta", rhs = "<Cmd>TableAddFormula<CR>" },
+      { mode = "n", lhs = "<leader>tc", rhs = "<Cmd>TableEvalFormulaLine<CR>" },
+      { mode = "n", lhs = "<leader>tf", rhs = "<Cmd>TableModeRealign<CR>" },
+      { mode = "n", lhs = "<leader>tm", rhs = "<Cmd>TableModeToggle<CR>" },
     }
   }
 }

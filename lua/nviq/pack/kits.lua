@@ -108,7 +108,7 @@ packer.add {
       }
     end,
     keymap = {
-      { modes = "n", lhs = "<leader>op", rhs = function()
+      { mode = "n", lhs = "<leader>op", rhs = function()
         local oil = require("oil")
         if vim.bo.filetype == "oil" then
           oil.close()
