@@ -20,7 +20,9 @@ packer.add({
 packer.add({
   src = "https://github.com/hrsh7th/nvim-cmp",
   data = {
-    lazy = false, -- FIXME: cmp does not work with lazy loading
+    -- FIXME: cmp does not work with lazy loading, because files in "after/"
+    -- directory won't be sourced when neovim has already initialized.
+    lazy = false,
     deps = {
       "https://github.com/hrsh7th/cmp-buffer",
       "https://github.com/hrsh7th/cmp-cmdline",
