@@ -106,6 +106,13 @@ local function spec_set_lazy(spec)
   end
 end
 
+---
+---@param spec nviq.appl.packer.Spec
+---@return string
+local function spec_group_name(spec)
+  return "nviq.appl.packer." .. spec.name
+end
+
 ---Returns a normalized spec, which "data" is set.
 ---@param spec string|nviq.appl.packer.Spec
 ---@return nviq.appl.packer.Spec?
@@ -146,6 +153,9 @@ end
 ---
 ---@param spec nviq.appl.packer.Spec
 local function spec_init(spec)
+  -- Delete all autocmds.
+  pcall(vim.api.nvim_del_augroup_by_name, spec_group_name(spec))
+
   -- Delete all commands.
   if type(spec.data.cmd) == "table" then
     for _, cmd in ipairs(spec.data.cmd) do
@@ -193,7 +203,7 @@ local function spec_conf(spec)
   end
 end
 
----
+---Loads the package immediately.
 ---@param spec nviq.appl.packer.Spec
 local function spec_load_now(spec)
   if spec.data.is_loaded then
@@ -213,7 +223,7 @@ local function spec_load_now(spec)
   spec_conf(spec)
 end
 
----
+---Loads the package later.
 ---@param spec nviq.appl.packer.Spec
 local function spec_load_later(spec)
   if spec.data.is_loaded or not spec.data.lazy then
@@ -235,8 +245,6 @@ local function spec_load_later(spec)
     end
   end
 
-  -- Event trigger
-
   -- Keymap trigger
   if type(data.keymap) == "table" then
     for _, keymap in ipairs(data.keymap) do
@@ -247,16 +255,33 @@ local function spec_load_later(spec)
     end
   end
 
+  local group = vim.api.nvim_create_augroup(spec_group_name(spec), {
+    clear = true
+  })
+
+  -- Event trigger
+  if data.event then
+    vim.api.nvim_create_autocmd(data.event, {
+      group = group,
+      once = true,
+      callback = function(ev)
+        spec_load_now(spec)
+        vim.api.nvim_exec_autocmds(ev.event, { modeline = false })
+      end
+    })
+  end
+
   -- FileType trigger
   if data.ft then
     vim.api.nvim_create_autocmd("FileType", {
       pattern = data.ft,
+      group = group,
       once = true,
-      callback = function(event)
+      callback = function(ev)
         spec_load_now(spec)
         -- Re-trigger "FileType" event.
         vim.schedule(function()
-          if vim.api.nvim_buf_is_valid(event.buf) then
+          if vim.api.nvim_buf_is_valid(ev.buf) then
             vim.cmd("filetype detect")
           end
         end)
@@ -266,7 +291,9 @@ local function spec_load_later(spec)
 end
 
 local function set_hooks()
-  local group = vim.api.nvim_create_augroup("nviq.appl.packer.pack_events", { clear = true })
+  local group = vim.api.nvim_create_augroup("nviq.appl.packer.pack_events", {
+    clear = true
+  })
 
   vim.api.nvim_create_autocmd("PackChangedPre", {
     group = group,

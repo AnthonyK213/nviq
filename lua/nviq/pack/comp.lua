@@ -6,6 +6,7 @@ local packer = require("nviq.appl.packer")
 packer.add({
   src = "https://github.com/L3MON4D3/LuaSnip",
   data = {
+    lazy = true,
     conf = function()
       require("luasnip.loaders.from_vscode").lazy_load {
         paths = { vim.fs.joinpath(vim.fn.stdpath("config"), "snippet") }
@@ -19,6 +20,7 @@ packer.add({
 packer.add({
   src = "https://github.com/hrsh7th/nvim-cmp",
   data = {
+    lazy = false, -- FIXME: cmp does not work with lazy loading
     deps = {
       "https://github.com/hrsh7th/cmp-buffer",
       "https://github.com/hrsh7th/cmp-cmdline",
@@ -26,8 +28,8 @@ packer.add({
       "https://github.com/hrsh7th/cmp-nvim-lsp-signature-help",
       "https://github.com/hrsh7th/cmp-omni",
       "https://github.com/hrsh7th/cmp-path",
-      "https://github.com/saadparwaiz1/cmp_luasnip",
       "https://github.com/L3MON4D3/LuaSnip",
+      "https://github.com/saadparwaiz1/cmp_luasnip",
     },
     conf = function()
       local cmp = require("cmp")
@@ -204,6 +206,7 @@ packer.add({
           })
         end
       end
-    end
+    end,
+    event = { "InsertEnter", "CmdlineEnter" },
   }
 })
