@@ -102,7 +102,8 @@ packer.add {
       end
 
       crates.setup(option)
-    end
+    end,
+    ft = "toml"
   }
 }
 
@@ -111,6 +112,7 @@ packer.add {
 packer.add {
   src = "https://github.com/Civitasv/cmake-tools.nvim",
   data = {
+    lazy = true,
     deps = {
       "https://github.com/nvim-lua/plenary.nvim",
       "https://github.com/mfussenegger/nvim-dap",
@@ -144,6 +146,10 @@ packer.add {
           name = "terminal",
         },
       }
-    end
+    end,
+    cmd = {
+      "CMakeGenerate", "CMakeBuild", "CMakeRun", "CMakeDebug", "CMakeRunTest",
+      "CMakeInstall", "CMakeClean"
+    }
   }
 }

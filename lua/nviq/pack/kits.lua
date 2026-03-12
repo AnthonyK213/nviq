@@ -136,6 +136,7 @@ packer.add {
 packer.add {
   src = "https://github.com/nvim-telescope/telescope.nvim",
   data = {
+    lazy = false, -- This is a basic UI component, no lazy loading.
     deps = {
       "https://github.com/nvim-lua/plenary.nvim",
       "https://github.com/nvim-telescope/telescope-ui-select.nvim",
@@ -224,32 +225,30 @@ packer.add {
       require("telescope").load_extension("aerial")
       require("telescope").load_extension("ui-select")
       require("telescope").load_extension("undo")
-
-      vim.keymap.set("n", "<leader>fb", function()
+    end,
+    keymap = {
+      { mode = "n", lhs = "<leader>fb", rhs = function()
         require("telescope.builtin").buffers()
-      end, { desc = "Pick buffers" })
-
-      vim.keymap.set("n", "<leader>ff", function()
+      end, desc = "Pick buffers" },
+      { mode = "n", lhs = "<leader>ff", rhs = function()
         require("telescope.builtin").find_files()
-      end, { desc = "Find files" })
-
-      vim.keymap.set("n", "<leader>fg", function()
+      end, desc = "Find files" },
+      { mode = "n", lhs = "<leader>fg", rhs = function()
         require("telescope.builtin").live_grep()
-      end, { desc = "Live grep" })
-
-      vim.keymap.set("n", "<leader>fu", function()
+      end, desc = "Live grep" },
+      { mode = "n", lhs = "<leader>fu", rhs = function()
         require("telescope").extensions.undo.undo()
-      end, { desc = "Undo tree" })
-    end
+      end, desc = "Undo tree" },
+    }
   }
 }
-
 
 -----------------------------neovim-session-manager-----------------------------
 
 packer.add {
   src = "https://github.com/Shatur/neovim-session-manager",
   data = {
+    lazy = false, -- Have to load to save session when exit.
     deps = {
       "https://github.com/nvim-lua/plenary.nvim",
     },

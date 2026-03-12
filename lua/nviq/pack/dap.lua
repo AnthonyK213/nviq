@@ -5,6 +5,7 @@ local packer = require("nviq.appl.packer")
 packer.add {
   src = "https://github.com/mfussenegger/nvim-dap",
   data = {
+    lazy = true,
     deps = {
       "https://github.com/stevearc/overseer.nvim"
     },
@@ -165,12 +166,12 @@ packer.add {
   }
 }
 
-
 ---------------------------------mason-nvim-dap---------------------------------
 
 packer.add {
   src = "https://github.com/jay-babu/mason-nvim-dap.nvim",
   data = {
+    lazy = true,
     deps = {
       "https://github.com/mfussenegger/nvim-dap",
       "https://github.com/mason-org/mason.nvim",
@@ -208,8 +209,10 @@ packer.add {
 packer.add {
   src = "https://github.com/rcarriga/nvim-dap-ui",
   data = {
+    lazy = true,
     deps = {
       "https://github.com/mfussenegger/nvim-dap",
+      "https://github.com/jay-babu/mason-nvim-dap.nvim",
       "https://github.com/nvim-neotest/nvim-nio",
     },
     conf = function()
@@ -222,21 +225,22 @@ packer.add {
       dap.listeners.before.launch.dapui_config = function() dapui.open() end
       dap.listeners.before.event_terminated.dapui_config = function() dapui.close() end
       dap.listeners.before.event_exited.dapui_config = function() dapui.close() end
-
-      vim.keymap.set("n", "<F5>", function() require("dap").continue() end)
-      vim.keymap.set("n", "<F10>", function() require("dap").step_over() end)
-      vim.keymap.set("n", "<F23>", function() require("dap").step_into() end)
-      vim.keymap.set("n", "<S-F11>", function() require("dap").step_into() end)
-      vim.keymap.set("n", "<F47>", function() require("dap").step_out() end)
-      vim.keymap.set("n", "<S-C-F11>", function() require("dap").step_out() end)
-      vim.keymap.set("n", "<leader>db", function() require("dap").toggle_breakpoint() end)
-      vim.keymap.set("n", "<leader>dc", function() require("dap").clear_breakpoints() end)
-      vim.keymap.set("n", "<leader>dl", function() require("dap").run_last() end)
-      vim.keymap.set("n", "<leader>dr", function() require("dap").repl.toggle() end)
-      vim.keymap.set("n", "<leader>dt", function() require("dap").terminate() end)
-      vim.keymap.set("n", "<leader>dn", function() require("dapui").toggle() end)
-      vim.keymap.set("n", "<leader>df", function() require("dapui").float_element() end)
-      vim.keymap.set("x", "<leader>dv", function() require("dapui").eval() end)
-    end
+    end,
+    keymap = {
+      { mode = "n", lhs = "<F5>",       rhs = function() require("dap").continue() end },
+      { mode = "n", lhs = "<F10>",      rhs = function() require("dap").step_over() end },
+      { mode = "n", lhs = "<F23>",      rhs = function() require("dap").step_into() end },
+      { mode = "n", lhs = "<S-F11>",    rhs = function() require("dap").step_into() end },
+      { mode = "n", lhs = "<F47>",      rhs = function() require("dap").step_out() end },
+      { mode = "n", lhs = "<S-C-F11>",  rhs = function() require("dap").step_out() end },
+      { mode = "n", lhs = "<leader>db", rhs = function() require("dap").toggle_breakpoint() end },
+      { mode = "n", lhs = "<leader>dc", rhs = function() require("dap").clear_breakpoints() end },
+      { mode = "n", lhs = "<leader>dl", rhs = function() require("dap").run_last() end },
+      { mode = "n", lhs = "<leader>dr", rhs = function() require("dap").repl.toggle() end },
+      { mode = "n", lhs = "<leader>dt", rhs = function() require("dap").terminate() end },
+      { mode = "n", lhs = "<leader>dn", rhs = function() require("dapui").toggle() end },
+      { mode = "n", lhs = "<leader>df", rhs = function() require("dapui").float_element() end },
+      { mode = "x", lhs = "<leader>dv", rhs = function() require("dapui").eval() end },
+    }
   }
 }

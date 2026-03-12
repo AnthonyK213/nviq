@@ -6,8 +6,6 @@ packer.add {
   src = "https://github.com/tpope/vim-fugitive",
   data = {
     conf = function()
-      vim.keymap.set("n", "<leader>gn", "<Cmd>Git<CR>")
-
       local function git_pull()
         local bufnr = vim.api.nvim_get_current_buf()
         require("nviq.util.futures").spawn(function()
@@ -43,7 +41,10 @@ packer.add {
           vim.keymap.set("n", "<leader>gP", git_push, opt)
         end
       })
-    end
+    end,
+    keymap = {
+      { mode = "n", lhs = "<leader>gn", rhs = "<Cmd>Git<CR>" }
+    },
   }
 }
 

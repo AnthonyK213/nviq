@@ -56,15 +56,12 @@ packer.add {
         content_editable = false,
         disable_filename = 0
       }
-      vim.g.mkdp_filetypes = {
-        "markdown",
-        "vimwiki.markdown"
-      }
+      vim.g.mkdp_filetypes = { "markdown" }
     end,
     conf = function()
       vim.api.nvim_create_autocmd("FileType", {
         group = vim.api.nvim_create_augroup("nviq.pack.mark.markdown-preview", { clear = true }),
-        pattern = { "markdown", "vimwiki.markdown" },
+        pattern = { "markdown" },
         callback = function(event)
           vim.b[event.buf].nviq_handler_preview_toggle = function()
             if vim.fn.exists(":MarkdownPreviewToggle") ~= 0 then
@@ -81,7 +78,8 @@ packer.add {
           vim.cmd [[call mkdp#util#install()]]
         end
       end
-    }
+    },
+    ft = "markdown"
   },
 }
 
@@ -97,11 +95,11 @@ packer.add {
 --         },
 --         keep_separator = false,
 --         separator = {
---           markdown             = "^%-%-%-",
---           ["vimwiki.markdown"] = "^%-%-%-",
+--           markdown = "^%-%-%-",
 --         }
 --       }
---     end
+--     end,
+--     cmd = { "Presenting" }
 --   }
 -- }
 
@@ -148,35 +146,24 @@ packer.add {
           vim.keymap.set("n", "<leader>mv", "<Cmd>VimtexTocToggle<CR>", { buffer = event.buf })
         end
       })
-    end
+    end,
+    ft = "tex"
   }
 }
 
--------------------------------------vimwiki------------------------------------
+------------------------------------wiki.vim------------------------------------
 
 packer.add {
-  src = "https://github.com/vimwiki/vimwiki",
-  version = "dev",
+  src = "https://github.com/lervag/wiki.vim",
   data = {
     init = function()
-      vim.g.vimwiki_list = {
-        {
-          path = vim.fs.joinpath(_G.NVIQ.settings.path.vimwiki),
-          path_html = vim.fs.joinpath(_G.NVIQ.settings.path.vimwiki, "html"),
-          syntax = "markdown",
-          ext = ".markdown"
-        }
-      }
-      vim.g.vimwiki_commentstring = "<!--%s-->"
-      vim.g.vimwiki_folding = "syntax"
-      vim.g.vimwiki_filetypes = { "markdown" }
-      vim.g.vimwiki_ext2syntax = { [".markdown"] = "markdown" }
-      vim.g.vimwiki_table_auto_fmt = 0
-      vim.g.vimwiki_key_mappings = {
-        table_format   = 0,
-        table_mappings = 0,
-        lists_return   = 0,
-      }
-    end
+      vim.g.wiki_root = vim.fs.normalize(_G.NVIQ.settings.path.vimwiki)
+      vim.g.wiki_filetypes = { "md" }
+    end,
+    keymap = {
+      { mode = "n", lhs = "<leader>ww" },
+      { mode = "n", lhs = "<leader>w<leader>w" },
+      { mode = "n", lhs = "<leader>wn" },
+    }
   }
 }

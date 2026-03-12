@@ -150,14 +150,14 @@ end
 
 vim.api.nvim_create_autocmd("FileType", {
   group = _augroup,
-  pattern = { "markdown", "vimwiki.markdown" },
+  pattern = { "markdown" },
   callback = function(event)
     local opts = { buffer = event.buf }
-    surround_toggle("<M-P>", "`", [[\v(markdown|Vimwiki)Code|raw]], opts)
-    surround_toggle("<M-I>", "*", [[\v(markdown|Vimwiki)Italic|italic]], opts)
-    surround_toggle("<M-B>", "**", [[\v(markdown|Vimwiki)Bold|strong]], opts)
-    surround_toggle("<M-M>", "***", [[\v(markdown|Vimwiki)BoldItalic|strong|italic]], opts)
-    surround_toggle("<M-U>", "<u>", [[\v(html|Vimwiki)Underline]], opts)
+    surround_toggle("<M-P>", "`", [[\v(markdown)Code|raw]], opts)
+    surround_toggle("<M-I>", "*", [[\v(markdown)Italic|italic]], opts)
+    surround_toggle("<M-B>", "**", [[\v(markdown)Bold|strong]], opts)
+    surround_toggle("<M-M>", "***", [[\v(markdown)BoldItalic|strong|italic]], opts)
+    surround_toggle("<M-U>", "<u>", [[\v(html)Underline]], opts)
   end,
 })
 
