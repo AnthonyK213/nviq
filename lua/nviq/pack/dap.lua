@@ -219,7 +219,30 @@ packer.add {
       local dap = require("dap")
       local dapui = require("dapui")
 
-      dapui.setup()
+      local dap_opt = {}
+
+      if not _G.NVIQ.settings.tui.devicons then
+        dap_opt.controls = {
+          icons = {
+            disconnect = "Q",
+            pause      = "||",
+            play       = "|>",
+            run_last   = "R",
+            step_back  = "<=",
+            step_into  = "->",
+            step_out   = "<-",
+            step_over  = "=>",
+            terminate  = "X"
+          }
+        }
+        dap_opt.icons = {
+          collapsed     = ">",
+          current_frame = ">",
+          expanded      = "v"
+        }
+      end
+
+      dapui.setup(dap_opt)
 
       dap.listeners.before.attach.dapui_config = function() dapui.open() end
       dap.listeners.before.launch.dapui_config = function() dapui.open() end

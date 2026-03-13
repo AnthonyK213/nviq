@@ -3,7 +3,7 @@ local packer = require("nviq.appl.packer")
 
 ------------------------------------LuaSnip-------------------------------------
 
-packer.add({
+packer.add {
   src = "https://github.com/L3MON4D3/LuaSnip",
   data = {
     lazy = true,
@@ -13,11 +13,11 @@ packer.add({
       }
     end
   }
-})
+}
 
 --------------------------------------cmp---------------------------------------
 
-packer.add({
+packer.add {
   src = "https://github.com/hrsh7th/nvim-cmp",
   data = {
     -- FIXME: cmp does not work with lazy loading, because files in "after/"
@@ -211,4 +211,4 @@ packer.add({
     end,
     event = { "InsertEnter", "CmdlineEnter" },
   }
-})
+}

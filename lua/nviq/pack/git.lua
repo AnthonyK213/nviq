@@ -5,6 +5,7 @@ local packer = require("nviq.appl.packer")
 packer.add {
   src = "https://github.com/tpope/vim-fugitive",
   data = {
+    lazy = true,
     conf = function()
       local function git_pull()
         local bufnr = vim.api.nvim_get_current_buf()
@@ -53,6 +54,7 @@ packer.add {
 packer.add {
   src = "https://github.com/lewis6991/gitsigns.nvim",
   data = {
+    lazy = false,
     conf = function()
       local function nav_hunk_next()
         require("gitsigns").nav_hunk("next")

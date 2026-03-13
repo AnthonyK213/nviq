@@ -1,45 +1,11 @@
 local packer = require("nviq.appl.packer")
 
---------------------------------------dial--------------------------------------
-
--- packer.add {
---   src = "https://github.com/monaqa/dial.nvim",
---   data = {
---     keymap = {
---       { mode = "n", lhs = "<C-A>", rhs = function()
---         require("dial.map").manipulate("increment", "normal")
---       end },
---       { mode = "n", lhs = "<C-X>", rhs = function()
---         require("dial.map").manipulate("decrement", "normal")
---       end },
---       { mode = "n", lhs = "g<C-A>", rhs = function()
---         require("dial.map").manipulate("increment", "gnormal")
---       end },
---       { mode = "n", lhs = "g<C-X>", rhs = function()
---         require("dial.map").manipulate("decrement", "gnormal")
---       end
---       },
---       { mode = "v", lhs = "<C-A>", rhs = function()
---         require("dial.map").manipulate("increment", "visual")
---       end },
---       { mode = "v", lhs = "<C-X>", rhs = function()
---         require("dial.map").manipulate("decrement", "visual")
---       end },
---       { mode = "v", lhs = "g<C-A>", rhs = function()
---         require("dial.map").manipulate("increment", "gvisual")
---       end },
---       { mode = "v", lhs = "g<C-X>", rhs = function()
---         require("dial.map").manipulate("decrement", "gvisual")
---       end },
---     }
---   }
--- }
-
 --------------------------------markdown-preview--------------------------------
 
 packer.add {
   src = "https://github.com/iamcco/markdown-preview.nvim",
   data = {
+    lazy = true,
     init = function()
       vim.g.mkdp_auto_start = 0
       vim.g.mkdp_auto_close = 1
@@ -83,31 +49,12 @@ packer.add {
   },
 }
 
------------------------------------presenting-----------------------------------
-
--- packer.add {
---   src = "https://github.com/sotte/presenting.nvim",
---   data = {
---     conf = function()
---       require("presenting").setup {
---         options = {
---           width = 80,
---         },
---         keep_separator = false,
---         separator = {
---           markdown = "^%-%-%-",
---         }
---       }
---     end,
---     cmd = { "Presenting" }
---   }
--- }
-
 ---------------------------------vim-table-mode---------------------------------
 
 packer.add {
   src = "https://github.com/dhruvasagar/vim-table-mode",
   data = {
+    lazy = true,
     keymap = {
       { mode = "n", lhs = "<leader>ta", rhs = "<Cmd>TableAddFormula<CR>" },
       { mode = "n", lhs = "<leader>tc", rhs = "<Cmd>TableEvalFormulaLine<CR>" },
@@ -122,6 +69,7 @@ packer.add {
 packer.add {
   src = "https://github.com/lervag/vimtex",
   data = {
+    lazy = true,
     init = function()
       vim.g.tex_flavor = "latex"
       vim.g.vimtex_toc_config = {
@@ -156,6 +104,7 @@ packer.add {
 packer.add {
   src = "https://github.com/lervag/wiki.vim",
   data = {
+    lazy = true,
     init = function()
       vim.g.wiki_root = vim.fs.normalize(_G.NVIQ.settings.path.vimwiki)
       vim.g.wiki_filetypes = { "md" }

@@ -3,7 +3,12 @@ local packer = require("nviq.appl.packer")
 ------------------------------------devicons------------------------------------
 
 if _G.NVIQ.settings.tui.devicons then
-  packer.add { src = "https://github.com/nvim-tree/nvim-web-devicons" }
+  packer.add {
+    src = "https://github.com/nvim-tree/nvim-web-devicons",
+    data = {
+      lazy = false
+    }
+  }
 end
 
 ------------------------------------nightfox------------------------------------
@@ -12,6 +17,7 @@ if _G.NVIQ.settings.tui.scheme == "nightfox" then
   packer.add {
     src = "https://github.com/EdenEast/nightfox.nvim",
     data = {
+      lazy = false,
       conf = function()
         require("nightfox").setup {
           options = {
@@ -77,6 +83,7 @@ end
 packer.add {
   src = "https://github.com/nvim-lualine/lualine.nvim",
   data = {
+    lazy = false,
     conf = function()
       require("lualine").setup {
         options = {
@@ -141,6 +148,7 @@ packer.add {
 packer.add {
   src = "https://github.com/lukas-reineke/indent-blankline.nvim",
   data = {
+    lazy = false,
     conf = function()
       require("ibl").setup {
         enabled = true,
@@ -177,6 +185,7 @@ packer.add {
 
 packer.add { src = "https://github.com/andymass/vim-matchup",
   data = {
+    lazy = false,
     init = function()
       vim.g.matchup_matchparen_offscreen = { method = "popup", border = "none" }
       vim.g.matchup_matchparen_deferred = 1

@@ -6,6 +6,7 @@ packer.add {
   src = "https://github.com/nvim-treesitter/nvim-treesitter",
   version = "main",
   data = {
+    lazy = false,
     conf = function()
       if vim.fn.executable("tree-sitter") == 1 then
         ---@type string[]?

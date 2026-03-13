@@ -416,4 +416,21 @@ function M.end_()
   _status = Status.Done
 end
 
+---
+function M.info()
+  vim.print("Loaded:")
+  for _, spec in pairs(_pack_map) do
+    if spec.data.is_loaded then
+      vim.print("\t" .. spec.name)
+    end
+  end
+
+  vim.print("Not loaded:")
+  for _, spec in pairs(_pack_map) do
+    if not spec.data.is_loaded then
+      vim.print("\t" .. spec.name)
+    end
+  end
+end
+
 return M

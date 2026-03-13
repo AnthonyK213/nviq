@@ -1,39 +1,12 @@
 local packer = require("nviq.appl.packer")
 
-------------------------------------colorizer-----------------------------------
-
--- packer.add {
---   src = "https://github.com/norcalli/nvim-colorizer.lua",
---   data = {
---     init = function()
---       vim.o.termguicolors = true
---     end,
---     conf = function()
---       require("colorizer").setup({
---         "html",
---         css = { names = true, rgb_fn = true },
---         vue = { names = true, rgb_fn = true },
---       }, {
---         RGB      = true,
---         RRGGBB   = true,
---         names    = false,
---         RRGGBBAA = false,
---         rgb_fn   = false,
---         hsl_fn   = false,
---         css      = false,
---         css_fn   = false,
---         mode     = "background"
---       })
---     end
---   }
--- }
-
 -------------------------------------crates-------------------------------------
 
 packer.add {
   src = "https://github.com/saecki/crates.nvim",
   version = "stable",
   data = {
+    lazy = true,
     conf = function()
       local crates = require("crates")
       local option = {

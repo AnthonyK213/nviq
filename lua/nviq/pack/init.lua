@@ -34,3 +34,7 @@ end, {
   end,
   desc = "Update packages managed by vim.pack."
 })
+
+vim.api.nvim_create_user_command("PacksInfo", function(_)
+  packer.info()
+end, { desc = "Show information of installed packages." })

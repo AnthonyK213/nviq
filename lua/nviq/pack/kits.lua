@@ -6,6 +6,7 @@ local tui_border = _G.NVIQ.settings.tui.border
 packer.add {
   src = "https://github.com/mason-org/mason.nvim",
   data = {
+    lazy = false,
     conf = function()
       require("mason").setup { ui = { border = tui_border } }
     end
@@ -14,9 +15,10 @@ packer.add {
 
 -------------------------------------aerial-------------------------------------
 
-packer.add({
+packer.add {
   src = "https://github.com/stevearc/aerial.nvim",
   data = {
+    lazy = false,
     conf = function()
       require("aerial").setup {
         backends = {
@@ -49,13 +51,14 @@ packer.add({
       }
     end
   }
-})
+}
 
 --------------------------------------oil---------------------------------------
 
 packer.add {
   src = "https://github.com/stevearc/oil.nvim",
   data = {
+    lazy = true,
     conf = function()
       require("oil").setup {
         float = {
@@ -125,6 +128,7 @@ packer.add {
 packer.add {
   src = "https://github.com/stevearc/overseer.nvim",
   data = {
+    lazy = true,
     conf = function()
       require("overseer").setup { dap = false }
     end
