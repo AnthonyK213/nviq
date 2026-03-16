@@ -47,12 +47,12 @@ local function custom_attach(client, bufnr)
   local opt = { buffer = bufnr }
 
   vim.keymap.set("n", "K", lsp_hover, opt)
+  vim.keymap.set("i", "<M-k>", vim.lsp.buf.signature_help, opt)
   vim.keymap.set("n", "<leader>l[", diagnostic_jump_prev, opt)
   vim.keymap.set("n", "<leader>l]", diagnostic_jump_next, opt)
   vim.keymap.set("n", "<leader>la", vim.lsp.buf.code_action, opt)
   vim.keymap.set("n", "<leader>ld", vim.lsp.buf.declaration, opt)
   vim.keymap.set("n", "<leader>lf", vim.lsp.buf.definition, opt)
-  vim.keymap.set("n", "<leader>lh", vim.lsp.buf.signature_help, opt)
   vim.keymap.set("n", "<leader>li", vim.lsp.buf.implementation, opt)
   vim.keymap.set("n", "<leader>lk", diagnostic_open_float, opt)
   vim.keymap.set("n", "<leader>lm", lsp_format, opt)

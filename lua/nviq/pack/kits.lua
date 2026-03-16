@@ -6,7 +6,8 @@ local tui_border = _G.NVIQ.settings.tui.border
 packer.add {
   src = "https://github.com/mason-org/mason.nvim",
   data = {
-    lazy = false,
+    lazy = true,
+    cmd = { "Mason" },
     conf = function()
       require("mason").setup { ui = { border = tui_border } }
     end
@@ -129,6 +130,7 @@ packer.add {
   src = "https://github.com/stevearc/overseer.nvim",
   data = {
     lazy = true,
+    cmd = { "OverseerRun" },
     conf = function()
       require("overseer").setup { dap = false }
     end
@@ -250,22 +252,22 @@ packer.add {
 -----------------------------neovim-session-manager-----------------------------
 
 packer.add {
-  src = "https://github.com/Shatur/neovim-session-manager",
+  src = "https://github.com/stevearc/resession.nvim",
   data = {
-    lazy = false, -- Have to load to save session when exit.
-    deps = {
-      "https://github.com/nvim-lua/plenary.nvim",
-    },
+    lazy = true,
+    cmd = { "SessionSave", "SessionLoad", "SessionDelete" },
     conf = function()
-      require("session_manager").setup {
-        sessions_dir = require("plenary.path"):new(vim.fn.stdpath("data"), "sessions"),
-        path_replacer = "__",
-        colon_replacer = "++",
-        autoload_mode = require("session_manager.config").AutoloadMode.Disabled,
-        autosave_last_session = true,
-        autosave_ignore_not_normal = true,
-        autosave_only_in_session = false,
-      }
-    end
+      require("resession").setup()
+      vim.api.nvim_create_user_command("SessionSave", function(tbl)
+        local name = tbl.fargs[1] or vim.uv.cwd()
+        require("resession").save(name)
+      end, { nargs = "?" })
+      vim.api.nvim_create_user_command("SessionLoad", function(_)
+        require("resession").load()
+      end, {})
+      vim.api.nvim_create_user_command("SessionDelete", function(_)
+        require("resession").delete()
+      end, {})
+    end,
   }
 }

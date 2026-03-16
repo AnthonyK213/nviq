@@ -5,7 +5,8 @@ local packer = require("nviq.appl.packer")
 packer.add {
   src = "https://github.com/mason-org/mason-lspconfig.nvim",
   data = {
-    lazy = false,
+    lazy = true,
+    event = { "BufReadPre", "BufNewFile" },
     deps = {
       "https://github.com/neovim/nvim-lspconfig",
       "https://github.com/mason-org/mason.nvim",

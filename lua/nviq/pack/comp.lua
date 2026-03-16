@@ -27,7 +27,7 @@ packer.add {
       "https://github.com/hrsh7th/cmp-buffer",
       "https://github.com/hrsh7th/cmp-cmdline",
       "https://github.com/hrsh7th/cmp-nvim-lsp",
-      "https://github.com/hrsh7th/cmp-nvim-lsp-signature-help",
+      -- "https://github.com/hrsh7th/cmp-nvim-lsp-signature-help",
       "https://github.com/hrsh7th/cmp-omni",
       "https://github.com/hrsh7th/cmp-path",
       "https://github.com/L3MON4D3/LuaSnip",
@@ -132,7 +132,7 @@ packer.add {
         sources = cmp.config.sources({
           { name = "nvim_lsp" },
           { name = "luasnip" },
-          { name = "nvim_lsp_signature_help" },
+          -- { name = "nvim_lsp_signature_help" },
         }, {
           { name = "path" },
           { name = "buffer", keyword_length = 4 },
