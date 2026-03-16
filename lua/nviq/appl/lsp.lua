@@ -3,11 +3,6 @@
 ---@type nviq.appl.lsp.OnAttach[]
 local _client_on_attach_queue = {}
 
-local _float_opts = {
-  border = _G.NVIQ.settings.tui.border,
-  max_width = 80,
-}
-
 local _filter_symbols_kind = {
   "Class",
   "Constructor",
@@ -20,23 +15,18 @@ local _filter_symbols_kind = {
 }
 
 local function lsp_hover()
-  vim.lsp.buf.hover(_float_opts)
-end
-
-local function lsp_format()
-  vim.lsp.buf.format { async = false }
-end
-
-local function diagnostic_open_float()
-  vim.diagnostic.open_float(_float_opts)
+  vim.lsp.buf.hover {
+    max_width  = math.max(3, math.floor(vim.o.columns * 0.8)),
+    max_height = math.max(3, math.floor(vim.o.lines * 0.8)),
+  }
 end
 
 local function diagnostic_jump_prev()
-  vim.diagnostic.jump { count = -1, float = _float_opts }
+  vim.diagnostic.jump { count = -1 }
 end
 
 local function diagnostic_jump_next()
-  vim.diagnostic.jump { count = 1, float = _float_opts }
+  vim.diagnostic.jump { count = 1 }
 end
 
 ---Callback invoked when client attaches to a buffer.
@@ -46,20 +36,23 @@ local function custom_attach(client, bufnr)
   ---@type vim.keymap.set.Opts
   local opt = { buffer = bufnr }
 
-  vim.keymap.set("n", "K", lsp_hover, opt)
-  vim.keymap.set("n", "<leader>l[", diagnostic_jump_prev, opt)
-  vim.keymap.set("n", "<leader>l]", diagnostic_jump_next, opt)
-  vim.keymap.set("n", "<leader>la", vim.lsp.buf.code_action, opt)
+  -- "<C-S>": vim.lsp.buf.signature_help
+  vim.keymap.set("n", "K", lsp_hover, opt)                            -- "K"
+
+  vim.keymap.set("n", "<leader>la", vim.lsp.buf.code_action, opt)     -- "gra"
+  vim.keymap.set("n", "<leader>li", vim.lsp.buf.implementation, opt)  -- "gri"
+  vim.keymap.set("n", "<leader>ln", vim.lsp.buf.rename, opt)          -- "grn"
+  vim.keymap.set("n", "<leader>lr", vim.lsp.buf.references, opt)      -- "grr"
+  vim.keymap.set("n", "<leader>lt", vim.lsp.buf.type_definition, opt) -- "grt"
+
   vim.keymap.set("n", "<leader>ld", vim.lsp.buf.declaration, opt)
   vim.keymap.set("n", "<leader>lf", vim.lsp.buf.definition, opt)
-  vim.keymap.set("n", "<leader>lh", vim.lsp.buf.signature_help, opt)
-  vim.keymap.set("n", "<leader>li", vim.lsp.buf.implementation, opt)
-  vim.keymap.set("n", "<leader>lk", diagnostic_open_float, opt)
-  vim.keymap.set("n", "<leader>lm", lsp_format, opt)
-  vim.keymap.set("n", "<leader>ln", vim.lsp.buf.rename, opt)
-  vim.keymap.set("n", "<leader>lr", vim.lsp.buf.references, opt)
+  vim.keymap.set("n", "<leader>lm", vim.lsp.buf.format, opt)
   vim.keymap.set("n", "<leader>ls", vim.lsp.buf.workspace_symbol, opt)
-  vim.keymap.set("n", "<leader>lt", vim.lsp.buf.type_definition, opt)
+
+  vim.keymap.set("n", "<leader>l[", diagnostic_jump_prev, opt)      -- "]d"
+  vim.keymap.set("n", "<leader>l]", diagnostic_jump_next, opt)      -- "[d"
+  vim.keymap.set("n", "<leader>lk", vim.diagnostic.open_float, opt) -- "<C-W>d"
 
   for _, cb in ipairs(_client_on_attach_queue) do
     cb(client, bufnr)
