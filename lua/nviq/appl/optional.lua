@@ -192,6 +192,16 @@ end, {
   desc = "Toggle terminals",
 })
 
+-- Color scheme
+
+if vim.list_contains({
+      "default",
+      "catppuccin",
+      "lunaperche",
+    }, _G.NVIQ.settings.tui.scheme) then
+  vim.cmd.colorscheme(_G.NVIQ.settings.tui.scheme)
+end
+
 -- Theme
 
 require("nviq.appl.theme").set_theme(_G.NVIQ.settings.tui.theme)
