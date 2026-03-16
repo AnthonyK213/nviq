@@ -9,7 +9,7 @@ require("nviq.appl.bigfile").setup {
 
 -- GLSL
 
-vim.api.nvim_create_autocmd("Filetype", {
+vim.api.nvim_create_autocmd("FileType", {
   group = _augroup,
   pattern = "glsl",
   callback = function(event)

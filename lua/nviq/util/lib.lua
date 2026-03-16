@@ -372,7 +372,9 @@ function M.open(path, opt)
     }
     local proc, pid
     proc, pid = vim.uv.spawn("cmd", option, vim.schedule_wrap(function()
-      proc:close()
+      if proc then
+        proc:close()
+      end
     end))
     return { cmd = "cmd", pid = pid }, nil
   end
