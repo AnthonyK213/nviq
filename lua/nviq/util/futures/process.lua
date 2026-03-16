@@ -2,7 +2,7 @@ local lib = require("nviq.util.lib")
 
 ---@class nviq.futures.ProcessHandle
 ---@field private m_data uv.uv_process_t Process handle.
----@field private m_pid integer Process ID.
+---@field private m_pid integer|string Process ID.
 ---@field private m_exited boolean
 local ProcessHandle = {}
 
@@ -11,7 +11,7 @@ ProcessHandle.__index = ProcessHandle
 
 ---Constructor.
 ---@param data uv.uv_process_t Process handle.
----@param pid integer Process ID.
+---@param pid integer|string Process ID.
 ---@return nviq.futures.ProcessHandle
 function ProcessHandle.new(data, pid)
   local handle = {

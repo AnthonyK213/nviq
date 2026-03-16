@@ -22,12 +22,6 @@ vim.keymap.set("n", "<leader>cs", "<Cmd>setlocal spell! spelllang=en_us<CR>", {
   desc = "Toggle spell check"
 })
 
-vim.keymap.set({ "n", "i" }, "<C-S>", function()
-  if vim.bo.buftype == "" then
-    vim.cmd.write()
-  end
-end, { desc = "Write the whole buffer to the current file" })
-
 vim.keymap.set("v", "<M-c>", [["+y]], {
   desc = "Copy to system clipboard"
 })
