@@ -69,6 +69,8 @@
           "type": "string",
           "enum": [
             "default",
+            "catppuccin",
+            "lunaperche",
             "nightfox"
           ]
         },
