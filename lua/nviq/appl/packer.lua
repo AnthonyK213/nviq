@@ -300,6 +300,7 @@ local function set_hooks()
     callback = function(ev)
       local event_data = ev.data --[[@as nviq.appl.packer.EventData]]
       local spec = event_data.spec
+      if not spec.data then return end
       local hook = spec.data.hook
       if not hook or not hook.pre then return end
       hook.pre(event_data)
@@ -311,6 +312,7 @@ local function set_hooks()
     callback = function(ev)
       local event_data = ev.data --[[@as nviq.appl.packer.EventData]]
       local spec = event_data.spec
+      if not spec.data then return end
       local hook = spec.data.hook
       if not hook or not hook.post then return end
       hook.post(event_data)

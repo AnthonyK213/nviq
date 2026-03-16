@@ -29,11 +29,27 @@ end, {
   complete = function()
     local plug_datas = vim.pack.get(nil, { info = false })
     return vim.iter(plug_datas):map(function(plug_data)
-      return plug_data.spec.name
+      if plug_data.active then
+        return plug_data.spec.name
+      end
+      return nil
+    end):filter(function(name)
+      return name ~= nil
     end):totable()
   end,
   desc = "Update packages managed by vim.pack."
 })
+
+vim.api.nvim_create_user_command("PacksClean", function(_)
+  local plug_datas = vim.pack.get(nil, { info = false })
+  local plugs_to_del = {}
+  for _, plug_data in ipairs(plug_datas) do
+    if not plug_data.active then
+      table.insert(plugs_to_del, plug_data.spec.name)
+    end
+  end
+  vim.pack.del(plugs_to_del)
+end, { desc = "Clean inactive packages." })
 
 vim.api.nvim_create_user_command("PacksInfo", function(_)
   packer.info()
