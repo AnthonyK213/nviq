@@ -16,6 +16,8 @@
 ---@alias nviq.appl.packer.HookCb fun(ev:nviq.appl.packer.EventData)
 ---@alias nviq.appl.packer.Hook {pre:nviq.appl.packer.HookCb?,post:nviq.appl.packer.HookCb?}
 
+---@alias nviq.appl.packer.PlugData {spec:nviq.appl.packer.Spec,path:string}
+
 ---@class nviq.appl.packer.Data
 ---@field init? fun(spec: nviq.appl.packer.Spec)
 ---@field conf? fun(spec: nviq.appl.packer.Spec)
@@ -203,29 +205,89 @@ local function spec_conf(spec)
   end
 end
 
----Loads the package immediately.
----@param spec nviq.appl.packer.Spec
-local function spec_load_now(spec)
+---Collects all scripts in "after/plugin". Since those scripts won't be sourced
+---automatically after neovim initialization, we need to source them later.
+---@param plug nviq.appl.packer.PlugData
+---@param after_files? string[]
+local function plug_collect_after_files(plug, after_files)
+  if not after_files or not plug.path then
+    return
+  end
+
+  if not plug.spec.data.lazy then
+    return
+  end
+
+  local after_plugin_dir = vim.fs.joinpath(plug.path, "after", "plugin")
+  if not require("nviq.util.f").is_dir(after_plugin_dir) then
+    return
+  end
+
+  for name, type_ in vim.fs.dir(after_plugin_dir) do
+    if type_ == "file" and (name:match("%.lua$") or name:match("%.vim$")) then
+      table.insert(after_files, vim.fs.joinpath(after_plugin_dir, name))
+    end
+  end
+end
+
+---Sources scripts in "after/plugin".
+---@param after_files string[]
+local function plug_source_after_files(after_files)
+  for _, after_file in ipairs(after_files) do
+    vim.cmd.source(after_file)
+  end
+end
+
+---Loads the package and dependencies.
+---@param plug nviq.appl.packer.PlugData
+---@param after_files? string[]
+local function plug_load_all(plug, after_files)
+  local spec = plug.spec
   if spec.data.is_loaded then
     return
   end
 
+  -- Load dependencies.
   if spec.data.deps then
     for _, dep in ipairs(spec.data.deps) do
       --- Cycle?
       local dep_spec = _pack_map[dep]
-      spec_load_now(dep_spec)
+      local dep_plug
+      if after_files then
+        -- Get PlugData when plug path is needed.
+        dep_plug = vim.pack.get({ dep_spec.name }, { info = false })[1]
+      else
+        dep_plug = { spec = dep_spec }
+      end
+      if dep_plug then
+        plug_load_all(dep_plug, after_files)
+      end
     end
   end
+
+  plug_collect_after_files(plug, after_files)
 
   spec_init(spec)
   spec_load(spec)
   spec_conf(spec)
 end
 
+---Loads the package immediately.
+---@param plug nviq.appl.packer.PlugData
+local function plug_load_now(plug)
+  if plug.spec.data.lazy then
+    local after_files = {}
+    plug_load_all(plug, after_files)
+    plug_source_after_files(after_files)
+  else
+    plug_load_all(plug)
+  end
+end
+
 ---Loads the package later.
----@param spec nviq.appl.packer.Spec
-local function spec_load_later(spec)
+---@param plug nviq.appl.packer.PlugData
+local function plug_load_later(plug)
+  local spec = plug.spec
   if spec.data.is_loaded or not spec.data.lazy then
     return
   end
@@ -239,7 +301,7 @@ local function spec_load_later(spec)
   if type(data.cmd) == "table" then
     for _, cmd in ipairs(data.cmd) do
       vim.api.nvim_create_user_command(cmd, function(_)
-        spec_load_now(spec)
+        plug_load_now(plug)
         vim.cmd(cmd)
       end, {})
     end
@@ -249,7 +311,7 @@ local function spec_load_later(spec)
   if type(data.keymap) == "table" then
     for _, keymap in ipairs(data.keymap) do
       vim.keymap.set(keymap.mode, keymap.lhs, function()
-        spec_load_now(spec)
+        plug_load_now(plug)
         require("nviq.util.k").feedkeys(keymap.lhs, "m", false)
       end)
     end
@@ -265,7 +327,7 @@ local function spec_load_later(spec)
       group = group,
       once = true,
       callback = function(ev)
-        spec_load_now(spec)
+        plug_load_now(plug)
         vim.api.nvim_exec_autocmds(ev.event, { modeline = false })
       end
     })
@@ -278,7 +340,7 @@ local function spec_load_later(spec)
       group = group,
       once = true,
       callback = function(ev)
-        spec_load_now(spec)
+        plug_load_now(plug)
         -- Re-trigger "FileType" event.
         vim.schedule(function()
           if vim.api.nvim_buf_is_valid(ev.buf) then
@@ -321,13 +383,12 @@ local function set_hooks()
 end
 
 ---
----@param plug_data {spec:nviq.appl.packer.Spec, path:string}
+---@param plug_data nviq.appl.packer.PlugData
 local function on_load(plug_data)
-  local spec = plug_data.spec
-  if spec.data.lazy then
-    spec_load_later(spec)
+  if plug_data.spec.data.lazy then
+    plug_load_later(plug_data)
   else
-    spec_load_now(spec)
+    plug_load_now(plug_data)
   end
 end
 
