@@ -64,10 +64,7 @@ vim.diagnostic.config {
   underline        = true,
   update_in_insert = false,
   severity_sort    = false,
-  float            = {
-    border    = _G.NVIQ.settings.tui.border,
-    max_width = 80,
-  },
+  float            = lib.flex_float,
 }
 
 -- Register handlers.

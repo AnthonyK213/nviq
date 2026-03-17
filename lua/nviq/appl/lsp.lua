@@ -15,10 +15,8 @@ local _filter_symbols_kind = {
 }
 
 local function lsp_hover()
-  vim.lsp.buf.hover {
-    max_width  = math.max(3, math.floor(vim.o.columns * 0.8)),
-    max_height = math.max(3, math.floor(vim.o.lines * 0.8)),
-  }
+  local opts = require("nviq.util.lib").flex_float()
+  vim.lsp.buf.hover(opts --[[@as vim.lsp.buf.hover.Opts]])
 end
 
 local function diagnostic_jump_prev()
@@ -50,8 +48,8 @@ local function custom_attach(client, bufnr)
   vim.keymap.set("n", "<leader>lm", vim.lsp.buf.format, opt)
   vim.keymap.set("n", "<leader>ls", vim.lsp.buf.workspace_symbol, opt)
 
-  vim.keymap.set("n", "<leader>l[", diagnostic_jump_prev, opt)      -- "]d"
-  vim.keymap.set("n", "<leader>l]", diagnostic_jump_next, opt)      -- "[d"
+  vim.keymap.set("n", "<leader>l[", diagnostic_jump_prev, opt)      -- "[d"
+  vim.keymap.set("n", "<leader>l]", diagnostic_jump_next, opt)      -- "]d"
   vim.keymap.set("n", "<leader>lk", vim.diagnostic.open_float, opt) -- "<C-W>d"
 
   for _, cb in ipairs(_client_on_attach_queue) do
