@@ -302,7 +302,10 @@ local function plug_load_later(plug)
     for _, cmd in ipairs(data.cmd) do
       vim.api.nvim_create_user_command(cmd, function(_)
         plug_load_now(plug)
-        vim.cmd(cmd)
+        local ok, err = pcall(vim.cmd --[[@as function]], cmd)
+        if not ok and err then
+          vim.notify(err, vim.log.levels.ERROR)
+        end
       end, {})
     end
   end

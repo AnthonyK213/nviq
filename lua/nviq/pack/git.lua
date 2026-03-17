@@ -43,6 +43,7 @@ packer.add {
         end
       })
     end,
+    cmd = { "G", "Git" },
     keymap = {
       { mode = "n", lhs = "<leader>gn", rhs = "<Cmd>Git<CR>" }
     },
