@@ -28,12 +28,9 @@ local function show(result)
   if vim.g.vscode then
     vim.notify(table.concat(contents, "\n"), vim.log.levels.INFO)
   else
-    _bufnr, _winid = vim.lsp.util.open_floating_preview(contents, "markdown", {
-      max_height = 20,
-      max_width = 50,
-      wrap = true,
-      border = _G.NVIQ.settings.tui.border,
-    })
+    local float_opts = lib.flex_float()
+    float_opts.wrap = true
+    _bufnr, _winid = vim.lsp.util.open_floating_preview(contents, "markdown", float_opts)
   end
 end
 
