@@ -183,7 +183,8 @@ packer.add {
 
 -----------------------------------vim-matchup----------------------------------
 
-packer.add { src = "https://github.com/andymass/vim-matchup",
+packer.add {
+  src = "https://github.com/andymass/vim-matchup",
   data = {
     lazy = false,
     init = function()
