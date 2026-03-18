@@ -199,8 +199,9 @@ function M.task_run(task, args)
       else
         build:notify_err()
       end
-      if futil.is_file(args.prod_name) then
-        vim.fs.rm(args.prod_name)
+      local prod_path = vim.fs.joinpath(args.file_dir, args.prod_name)
+      if futil.is_file(prod_path) then
+        vim.fs.rm(prod_path)
       end
     end)
     return
