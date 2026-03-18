@@ -1,6 +1,13 @@
 -- No plugins when offline.
 if _G.NVIQ.settings.general.offline then return end
 
+-- Disable some built-in plugins.
+
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+-- Setup packer.
+
 local packer = require("nviq.appl.packer")
 
 packer.begin { confirm = false }
@@ -16,6 +23,8 @@ require("nviq.pack.dev")
 require("nviq.pack.mark")
 
 packer.end_()
+
+-- Packer commands.
 
 vim.api.nvim_create_user_command("PacksUpdate", function(tbl)
   local opt = { force = false }
