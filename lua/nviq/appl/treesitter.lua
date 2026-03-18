@@ -1,9 +1,24 @@
 local M = {}
 
-function M.setup()
-  ---@type string[]?
-  local parsers = vim.tbl_get(_G.NVIQ.settings, "ts", "parsers")
-  if not parsers then return end
+---@class nviq.appl.treesitter.Options
+---@field parsers string[]?
+---@field indentexpr string?
+
+---
+---@return string[]?
+function M.get_parsers()
+  return vim.tbl_get(_G.NVIQ.settings, "ts", "parsers")
+end
+
+---
+---@param opts? nviq.appl.treesitter.Options
+function M.setup(opts)
+  opts = opts or {}
+
+  local parsers = opts.parsers or M.get_parsers()
+  if not parsers or #parsers == 0 then
+    return
+  end
 
   local filetypes = {}
   for _, parser in ipairs(parsers) do
@@ -17,11 +32,12 @@ function M.setup()
     group = vim.api.nvim_create_augroup("nviq.appl.treesitter", { clear = true }),
     pattern = filetypes,
     callback = function()
-      pcall(function()
-        vim.treesitter.start()
+      if pcall(vim.treesitter.start) then
         vim.wo.foldexpr = [[v:lua.vim.treesitter.foldexpr()]]
-        vim.bo.indentexpr = [[v:lua.require("nvim-treesitter").indentexpr()]]
-      end)
+        if opts.indentexpr then
+          vim.bo.indentexpr = opts.indentexpr
+        end
+      end
     end,
   })
 end

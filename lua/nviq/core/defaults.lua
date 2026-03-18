@@ -24,7 +24,7 @@ vim.o.fencs = "utf-8,chinese,ucs-bom,latin-1,shift-jis,gb18030,gbk,gb2312,cp936"
 vim.o.fileformats = "unix,dos,mac"
 vim.opt.formatoptions:append("mB")
 vim.o.autoindent = true
-vim.o.smartindent = true
+vim.o.smartindent = false
 vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.softtabstop = 2

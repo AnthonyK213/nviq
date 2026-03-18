@@ -8,15 +8,21 @@ packer.add {
   data = {
     lazy = false,
     conf = function()
-      if vim.fn.executable("tree-sitter") == 1 then
-        ---@type string[]?
-        local parsers = vim.tbl_get(_G.NVIQ.settings, "ts", "parsers")
-        if parsers and #parsers > 0 then
-          require("nvim-treesitter").install(parsers)
-        end
+      local ts = require("nviq.appl.treesitter")
+
+      local parsers = ts.get_parsers()
+      if not parsers or #parsers == 0 then
+        return
       end
 
-      require("nviq.appl.treesitter").setup()
+      if vim.fn.executable("tree-sitter") == 1 then
+        require("nvim-treesitter").install(parsers)
+      end
+
+      ts.setup {
+        parsers = parsers,
+        indentexpr = [[v:lua.require("nvim-treesitter").indentexpr()]],
+      }
     end
   }
 }
