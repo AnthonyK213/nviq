@@ -7,7 +7,8 @@ vim.o.number = true
 vim.o.hidden = true
 vim.o.cursorline = true
 vim.o.cmdheight = 1
-vim.o.scrolloff = 5
+vim.o.scrolloff = 8
+vim.o.smoothscroll = true
 vim.o.laststatus = _G.NVIQ.settings.tui.global_status and 3 or 2
 vim.o.signcolumn = "yes:1"
 vim.o.winborder = _G.NVIQ.settings.tui.border
@@ -56,6 +57,11 @@ vim.o.confirm = true
 
 vim.g.mapleader = " "
 
+vim.g.loaded_node_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+
 -- Diagnostics
 
 vim.diagnostic.config {
@@ -69,8 +75,10 @@ vim.diagnostic.config {
 
 -- Register handlers.
 
----@type fun():string,integer,integer Handler to get <cword> which returns the word, start pos (0-based, inclusive) and end pos (0-based, exclusive).
+---@type fun():string,integer,integer Handler to get <cword> which returns the
+---word, start pos (0-based, inclusive) and end pos (0-based, exclusive).
 _G.NVIQ.handlers.get_word = lib.get_word
 
----@type fun(theme:"dark"|"light")|nil Handler to set background theme. Should be registered by colorscheme.
+---@type fun(theme:"dark"|"light")|nil Handler to set background theme.
+---Should be registered by colorscheme.
 _G.NVIQ.handlers.set_theme = lib.set_theme
