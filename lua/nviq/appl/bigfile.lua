@@ -18,6 +18,7 @@ local function is_bigfile(path, bufnr, config)
     return false
   end
 
+  path = vim.fs.normalize(path)
   if path ~= vim.fs.normalize(vim.api.nvim_buf_get_name(bufnr)) then
     return false
   end
