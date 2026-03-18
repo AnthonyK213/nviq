@@ -154,43 +154,39 @@ end
 
 ---
 ---@param spec nviq.appl.packer.Spec
-local function spec_init(spec)
-  -- Delete all autocmds.
-  pcall(vim.api.nvim_del_augroup_by_name, spec_group_name(spec))
-
-  -- Delete all commands.
-  if type(spec.data.cmd) == "table" then
-    for _, cmd in ipairs(spec.data.cmd) do
-      pcall(vim.api.nvim_del_user_command, cmd)
-    end
-  end
-
-  -- Delete all keymap hooks.
-  if spec.data.keymap then
-    for _, keymap in ipairs(spec.data.keymap) do
-      pcall(vim.keymap.del, keymap.mode, keymap.lhs)
-    end
-  end
-
-  if spec.data.init then
-    spec.data.init(spec)
-  end
-end
-
----
----@param spec nviq.appl.packer.Spec
 local function spec_load(spec)
-  if spec.name and not spec.data.is_loaded then
+  if not spec.name or spec.data.is_loaded then
+    return
+  end
+
+  if spec.data.lazy then
+    -- Delete all autocmds.
+    pcall(vim.api.nvim_del_augroup_by_name, spec_group_name(spec))
+
+    -- Delete all command hooks.
+    if type(spec.data.cmd) == "table" then
+      for _, cmd in ipairs(spec.data.cmd) do
+        pcall(vim.api.nvim_del_user_command, cmd)
+      end
+    end
+
+    -- Delete all keymap hooks.
+    if spec.data.keymap then
+      for _, keymap in ipairs(spec.data.keymap) do
+        pcall(vim.keymap.del, keymap.mode, keymap.lhs)
+      end
+    end
+  end
+
+  -- Load the package.
+  do
     vim.cmd.packadd(spec.name)
     spec.data.is_loaded = true
     -- This spec from "load" callback is deep-copied.
     _pack_map[spec.src].data.is_loaded = true
   end
-end
 
----
----@param spec nviq.appl.packer.Spec
-local function spec_conf(spec)
+  -- Run configuration callback.
   if spec.data.conf then
     spec.data.conf(spec)
   end
@@ -267,9 +263,7 @@ local function plug_load_all(plug, after_files)
 
   plug_collect_after_files(plug, after_files)
 
-  spec_init(spec)
   spec_load(spec)
-  spec_conf(spec)
 end
 
 ---Loads the package immediately.
@@ -388,6 +382,11 @@ end
 ---
 ---@param plug_data nviq.appl.packer.PlugData
 local function on_load(plug_data)
+  local spec = plug_data.spec
+  if spec.data.init then
+    spec.data.init(spec)
+  end
+
   if plug_data.spec.data.lazy then
     plug_load_later(plug_data)
   else
