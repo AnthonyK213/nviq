@@ -1,29 +1,5 @@
 local mini_deps = require("mini.deps")
 
-------------------------------------colorizer-----------------------------------
-
--- mini_deps.later(function()
---   vim.o.termguicolors = true
---
---   mini_deps.add { source = "norcalli/nvim-colorizer.lua" }
---
---   require("colorizer").setup({
---     "html",
---     css = { names = true, rgb_fn = true },
---     vue = { names = true, rgb_fn = true },
---   }, {
---     RGB      = true,
---     RRGGBB   = true,
---     names    = false,
---     RRGGBBAA = false,
---     rgb_fn   = false,
---     hsl_fn   = false,
---     css      = false,
---     css_fn   = false,
---     mode     = "background"
---   })
--- end)
-
 -------------------------------------crates-------------------------------------
 
 mini_deps.later(function()

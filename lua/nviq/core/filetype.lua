@@ -4,9 +4,8 @@ vim.filetype.add {
     [".nvimrc"] = "json",
   },
   extension = {
-    markdown = "vimwiki.markdown",
-    urdf     = "xml",
-    vert     = "glsl",
-    frag     = "glsl",
+    urdf = "xml",
+    vert = "glsl",
+    frag = "glsl",
   }
 }

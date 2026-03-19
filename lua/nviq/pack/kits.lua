@@ -233,20 +233,20 @@ end)
 -----------------------------neovim-session-manager-----------------------------
 
 mini_deps.later(function()
-  mini_deps.add {
-    source = "Shatur/neovim-session-manager",
-    depends = {
-      "nvim-lua/plenary.nvim",
-    }
-  }
+  mini_deps.add { source = "stevearc/resession.nvim" }
 
-  require("session_manager").setup {
-    sessions_dir = require("plenary.path"):new(vim.fn.stdpath("data"), "sessions"),
-    path_replacer = "__",
-    colon_replacer = "++",
-    autoload_mode = require("session_manager.config").AutoloadMode.Disabled,
-    autosave_last_session = true,
-    autosave_ignore_not_normal = true,
-    autosave_only_in_session = false,
-  }
+  require("resession").setup()
+
+  vim.api.nvim_create_user_command("SessionSave", function(tbl)
+    local name = tbl.fargs[1] or vim.uv.cwd()
+    require("resession").save(name)
+  end, { nargs = "?" })
+
+  vim.api.nvim_create_user_command("SessionLoad", function(_)
+    require("resession").load()
+  end, {})
+
+  vim.api.nvim_create_user_command("SessionDelete", function(_)
+    require("resession").delete()
+  end, {})
 end)

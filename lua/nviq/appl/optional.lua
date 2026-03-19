@@ -196,7 +196,6 @@ end, {
 
 if vim.list_contains({
       "default",
-      "catppuccin",
       "lunaperche",
     }, _G.NVIQ.settings.tui.scheme) then
   vim.cmd.colorscheme(_G.NVIQ.settings.tui.scheme)

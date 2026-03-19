@@ -20,7 +20,6 @@ mini_deps.later(function()
       "hrsh7th/cmp-buffer",
       "hrsh7th/cmp-cmdline",
       "hrsh7th/cmp-nvim-lsp",
-      "hrsh7th/cmp-nvim-lsp-signature-help",
       "hrsh7th/cmp-omni",
       "hrsh7th/cmp-path",
       "saadparwaiz1/cmp_luasnip",
@@ -126,7 +125,6 @@ mini_deps.later(function()
     sources = cmp.config.sources({
       { name = "nvim_lsp" },
       { name = "luasnip" },
-      { name = "nvim_lsp_signature_help" },
     }, {
       { name = "path" },
       { name = "buffer", keyword_length = 4 },
