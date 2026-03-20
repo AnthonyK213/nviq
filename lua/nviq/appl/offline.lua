@@ -11,11 +11,28 @@ vim.o.mouse = "nvic"
 vim.g.netrw_altv = 1
 vim.g.netrw_banner = 0
 vim.g.netrw_winsize = 20
-vim.g.netrw_liststyle = 4
-vim.g.netrw_browse_split = 4
+vim.g.netrw_liststyle = 0
+vim.g.netrw_browse_split = 0
 vim.g.netrw_clipboard = 0
+vim.g.netrw_fastbrowse = 0
+vim.g.netrw_timefmt = "%Y-%m-%d %H:%M"
+vim.g.netrw_sort_by = "name"
 
-vim.keymap.set("n", "<leader>op", "<Cmd>Lexplore<CR>")
+vim.keymap.set("n", "<leader>op", "<Cmd>Explore<CR>")
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("nviq.appl.offline.netrw", { clear = true }),
+  pattern = "netrw",
+  callback = function(tbl)
+    vim.bo[tbl.buf].buflisted = false
+    vim.bo[tbl.buf].bufhidden = "wipe"
+
+    local opt = { remap = true, buffer = tbl.buf }
+    vim.keymap.set("n", "a", "%", opt) -- New file
+    vim.keymap.set("n", "r", "R", opt) -- Rename file
+    vim.keymap.set("n", "<leader>op", "<Cmd>Rexplore<CR>", opt)
+  end
+})
 
 -- LSP
 -- From [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
@@ -362,7 +379,7 @@ vim.keymap.set("n", "<leader>ff", function()
     local cwd = vim.fn.getcwd()
 
     local files = ls_files(cwd)
-    files = vim.fn.matchfuzzy(files, query)
+    files = vim.fn.matchfuzzy(files, query, { limit = 20 })
     if #files == 0 then
       vim.notify("Nothing found")
       return
@@ -457,3 +474,12 @@ vim.keymap.set("n", "<leader>fg", function()
     end
   end)
 end, { desc = "Grep" })
+
+-- Wiki
+
+vim.keymap.set("n", "<leader>ww", function()
+  local wiki_dir = _G.NVIQ.settings.path.vimwiki
+  if not wiki_dir then return end
+  local index_path = vim.fs.joinpath(wiki_dir, "index.md")
+  lib.edit_file(index_path, { chdir = true, silent = true })
+end, { desc = "Open wiki index" })
