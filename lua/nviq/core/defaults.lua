@@ -52,6 +52,8 @@ vim.o.undofile = false
 vim.o.autoread = true
 vim.o.autowrite = true
 vim.o.confirm = true
+vim.o.modeline = false
+vim.o.modelineexpr = false
 
 -- Global variables.
 
