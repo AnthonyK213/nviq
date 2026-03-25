@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow = "1.0.99"
-flate2 = { version = "1.1.2", features = ["zlib-ng"], default-features = false }
-native-dialog = "0.9.0"
-tar = "0.4.44"
+anyhow = "1.0.102"
+flate2 = { version = "1.1.9", features = ["zlib-rs"], default-features = false }
+native-dialog = "0.9.6"
+tar = "0.4.45"
 zip-extract = "0.4.1"
