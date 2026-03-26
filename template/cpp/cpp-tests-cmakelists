@@ -36,30 +36,32 @@ if(NOT googletest_POPULATED)
 endif()
 
 add_executable(
-  ${PROJECT_NAME}-test
-  test.cpp
+  ${PROJECT_NAME}-tests
+  main.cpp
   )
 
 target_include_directories(
-  ${PROJECT_NAME}-test
+  ${PROJECT_NAME}-tests
   PRIVATE
   ${PROJECT_SOURCE_DIR}/include/
   )
 
 target_link_libraries(
-  ${PROJECT_NAME}-test
+  ${PROJECT_NAME}-tests
   PRIVATE
   gtest
   ${PROJECT_NAME}
   )
 
-include(GoogleTest)
-
 add_custom_command(
-  TARGET ${PROJECT_NAME}-test POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "$<TARGET_PROPERTY:#{ProjectName},BINARY_DIR>/$<$<BOOL:${CMAKE_CONFIGURATION_TYPES}>:$<CONFIG>>"
-    "$<TARGET_PROPERTY:#{ProjectName}-test,BINARY_DIR>/$<$<BOOL:${CMAKE_CONFIGURATION_TYPES}>:$<CONFIG>>"
+  TARGET ${PROJECT_NAME}-tests POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    $<TARGET_FILE:#{ProjectName}>
+    $<TARGET_FILE_DIR:#{ProjectName}-tests>
+  COMMENT "Deploying runtime dependencies..."
+  VERBATIM
   )
 
-gtest_discover_tests(${PROJECT_NAME}-test)
+include(GoogleTest)
+
+gtest_discover_tests(${PROJECT_NAME}-tests)
