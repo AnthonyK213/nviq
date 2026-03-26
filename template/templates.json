@@ -48,7 +48,7 @@
       "include",
       "include/#{ProjectName}",
       "src",
-      "test"
+      "tests"
     ],
     "files": {
       ".clang-format": "common/common-clang-format",
@@ -60,8 +60,8 @@
       "include/#{ProjectName}/lib.h": "cpp/cpp-include-lib",
       "src/CMakeLists.txt": "cpp/cpp-src-cmakelists",
       "src/lib.cpp": "cpp/cpp-src-lib",
-      "test/CMakeLists.txt": "cpp/cpp-test-cmakelists",
-      "test/test.cpp": "cpp/cpp-test-test"
+      "tests/CMakeLists.txt": "cpp/cpp-tests-cmakelists",
+      "tests/main.cpp": "cpp/cpp-tests-main"
     }
   }
 ]
