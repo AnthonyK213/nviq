@@ -1,13 +1,22 @@
 use crate::code::SyntaxHighlighter;
 
 pub struct CmarkRenderer {
-    pub syntax_highlighter: SyntaxHighlighter,
+    syntax_highlighter: SyntaxHighlighter,
+    html_cleaner: ammonia::Builder<'static>,
 }
 
 impl CmarkRenderer {
     pub fn new() -> Self {
+        let mut html_cleaner = ammonia::Builder::default();
+        html_cleaner
+            .add_tag_attributes("code", &["class"])
+            .add_tags(&["span", "div"])
+            .add_tag_attributes("span", &["class"])
+            .add_tag_attributes("div", &["class"]);
+
         Self {
             syntax_highlighter: SyntaxHighlighter::new(),
+            html_cleaner,
         }
     }
 
@@ -25,6 +34,6 @@ impl CmarkRenderer {
         let mut html_output = String::new();
         pulldown_cmark::html::push_html(&mut html_output, iterator);
 
-        html_output
+        self.html_cleaner.clean(&html_output).to_string()
     }
 }
