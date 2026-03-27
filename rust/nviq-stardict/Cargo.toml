@@ -8,5 +8,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 _ffi_util = { path = "../_ffi_util" }
-rust-stardict = { git = "https://github.com/AnthonyK213/rust-stardict" }
+_stardict = { path = "../_stardict" }
 serde_json = "1.0.149"
