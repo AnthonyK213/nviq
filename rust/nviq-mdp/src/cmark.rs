@@ -14,7 +14,7 @@ impl CmarkRenderer {
     pub fn render(&mut self, markdown: &str) -> String {
         let mut options = pulldown_cmark::Options::empty();
         options.insert(pulldown_cmark::Options::ENABLE_FOOTNOTES);
-        // options.insert(pulldown_cmark::Options::ENABLE_MATH);
+        options.insert(pulldown_cmark::Options::ENABLE_MATH);
         options.insert(pulldown_cmark::Options::ENABLE_TABLES);
         options.insert(pulldown_cmark::Options::ENABLE_TASKLISTS);
 
