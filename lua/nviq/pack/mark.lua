@@ -2,52 +2,52 @@ local packer = require("nviq.appl.packer")
 
 --------------------------------markdown-preview--------------------------------
 
-packer.add {
-  src = "https://github.com/iamcco/markdown-preview.nvim",
-  data = {
-    lazy = true,
-    init = function()
-      vim.g.mkdp_auto_start = 0
-      vim.g.mkdp_auto_close = 1
-      vim.g.mkdp_preview_options = {
-        mkit = {},
-        katex = {},
-        uml = {},
-        maid = {},
-        disable_sync_scroll = 0,
-        sync_scroll_type = "relative",
-        hide_yaml_meta = 1,
-        sequence_diagrams = {},
-        flowchart_diagrams = {},
-        content_editable = false,
-        disable_filename = 0
-      }
-      vim.g.mkdp_filetypes = { "markdown" }
-    end,
-    conf = function()
-      vim.api.nvim_create_autocmd("FileType", {
-        group = vim.api.nvim_create_augroup("nviq.pack.mark.markdown-preview", { clear = true }),
-        pattern = { "markdown" },
-        callback = function(event)
-          vim.b[event.buf].nviq_handler_preview_toggle = function()
-            if vim.fn.exists(":MarkdownPreviewToggle") ~= 0 then
-              vim.cmd.MarkdownPreviewToggle()
-            end
-          end
-        end,
-      })
-    end,
-    hook = {
-      post = function(ev)
-        if ev.kind == "install" then
-          vim.cmd [[packadd markdown-preview.nvim]]
-          vim.cmd [[call mkdp#util#install()]]
-        end
-      end
-    },
-    ft = "markdown"
-  },
-}
+-- packer.add {
+--   src = "https://github.com/iamcco/markdown-preview.nvim",
+--   data = {
+--     lazy = true,
+--     init = function()
+--       vim.g.mkdp_auto_start = 0
+--       vim.g.mkdp_auto_close = 1
+--       vim.g.mkdp_preview_options = {
+--         mkit = {},
+--         katex = {},
+--         uml = {},
+--         maid = {},
+--         disable_sync_scroll = 0,
+--         sync_scroll_type = "relative",
+--         hide_yaml_meta = 1,
+--         sequence_diagrams = {},
+--         flowchart_diagrams = {},
+--         content_editable = false,
+--         disable_filename = 0
+--       }
+--       vim.g.mkdp_filetypes = { "markdown" }
+--     end,
+--     conf = function()
+--       vim.api.nvim_create_autocmd("FileType", {
+--         group = vim.api.nvim_create_augroup("nviq.pack.mark.markdown-preview", { clear = true }),
+--         pattern = { "markdown" },
+--         callback = function(event)
+--           vim.b[event.buf].nviq_handler_preview_toggle = function()
+--             if vim.fn.exists(":MarkdownPreviewToggle") ~= 0 then
+--               vim.cmd.MarkdownPreviewToggle()
+--             end
+--           end
+--         end,
+--       })
+--     end,
+--     hook = {
+--       post = function(ev)
+--         if ev.kind == "install" then
+--           vim.cmd [[packadd markdown-preview.nvim]]
+--           vim.cmd [[call mkdp#util#install()]]
+--         end
+--       end
+--     },
+--     ft = "markdown"
+--   },
+-- }
 
 ---------------------------------vim-table-mode---------------------------------
 

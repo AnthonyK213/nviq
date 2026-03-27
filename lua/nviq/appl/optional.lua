@@ -123,6 +123,16 @@ vim.api.nvim_create_user_command("MarpToggle", function(_)
   require("nviq.appl.marp").toggle()
 end, { desc = "Toggle marp-cli" })
 
+-- Markdown Preview
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = _augroup,
+  pattern = { "markdown" },
+  callback = function(event)
+    vim.b[event.buf].nviq_handler_preview_toggle = require("nviq.appl.mdp").toggle
+  end,
+})
+
 -- Template
 
 vim.api.nvim_create_user_command("CreateProject", function(_)
