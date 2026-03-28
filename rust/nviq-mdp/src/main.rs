@@ -1,10 +1,13 @@
-use actix_web::{App, Error, HttpRequest, HttpResponse, HttpServer, web};
+use actix_files::NamedFile;
+use actix_web::http::header;
+use actix_web::{App, Error, HttpRequest, HttpResponse, HttpServer, Responder, web};
 use actix_ws::{Message, Session};
 use futures_util::StreamExt as _;
 use nvim_rs::{Handler, Neovim, error::LoopError};
 use rmpv::Value;
 use rust_embed::RustEmbed;
 use serde::Serialize;
+use std::path::{Component, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::{sync::Mutex, sync::RwLock, task::JoinHandle};
@@ -12,6 +15,7 @@ use tokio::{sync::Mutex, sync::RwLock, task::JoinHandle};
 mod cmark;
 mod code;
 mod nvim;
+mod util;
 
 type Writer = nvim_rs::compat::tokio::Compat<tokio::fs::File>;
 
@@ -28,6 +32,7 @@ enum Payload {
 
 #[derive(Clone)]
 struct NeovimHandler {
+    pub current_dir: Arc<RwLock<PathBuf>>,
     session: Arc<Mutex<Option<Session>>>,
     port: Arc<RwLock<u16>>,
     renderer: Arc<Mutex<cmark::CmarkRenderer>>,
@@ -40,6 +45,7 @@ struct NeovimHandler {
 impl NeovimHandler {
     pub fn new() -> Self {
         Self {
+            current_dir: Arc::new(RwLock::new(PathBuf::default())),
             session: Arc::new(Mutex::new(None)),
             port: Arc::new(RwLock::new(0)),
             renderer: Arc::new(Mutex::new(cmark::CmarkRenderer::new())),
@@ -72,6 +78,11 @@ impl NeovimHandler {
         let mut session = self.session.lock().await;
         if let Some(session) = &mut *session {
             let buffer = neovim.get_current_buf().await?;
+
+            let buf_root = nvim::buf_get_root(neovim, &buffer).await?;
+            let mut current_dir = self.current_dir.write().await;
+            *current_dir = buf_root;
+
             let markdown = nvim::buf_get_all_text(&buffer).await?;
 
             let mut renderer = self.renderer.lock().await;
@@ -268,6 +279,54 @@ async fn static_handler(path: web::Path<String>) -> HttpResponse {
     }
 }
 
+#[actix_web::get("/api/images/{filename:.*}")]
+async fn local_image_handler(
+    req: HttpRequest,
+    path: web::Path<String>,
+    data: web::Data<NeovimClient>,
+) -> impl Responder {
+    if !util::is_relative_path(path.as_str()) {
+        return Err(actix_web::error::ErrorForbidden("Relative paths only"));
+    }
+
+    let file_path = PathBuf::from(path.into_inner());
+
+    if file_path
+        .components()
+        .any(|c| matches!(c, Component::ParentDir))
+    {
+        return Err(actix_web::error::ErrorForbidden("Access Denied"));
+    }
+
+    let buf_root = data.handler.current_dir.read().await;
+    let full_path = buf_root.join(file_path);
+
+    match NamedFile::open(&full_path) {
+        Ok(named_file) => {
+            let mut res = named_file.into_response(&req);
+            let headers = res.headers_mut();
+
+            headers.insert(
+                header::CACHE_CONTROL,
+                header::HeaderValue::from_static(
+                    "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+                ),
+            );
+            headers.insert(header::PRAGMA, header::HeaderValue::from_static("no-cache"));
+            headers.insert(header::EXPIRES, header::HeaderValue::from_static("0"));
+
+            Ok(res)
+        }
+        Err(e) => {
+            eprintln!("Failed to read file: {:?}. Target path: {:?}", e, full_path);
+            Err(actix_web::error::ErrorNotFound(format!(
+                "File not found: {:?}",
+                e
+            )))
+        }
+    }
+}
+
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
     let handler = NeovimHandler::new();
@@ -290,6 +349,7 @@ async fn main() -> anyhow::Result<()> {
             .app_data(web::Data::new(client_app_data.clone()))
             .service(web::resource("/").to(index))
             .service(static_handler)
+            .service(local_image_handler)
             .route("/ws", web::get().to(ws_index))
             .default_service(web::route().to(index))
     })

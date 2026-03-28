@@ -1,4 +1,28 @@
 use crate::code::CodeBlockHandler;
+use crate::util;
+use pulldown_cmark::{Event, Tag};
+
+fn process_image_source(event: Event) -> Event {
+    if let Event::Start(Tag::Image {
+        link_type,
+        mut dest_url,
+        title,
+        id,
+    }) = event
+    {
+        if util::is_relative_path(&dest_url) {
+            dest_url = format!("/api/images/{}", dest_url).into();
+        }
+
+        return Event::Start(Tag::Image {
+            link_type,
+            dest_url,
+            title,
+            id,
+        });
+    }
+    event
+}
 
 pub struct CmarkRenderer {
     code_block_handler: CodeBlockHandler,
@@ -30,6 +54,7 @@ impl CmarkRenderer {
 
         let parser = pulldown_cmark::Parser::new_ext(markdown, options);
         let iterator = pulldown_cmark::TextMergeStream::new(parser)
+            .map(process_image_source)
             .flat_map(|event| self.code_block_handler.process_event(event));
 
         let mut html_output = String::new();
