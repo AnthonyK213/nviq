@@ -80,6 +80,28 @@
       }
     }
 
+    function nviqMdpScroll(currentLine) {
+      const elems = $nviqMdp.querySelectorAll("[data-source-line]");
+      let targetElem = null;
+
+      for (let i = 0; i < elems.length; i++) {
+        const line = parseInt(elems[i].getAttribute("data-source-line"));
+        if (line <= currentLine) {
+          targetElem = elems[i];
+        } else {
+          break;
+        }
+      }
+
+      if (targetElem) {
+        const targetScrollTop = targetElem.offsetTop - (window.innerHeight / 2)
+        window.scrollTo({
+            top: targetScrollTop,
+            behavior: "smooth"
+        });
+      }
+    }
+
     function connect() {
       const { location } = window;
 
@@ -103,7 +125,7 @@
             nviqMdpRenderMermaid()
             break;
           case "Scroll":
-            window.scrollTo({ top: payload.ratio * $nviqMdp.scrollHeight });
+            nviqMdpScroll(payload.line)
             break;
           default:
             break;

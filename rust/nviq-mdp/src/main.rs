@@ -13,7 +13,6 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::{sync::Mutex, sync::RwLock, task::JoinHandle};
 
 mod cmark;
-mod code;
 mod nvim;
 mod util;
 
@@ -27,7 +26,7 @@ static NVIQ_MDP_LOCAL_HOST: &str = "127.0.0.1";
 enum Payload {
     None,
     Update { text: String },
-    Scroll { ratio: f32 },
+    Scroll { line: u32 },
 }
 
 #[derive(Clone)]
@@ -95,10 +94,10 @@ impl NeovimHandler {
         Ok(())
     }
 
-    pub async fn scroll(&self, ratio: f32) -> anyhow::Result<()> {
+    pub async fn scroll(&self, line: u32) -> anyhow::Result<()> {
         let mut session = self.session.lock().await;
         if let Some(session) = &mut *session {
-            let payload = Payload::Scroll { ratio };
+            let payload = Payload::Scroll { line };
             let payload_string = serde_json::to_string(&payload)?;
             session.text(payload_string).await?;
         }
@@ -147,26 +146,28 @@ impl Handler for NeovimHandler {
                 Ok(Value::Nil)
             }
             "scroll" => {
-                if let Some(&Value::F64(ratio)) = args.get(0) {
-                    let mut throttle = self.throttle_scroll.lock().await;
-                    let now = SystemTime::now();
-                    if let Ok(elapsed) = now.duration_since(*throttle) {
-                        if elapsed >= Duration::from_millis(100) {
-                            *throttle = now;
-                            let _ = self.scroll(ratio as f32).await;
-                        } else {
-                            drop(throttle);
-                            let mut debounce = self.debounce_scroll.lock().await;
-                            *debounce = now;
-                            let handler = self.clone();
-                            let debounce_clone = debounce.clone();
-                            tokio::spawn(async move {
-                                tokio::time::sleep(Duration::from_millis(200)).await;
-                                let debounce = handler.debounce_scroll.lock().await;
-                                if *debounce == debounce_clone {
-                                    let _ = handler.scroll(ratio as f32).await;
-                                }
-                            });
+                if let Some(&Value::Integer(line)) = args.get(0) {
+                    if let Some(lnum) = line.as_u64() {
+                        let mut throttle = self.throttle_scroll.lock().await;
+                        let now = SystemTime::now();
+                        if let Ok(elapsed) = now.duration_since(*throttle) {
+                            if elapsed >= Duration::from_millis(100) {
+                                *throttle = now;
+                                let _ = self.scroll(lnum as u32).await;
+                            } else {
+                                drop(throttle);
+                                let mut debounce = self.debounce_scroll.lock().await;
+                                *debounce = now;
+                                let handler = self.clone();
+                                let debounce_clone = debounce.clone();
+                                tokio::spawn(async move {
+                                    tokio::time::sleep(Duration::from_millis(200)).await;
+                                    let debounce = handler.debounce_scroll.lock().await;
+                                    if *debounce == debounce_clone {
+                                        let _ = handler.scroll(lnum as u32).await;
+                                    }
+                                });
+                            }
                         }
                     }
                 }

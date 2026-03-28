@@ -27,12 +27,8 @@ end
 ---
 local function scroll()
   if mdp_is_active() then
-    local ratio = 0.0
-    local lcnt = vim.api.nvim_buf_line_count(0)
-    if lcnt > 0 then
-      ratio = vim.fn.line("w0") / lcnt
-    end
-    vim.rpcrequest(_nviq_mdp, "scroll", ratio)
+    local line = vim.fn.line(".")
+    vim.rpcrequest(_nviq_mdp, "scroll", line)
   end
 end
 
