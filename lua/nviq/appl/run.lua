@@ -191,16 +191,26 @@ function M.task_run(task, args)
     futures.spawn(function()
       local code = build:await()
       if code == 0 then
-        local prod_path = vim.fs.joinpath(args.file_dir, args.prod_name)
-        local run = term_new({ prod_path }, { cwd = args.file_dir })
+        local run
+        if lib.has_win() then
+          -- Handle negative return value on Windows.
+          local cmd_wrap = string.format(
+            [[".\\%s & call echo [Process exited !ERRORLEVEL!] & exit /b 0"]],
+            args.prod_name
+          )
+          run = term_new({ "cmd", "/V:ON", "/c", cmd_wrap }, { cwd = args.file_dir })
+        else
+          run = term_new({ "./" .. args.prod_name }, { cwd = args.file_dir })
+        end
         if run then
           run:await()
         end
       else
         build:notify_err()
       end
-      if futil.is_file(args.prod_name) then
-        vim.fs.rm(args.prod_name)
+      local prod_path = vim.fs.joinpath(args.file_dir, args.prod_name)
+      if futil.is_file(prod_path) then
+        vim.fs.rm(prod_path)
       end
     end)
     return

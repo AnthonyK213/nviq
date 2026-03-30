@@ -8,19 +8,26 @@ require("nviq.appl.emacs")
 
 require("nviq.appl.autopair").setup {
   pairs = {
-    ["()"] = { left = "(", right = ")" },
-    ["[]"] = { left = "[", right = "]" },
-    ["{}"] = { left = "{", right = "}" },
-    ["''"] = { left = "'", right = "'" },
-    ['""'] = { left = '"', right = '"' },
-    tex_bf = { left = "\\textbf{", right = "}" },
-    tex_it = { left = "\\textit{", right = "}" },
-    tex_rm = { left = "\\textrm{", right = "}" },
-    md_p   = { left = "`", right = "`" },
-    md_i   = { left = "*", right = "*" },
-    md_b   = { left = "**", right = "**" },
-    md_m   = { left = "***", right = "***" },
-    md_u   = { left = "<u>", right = "</u>" },
+    ["()"]  = { left = "(", right = ")" },
+    ["[]"]  = { left = "[", right = "]" },
+    ["{}"]  = { left = "{", right = "}" },
+    ["''"]  = { left = "'", right = "'" },
+    ['""']  = { left = '"', right = '"' },
+    tex_bf  = { left = "\\textbf{", right = "}" },
+    tex_it  = { left = "\\textit{", right = "}" },
+    tex_rm  = { left = "\\textrm{", right = "}" },
+    md_p    = { left = "`", right = "`" },
+    md_i    = { left = "*", right = "*" },
+    md_b    = { left = "**", right = "**" },
+    md_m    = { left = "***", right = "***" },
+    md_u    = { left = "<u>", right = "</u>" },
+    paren   = { left = "（", right = "）" },
+    brack   = { left = "【", right = "】" },
+    quine   = { left = "「", right = "」" },
+    title_1 = { left = "〈", right = "〉" },
+    title_2 = { left = "《", right = "》" },
+    quote_1 = { left = "‘", right = "’" },
+    quote_2 = { left = "“", right = "”" },
   },
   keymaps = {
     ["("] = { action = "open", pair = "()" },
@@ -77,6 +84,20 @@ require("nviq.appl.autopair").setup {
         markdown = "md_u"
       }
     },
+    ["（"] = { action = "open", pair = "paren" },
+    ["）"] = { action = "close", pair = "paren" },
+    ["【"] = { action = "open", pair = "brack" },
+    ["】"] = { action = "close", pair = "brack" },
+    ["「"] = { action = "open", pair = "quine" },
+    ["」"] = { action = "close", pair = "quine" },
+    ["〈"] = { action = "open", pair = "title_1" },
+    ["〉"] = { action = "close", pair = "title_1" },
+    ["《"] = { action = "open", pair = "title_2" },
+    ["》"] = { action = "close", pair = "title_2" },
+    ["‘"] = { action = "open", pair = "quote_1" },
+    ["’"] = { action = "close", pair = "quote_1" },
+    ["“"] = { action = "open", pair = "quote_2" },
+    ["”"] = { action = "close", pair = "quote_2" },
   }
 }
 
@@ -150,14 +171,14 @@ end
 
 vim.api.nvim_create_autocmd("FileType", {
   group = _augroup,
-  pattern = { "markdown", "vimwiki.markdown" },
+  pattern = { "markdown" },
   callback = function(event)
     local opts = { buffer = event.buf }
-    surround_toggle("<M-P>", "`", [[\v(markdown|Vimwiki)Code|raw]], opts)
-    surround_toggle("<M-I>", "*", [[\v(markdown|Vimwiki)Italic|italic]], opts)
-    surround_toggle("<M-B>", "**", [[\v(markdown|Vimwiki)Bold|strong]], opts)
-    surround_toggle("<M-M>", "***", [[\v(markdown|Vimwiki)BoldItalic|strong|italic]], opts)
-    surround_toggle("<M-U>", "<u>", [[\v(html|Vimwiki)Underline]], opts)
+    surround_toggle("<M-P>", "`", [[\vmarkdownCode|raw]], opts)
+    surround_toggle("<M-I>", "*", [[\vmarkdownItalic|italic]], opts)
+    surround_toggle("<M-B>", "**", [[\vmarkdownBold|strong]], opts)
+    surround_toggle("<M-M>", "***", [[\vmarkdownBoldItalic|strong|italic]], opts)
+    surround_toggle("<M-U>", "<u>", [[\vhtmlUnderline]], opts)
   end,
 })
 

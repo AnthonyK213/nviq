@@ -1,5 +1,5 @@
 use _ffi_util::str_util;
-use rust_stardict::{ConsultOption, Library};
+use _stardict::{ConsultOption, Library};
 use std::ffi::{CString, c_char};
 
 #[unsafe(no_mangle)]

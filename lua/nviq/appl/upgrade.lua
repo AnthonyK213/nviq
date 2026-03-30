@@ -4,7 +4,8 @@ local futures = require("nviq.util.futures")
 
 local _source_table = {
   Windows = {
-    x64 = "nvim-win64.zip",
+    arm64 = "nvim-win-arm64.zip",
+    x64   = "nvim-win64.zip",
   },
   Linux = {
     arm64 = "nvim-linux-arm64.tar.gz",

@@ -10,3 +10,4 @@ Cargo.lock
 *.netrwhist
 .DS_Store
 doc/tags
+nvim-pack-lock.json

@@ -1,20 +1,23 @@
-local mini_deps = require("mini.deps")
+local packer = require("nviq.appl.packer")
 
 ---------------------------------mason-lspconfig--------------------------------
 
-mini_deps.now(function()
-  mini_deps.add {
-    source = "mason-org/mason-lspconfig.nvim",
-    depends = {
-      "neovim/nvim-lspconfig",
-      "mason-org/mason.nvim",
+packer.add {
+  src = "https://github.com/mason-org/mason-lspconfig.nvim",
+  data = {
+    lazy = true,
+    event = { "BufReadPre", "BufNewFile" },
+    deps = {
+      "https://github.com/neovim/nvim-lspconfig",
+      "https://github.com/mason-org/mason.nvim",
     },
-  }
+    conf = function()
+      require("mason-lspconfig").setup {
+        ensure_installed = require("nviq.appl.lsp").servers_to_install(),
+        automatic_enable = false,
+      }
 
-  require("mason-lspconfig").setup {
-    ensure_installed = require("nviq.appl.lsp").servers_to_install(),
-    automatic_enable = false,
+      require("nviq.appl.lsp").setup()
+    end
   }
-
-  require("nviq.appl.lsp").setup()
-end)
+}

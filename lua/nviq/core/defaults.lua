@@ -7,7 +7,8 @@ vim.o.number = true
 vim.o.hidden = true
 vim.o.cursorline = true
 vim.o.cmdheight = 1
-vim.o.scrolloff = 5
+vim.o.scrolloff = 8
+vim.o.smoothscroll = true
 vim.o.laststatus = _G.NVIQ.settings.tui.global_status and 3 or 2
 vim.o.signcolumn = "yes:1"
 vim.o.winborder = _G.NVIQ.settings.tui.border
@@ -23,7 +24,7 @@ vim.o.fencs = "utf-8,chinese,ucs-bom,latin-1,shift-jis,gb18030,gbk,gb2312,cp936"
 vim.o.fileformats = "unix,dos,mac"
 vim.opt.formatoptions:append("mB")
 vim.o.autoindent = true
-vim.o.smartindent = true
+vim.o.smartindent = false
 vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.softtabstop = 2
@@ -51,10 +52,17 @@ vim.o.undofile = false
 vim.o.autoread = true
 vim.o.autowrite = true
 vim.o.confirm = true
+vim.o.modeline = false
+vim.o.modelineexpr = false
 
 -- Global variables.
 
 vim.g.mapleader = " "
+
+vim.g.loaded_node_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
 
 -- Diagnostics
 
@@ -64,16 +72,15 @@ vim.diagnostic.config {
   underline        = true,
   update_in_insert = false,
   severity_sort    = false,
-  float            = {
-    border    = _G.NVIQ.settings.tui.border,
-    max_width = 80,
-  },
+  float            = lib.flex_float,
 }
 
 -- Register handlers.
 
----@type fun():string,integer,integer Handler to get <cword> which returns the word, start pos (0-based, inclusive) and end pos (0-based, exclusive).
+---@type fun():string,integer,integer Handler to get <cword> which returns the
+---word, start pos (0-based, inclusive) and end pos (0-based, exclusive).
 _G.NVIQ.handlers.get_word = lib.get_word
 
----@type fun(theme:"dark"|"light")|nil Handler to set background theme. Should be registered by colorscheme.
+---@type fun(theme:"dark"|"light")|nil Handler to set background theme.
+---Should be registered by colorscheme.
 _G.NVIQ.handlers.set_theme = lib.set_theme

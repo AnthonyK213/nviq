@@ -11,11 +11,28 @@ vim.o.mouse = "nvic"
 vim.g.netrw_altv = 1
 vim.g.netrw_banner = 0
 vim.g.netrw_winsize = 20
-vim.g.netrw_liststyle = 4
-vim.g.netrw_browse_split = 4
+vim.g.netrw_liststyle = 0
+vim.g.netrw_browse_split = 0
 vim.g.netrw_clipboard = 0
+vim.g.netrw_fastbrowse = 0
+vim.g.netrw_timefmt = "%Y-%m-%d %H:%M"
+vim.g.netrw_sort_by = "name"
 
-vim.keymap.set("n", "<leader>op", "<Cmd>Lexplore<CR>")
+vim.keymap.set("n", "<leader>op", "<Cmd>Explore<CR>")
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("nviq.appl.offline.netrw", { clear = true }),
+  pattern = "netrw",
+  callback = function(tbl)
+    vim.bo[tbl.buf].buflisted = false
+    vim.bo[tbl.buf].bufhidden = "wipe"
+
+    local opt = { remap = true, buffer = tbl.buf }
+    vim.keymap.set("n", "a", "%", opt) -- New file
+    vim.keymap.set("n", "r", "R", opt) -- Rename file
+    vim.keymap.set("n", "<leader>op", "<Cmd>Rexplore<CR>", opt)
+  end
+})
 
 -- LSP
 -- From [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
@@ -144,6 +161,75 @@ vim.keymap.set("n", "<leader>gb", function()
   require("nviq.appl.git").blame_line()
 end)
 
+-- Select UI
+
+---
+local function close_current_window()
+  if vim.api.nvim_win_is_valid(0) then
+    vim.api.nvim_win_close(0, true)
+  end
+end
+
+---
+---@generic T
+---@param items T[]
+---@param opts {prompt?:string,format_item?:(fun(item:T):string),kind?:string}
+---@param on_choice fun(item: T?, idx: integer?)
+local function ui_select(items, opts, on_choice)
+  if #items == 0 then
+    on_choice(nil, nil)
+    return
+  end
+
+  local bufnr = vim.api.nvim_create_buf(false, true)
+  local format_item = opts.format_item or tostring
+  local lines = {}
+  for _, item in ipairs(items) do
+    local line = format_item(item);
+    table.insert(lines, line)
+  end
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+  vim.bo[bufnr].modifiable = false
+
+  local width = math.min(math.floor(vim.o.columns * 0.6), 80)
+  local height = math.min(math.floor(vim.o.lines * 0.6), 12)
+  local win = vim.api.nvim_open_win(bufnr, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = math.floor((vim.o.lines - height) / 2) - 1,
+    col = math.floor((vim.o.columns - width) / 2),
+    style = "minimal",
+    title = opts.prompt or "Select one of:",
+  })
+  vim.wo[win].winfixbuf = true
+  vim.wo[win].cursorline = true
+
+  local selected = false
+
+  vim.keymap.set("n", "<CR>", function()
+    selected = true
+    local idx = vim.api.nvim_win_get_cursor(0)[1]
+    close_current_window()
+    on_choice(items[idx], idx)
+  end, { buffer = bufnr })
+
+  vim.keymap.set("n", "q", close_current_window, { buffer = bufnr })
+  vim.keymap.set("n", "<Esc>", close_current_window, { buffer = bufnr })
+
+  vim.api.nvim_create_autocmd("WinClosed", {
+    buffer = bufnr,
+    callback = function()
+      vim.api.nvim_buf_delete(bufnr, {})
+      if not selected then
+        on_choice(nil, nil)
+      end
+    end
+  })
+end
+
+vim.ui.select = ui_select
+
 -- Find symbols
 
 ---Returns a new list filtered by symbol kind.
@@ -159,7 +245,7 @@ end
 ---@param options vim.lsp.LocationOpts.OnList
 local function show_filtered_symbols_in_loclist(options)
   options.items = get_filtered_symbols(options.items)
-  vim.fn.setloclist(0, {}, " ", options)
+  vim.fn.setloclist(0, {}, " ", options --[[@as vim.fn.setqflist.what]])
   vim.cmd.lopen()
 end
 
@@ -190,7 +276,7 @@ local function find_in_filtered_symbols(options)
     end
 
     options.items = new_items
-    vim.fn.setloclist(winid, {}, " ", options)
+    vim.fn.setloclist(winid, {}, " ", options --[[@as vim.fn.setqflist.what]])
     vim.cmd.lopen()
   end)
 end
@@ -293,7 +379,7 @@ vim.keymap.set("n", "<leader>ff", function()
     local cwd = vim.fn.getcwd()
 
     local files = ls_files(cwd)
-    files = vim.fn.matchfuzzy(files, query)
+    files = vim.fn.matchfuzzy(files, query, { limit = 20 })
     if #files == 0 then
       vim.notify("Nothing found")
       return
@@ -303,10 +389,10 @@ vim.keymap.set("n", "<leader>ff", function()
     --- the beginning of the file even though it has been openned in a buffer.
 
     -- Avoid filling the window since there is no select-ui...
-    local n_take = math.max(math.floor(vim.o.lines * 0.38) - 2, 1)
-    if #files > n_take then
-      files = vim.iter(files):take(n_take):totable()
-    end
+    -- local n_take = math.max(math.floor(vim.o.lines * 0.38) - 2, 1)
+    -- if #files > n_take then
+    --   files = vim.iter(files):take(n_take):totable()
+    -- end
 
     ---@type string?
     local file = futures.ui.select(files, { prompt = "Pick file: " })
@@ -388,3 +474,12 @@ vim.keymap.set("n", "<leader>fg", function()
     end
   end)
 end, { desc = "Grep" })
+
+-- Wiki
+
+vim.keymap.set("n", "<leader>ww", function()
+  local wiki_dir = _G.NVIQ.settings.path.vimwiki
+  if not wiki_dir then return end
+  local index_path = vim.fs.joinpath(wiki_dir, "index.md")
+  lib.edit_file(index_path, { chdir = true, silent = true })
+end, { desc = "Open wiki index" })

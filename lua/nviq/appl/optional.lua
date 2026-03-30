@@ -9,7 +9,7 @@ require("nviq.appl.bigfile").setup {
 
 -- GLSL
 
-vim.api.nvim_create_autocmd("Filetype", {
+vim.api.nvim_create_autocmd("FileType", {
   group = _augroup,
   pattern = "glsl",
   callback = function(event)
@@ -123,6 +123,16 @@ vim.api.nvim_create_user_command("MarpToggle", function(_)
   require("nviq.appl.marp").toggle()
 end, { desc = "Toggle marp-cli" })
 
+-- Markdown Preview
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = _augroup,
+  pattern = { "markdown" },
+  callback = function(event)
+    vim.b[event.buf].nviq_handler_preview_toggle = require("nviq.appl.mdp").toggle
+  end,
+})
+
 -- Template
 
 vim.api.nvim_create_user_command("CreateProject", function(_)
@@ -191,6 +201,16 @@ end, {
   complete = function() return { "new", "toggle", "close", "hide" } end,
   desc = "Toggle terminals",
 })
+
+-- Color scheme
+
+if vim.list_contains({
+      "default",
+      "catppuccin",
+      "lunaperche",
+    }, _G.NVIQ.settings.tui.scheme) then
+  vim.cmd.colorscheme(_G.NVIQ.settings.tui.scheme)
+end
 
 -- Theme
 

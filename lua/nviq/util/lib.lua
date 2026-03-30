@@ -127,6 +127,15 @@ function M.edit_file(path, option)
   end
 end
 
+---Returns a float option with limited size depends on the editor size.
+---@return vim.lsp.util.open_floating_preview.Opts
+function M.flex_float()
+  return {
+    max_width  = math.max(1, math.floor(vim.o.columns * 0.8)),
+    max_height = math.max(1, math.floor(vim.o.lines * 0.8)),
+  }
+end
+
 ---Returns the path of the dotfile (.nvimrc, etc.).
 ---Searching order: stdpath("config") -> home -> ...
 ---Uses the last one was found.
@@ -372,7 +381,9 @@ function M.open(path, opt)
     }
     local proc, pid
     proc, pid = vim.uv.spawn("cmd", option, vim.schedule_wrap(function()
-      proc:close()
+      if proc then
+        proc:close()
+      end
     end))
     return { cmd = "cmd", pid = pid }, nil
   end
