@@ -91,7 +91,7 @@ packer.add {
         group = vim.api.nvim_create_augroup("nviq.pack.mark.vimtex", { clear = true }),
         pattern = "tex",
         callback = function(event)
-          vim.keymap.set("n", "<leader>mv", "<Cmd>VimtexTocToggle<CR>", { buffer = event.buf })
+          vim.keymap.set("n", "<leader>mv", "<Cmd>VimtexTocToggle<CR>", { buf = event.buf })
         end
       })
     end,

@@ -27,7 +27,8 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.bo[tbl.buf].buflisted = false
     vim.bo[tbl.buf].bufhidden = "wipe"
 
-    local opt = { remap = true, buffer = tbl.buf }
+    ---@type vim.keymap.set.Opts
+    local opt = { remap = true, buf = tbl.buf }
     vim.keymap.set("n", "a", "%", opt) -- New file
     vim.keymap.set("n", "r", "R", opt) -- Rename file
     vim.keymap.set("n", "<leader>op", "<Cmd>Rexplore<CR>", opt)
@@ -106,7 +107,7 @@ end)
 
 kutil.new_keymap("i", "<CR>", function(fallback)
   if vim.fn.pumvisible() ~= 0 then
-    kutil.feedkeys("<C-Y>", "in", true)
+    kutil.feedkeys("<C-Y>", "in")
   else
     fallback()
   end
@@ -114,7 +115,7 @@ end)
 
 kutil.new_keymap("i", "<Tab>", function(fallback)
   if vim.fn.pumvisible() ~= 0 then
-    kutil.feedkeys("<C-N>", "in", true)
+    kutil.feedkeys("<C-N>", "in")
     return
   end
 
@@ -129,9 +130,9 @@ kutil.new_keymap("i", "<Tab>", function(fallback)
   if #clients == 0 then
     if vim.regex("\\v[A-Za-z_\\u4e00-\\u9fa5]$"):match_str(context.b) then
       if vim.bo.omnifunc ~= "" then
-        kutil.feedkeys("<C-X><C-O>", "in", true)
+        kutil.feedkeys("<C-X><C-O>", "in")
       else
-        kutil.feedkeys("<C-X><C-I>", "in", true)
+        kutil.feedkeys("<C-X><C-I>", "in")
       end
       return
     end
@@ -147,7 +148,7 @@ end)
 
 kutil.new_keymap("i", "<S-Tab>", function(fallback)
   if vim.fn.pumvisible() ~= 0 then
-    kutil.feedkeys("<C-P>", "in", true)
+    kutil.feedkeys("<C-P>", "in")
   elseif vim.snippet.active { direction = -1 } then
     vim.snippet.jump(-1)
   else
@@ -212,10 +213,10 @@ local function ui_select(items, opts, on_choice)
     local idx = vim.api.nvim_win_get_cursor(0)[1]
     close_current_window()
     on_choice(items[idx], idx)
-  end, { buffer = bufnr })
+  end, { buf = bufnr })
 
-  vim.keymap.set("n", "q", close_current_window, { buffer = bufnr })
-  vim.keymap.set("n", "<Esc>", close_current_window, { buffer = bufnr })
+  vim.keymap.set("n", "q", close_current_window, { buf = bufnr })
+  vim.keymap.set("n", "<Esc>", close_current_window, { buf = bufnr })
 
   vim.api.nvim_create_autocmd("WinClosed", {
     buffer = bufnr,
@@ -307,17 +308,17 @@ end
 
 lsp.register_client_on_attach(function(_, bufnr)
   vim.keymap.set("n", "<leader>mv", show_document_symbols, {
-    buffer = bufnr,
+    buf = bufnr,
     desc = "Show document symbols"
   })
 
   vim.keymap.set("n", "<leader>fa", find_document_symbols, {
-    buffer = bufnr,
+    buf = bufnr,
     desc = "Find workspace symbols"
   })
 
   vim.keymap.set("n", "<leader>fs", find_workspace_symbols, {
-    buffer = bufnr,
+    buf = bufnr,
     desc = "Find workspace symbols"
   })
 end)

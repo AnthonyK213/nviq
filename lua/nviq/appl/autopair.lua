@@ -14,7 +14,7 @@ local ActionType = {
 ---Feeds keys to current buffer.
 ---@param str string Operation as string to feed to buffer.
 local function feed_keys(str)
-  kutil.feedkeys(str, "in", false)
+  kutil.feedkeys(str, "in")
 end
 
 ---Determines whether a character is a numeric/alphabetic/CJK(NAC) character.

@@ -309,7 +309,7 @@ local function plug_load_later(plug)
     for _, keymap in ipairs(data.keymap) do
       vim.keymap.set(keymap.mode, keymap.lhs, function()
         plug_load_now(plug)
-        require("nviq.util.k").feedkeys(keymap.lhs, "m", false)
+        require("nviq.util.k").feedkeys(keymap.lhs, "m")
       end)
     end
   end

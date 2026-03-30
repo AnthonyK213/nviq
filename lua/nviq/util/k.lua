@@ -16,7 +16,7 @@ local M = {}
 ---@return vim.api.keyset.get_keymap?
 local function get_keymap(mode, lhs, opts)
   local keymaps
-  local bufnr = opts.buffer
+  local bufnr = opts.buf
 
   if type(bufnr) == "number" then
     if not vim.api.nvim_buf_is_valid(bufnr) then return end
@@ -50,19 +50,19 @@ local function resolve_fallback(maparg)
       rhs = maparg.rhs --[[@as string]]
       return function()
         -- FIXME: Annoying escapes...
-        M.feedkeys(vim.api.nvim_eval(rhs), mode, true)
+        M.feedkeys(vim.api.nvim_eval(rhs), mode)
       end
     elseif maparg.callback then
       rhs = maparg.callback --[[@as function]]
       return function()
-        M.feedkeys(rhs(), mode, true)
+        M.feedkeys(rhs(), mode)
       end
     end
   else
     if maparg.rhs then
       rhs = maparg.rhs --[[@as string]]
       return function()
-        M.feedkeys(rhs, mode, true)
+        M.feedkeys(rhs, mode)
       end
     elseif maparg.callback then
       return maparg.callback
@@ -81,15 +81,14 @@ end
 ---@see vim.api.nvim_feedkeys
 ---@param keys string To be typed.
 ---@param mode string Behavior flags, see **feedkeys()**.
----@param escape_ks boolean If true, escape K_SPECIAL bytes in `keys`.
-function M.feedkeys(keys, mode, escape_ks)
+function M.feedkeys(keys, mode)
   local k = vim.api.nvim_replace_termcodes(keys, true, false, true)
-  vim.api.nvim_feedkeys(k, mode, escape_ks)
+  vim.api.nvim_feedkeys(k, mode, false)
 end
 
 ---Switches mode to NORMAL.
 function M.to_normal()
-  M.feedkeys("<C-\\><C-N>", "nx", false)
+  M.feedkeys("<C-\\><C-N>", "nx")
 end
 
 ---Creates new mapping with fallback.
@@ -102,7 +101,7 @@ function M.new_keymap(mode, lhs, new_rhs, opts)
 
   local maparg = get_keymap(mode, lhs, opts)
   local fallback = resolve_fallback(maparg) or function()
-    M.feedkeys(lhs, "in", true)
+    M.feedkeys(lhs, "in")
   end
 
   -- TODO: Handle `expr`

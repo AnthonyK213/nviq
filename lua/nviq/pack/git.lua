@@ -37,7 +37,8 @@ packer.add {
         group = vim.api.nvim_create_augroup("nviq.pack.git.fugitive", { clear = true }),
         pattern = "fugitive",
         callback = function(event)
-          local opt = { buffer = event.buf }
+          ---@type vim.keymap.set.Opts
+          local opt = { buf = event.buf }
           vim.keymap.set("n", "<leader>gp", git_pull, opt)
           vim.keymap.set("n", "<leader>gP", git_push, opt)
         end
@@ -104,7 +105,8 @@ packer.add {
           col = 1
         },
         on_attach = function(bufnr)
-          local opt = { buffer = bufnr }
+          ---@type vim.keymap.set.Opts
+          local opt = { buf = bufnr }
           vim.keymap.set("n", "<leader>gj", nav_hunk_next, opt)
           vim.keymap.set("n", "<leader>gk", nav_hunk_prev, opt)
           vim.keymap.set("n", "<leader>gp", require("gitsigns").preview_hunk, opt)

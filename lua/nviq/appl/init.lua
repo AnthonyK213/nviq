@@ -173,7 +173,8 @@ vim.api.nvim_create_autocmd("FileType", {
   group = _augroup,
   pattern = { "markdown" },
   callback = function(event)
-    local opts = { buffer = event.buf }
+    ---@type vim.keymap.set.Opts
+    local opts = { buf = event.buf }
     surround_toggle("<M-P>", "`", [[\vmarkdownCode|raw]], opts)
     surround_toggle("<M-I>", "*", [[\vmarkdownItalic|italic]], opts)
     surround_toggle("<M-B>", "**", [[\vmarkdownBold|strong]], opts)
@@ -186,7 +187,8 @@ vim.api.nvim_create_autocmd("FileType", {
   group = _augroup,
   pattern = "tex",
   callback = function(event)
-    local opts = { buffer = event.buf }
+    ---@type vim.keymap.set.Opts
+    local opts = { buf = event.buf }
     surround_toggle("<M-I>", { "\\textit{", "}" }, [[\vtexStyle(Ital|Both)]], opts)
     surround_toggle("<M-B>", { "\\textbf{", "}" }, [[\vtexStyleBo(ld|th)]], opts)
     surround_toggle("<M-M>", { "\\textrm{", "}" }, [[\vtex(StyleArgConc|MathTextConcArg)]], opts)

@@ -16,7 +16,8 @@ packer.add {
         lsp = {
           enabled = true,
           on_attach = function(_, bufnr)
-            local opts = { buffer = bufnr, silent = true }
+            ---@type vim.keymap.set.Opts
+            local opts = { buf = bufnr, silent = true }
             vim.keymap.set("n", "K", crates.show_popup, opts)
             vim.keymap.set("n", "<leader>cu", crates.update_crate, opts)
             vim.keymap.set("v", "<leader>cu", crates.update_crates, opts)

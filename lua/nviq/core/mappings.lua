@@ -64,7 +64,7 @@ end, { desc = "Open nvimrc" })
 
 for dir, key in pairs { h = "left", j = "down", k = "up", l = "right" } do
   vim.keymap.set("n", "<M-" .. dir .. ">", function()
-    require("nviq.util.k").feedkeys("<C-W>" .. dir, "nx", false)
+    require("nviq.util.k").feedkeys("<C-W>" .. dir, "nx")
   end, { desc = "Move cursor to window: " .. key })
 end
 

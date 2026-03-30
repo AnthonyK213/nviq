@@ -32,7 +32,7 @@ end
 ---@param bufnr integer
 local function custom_attach(client, bufnr)
   ---@type vim.keymap.set.Opts
-  local opt = { buffer = bufnr }
+  local opt = { buf = bufnr }
 
   -- "<C-S>": vim.lsp.buf.signature_help
   vim.keymap.set("n", "K", lsp_hover, opt)                            -- "K"

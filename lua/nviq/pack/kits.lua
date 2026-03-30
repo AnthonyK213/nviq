@@ -33,7 +33,8 @@ packer.add {
         nerd_font = false,
         highlight_closest = false,
         on_attach = function(bufnr)
-          local opt = { buffer = bufnr }
+          ---@type vim.keymap.set.Opts
+          local opt = { buf = bufnr }
           vim.keymap.set("n", "{", require("aerial").prev, opt)
           vim.keymap.set("n", "}", require("aerial").next, opt)
           vim.keymap.set("n", "[[", require("aerial").prev_up, opt)
@@ -213,7 +214,7 @@ packer.add {
 
       require("nviq.appl.lsp").register_client_on_attach(function(_, bufnr)
         ---@type vim.keymap.set.Opts
-        local opt = { buffer = bufnr }
+        local opt = { buf = bufnr }
         local picker = require("telescope.builtin")
 
         vim.keymap.set("n", "<F12>", picker.lsp_definitions, opt)
@@ -222,10 +223,7 @@ packer.add {
         vim.keymap.set("n", "<C-F12>", picker.lsp_implementations, opt)
         vim.keymap.set("n", "<F36>", picker.lsp_implementations, opt)
 
-        vim.keymap.set("n", "<leader>fs", find_workspace_symbols, {
-          buffer = bufnr,
-          desc = "Find workspace symbols"
-        })
+        vim.keymap.set("n", "<leader>fs", find_workspace_symbols, opt)
       end)
 
       require("telescope").load_extension("aerial")
