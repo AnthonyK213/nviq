@@ -14,7 +14,7 @@ local ActionType = {
 ---Feeds keys to current buffer.
 ---@param str string Operation as string to feed to buffer.
 local function feed_keys(str)
-  kutil.feedkeys(str, "in", true)
+  kutil.feedkeys(str, "in", false)
 end
 
 ---Determines whether a character is a numeric/alphabetic/CJK(NAC) character.
@@ -32,6 +32,8 @@ end
 ---@class nviq.appl.autopair.Pair
 ---@field private m_left string Left side of the pair.
 ---@field private m_right string Right side of the pair.
+---@field private m_len_left integer Length of the left side.
+---@field private m_len_right integer Length of the right side.
 local Pair = {}
 
 Pair.__index = Pair
@@ -43,6 +45,8 @@ function Pair.new(spec)
   local pair = {
     m_left = spec.left,
     m_right = spec.right,
+    m_len_left = sutil.len(spec.left),
+    m_len_right = sutil.len(spec.right),
   }
   setmetatable(pair, Pair)
   return pair
@@ -70,12 +74,20 @@ function Pair:right()
   return self.m_right
 end
 
+function Pair:len_left()
+  return self.m_len_left
+end
+
+function Pair:len_right()
+  return self.m_len_right
+end
+
 function Pair:_open()
-  feed_keys(self.m_left .. self.m_right .. string.rep(kutil.dir_key("l"), self.m_right:len()))
+  feed_keys(self.m_left .. self.m_right .. string.rep(kutil.dir_key("l"), self.m_len_right))
 end
 
 function Pair:_close()
-  feed_keys(string.rep(kutil.dir_key("r"), self.m_right:len()))
+  feed_keys(string.rep(kutil.dir_key("r"), self.m_len_right))
 end
 
 function Pair:open()
@@ -282,8 +294,8 @@ local function action_supbs()
     if not pair:is_unset()
         and vim.endswith(back, pair:left())
         and vim.startswith(fore, pair:right())
-        and #pair:left() + #pair:right() > res[2] + res[3] then
-      res = { true, #pair:left(), #pair:right() }
+        and pair:len_left() + pair:len_right() > res[2] + res[3] then
+      res = { true, pair:len_left(), pair:len_right() }
     end
   end
   if res[1] then

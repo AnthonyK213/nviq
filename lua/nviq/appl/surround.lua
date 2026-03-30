@@ -10,12 +10,19 @@ local _pairs = {
   ["{"] = "}",
   ["<"] = ">",
   [" "] = " ",
+  ["（"] = "）",
+  ["【"] = "】",
+  ["「"] = "」",
+  ["〈"] = "〉",
+  ["《"] = "》",
+  ["‘"] = "’",
+  ["“"] = "”",
 }
 
 ---Returns the right side of the surrounding pair according to the `left`.
 ---@param left string
 local function get_right(left)
-  if left:match("^[%(%[{<%s《“]+$") then
+  if vim.regex([[\v^[\(\[{< （【「〈《‘“]+$]]):match_str(left) then
     return table.concat(vim.tbl_map(function(x)
       return _pairs[x]
     end, tutil.reverse(sutil.chars(left))))
