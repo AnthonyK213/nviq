@@ -9,7 +9,7 @@ packer.add {
     lazy = true,
     conf = function()
       require("luasnip.loaders.from_vscode").lazy_load {
-        paths = { vim.fs.joinpath(vim.fn.stdpath("config"), "snippet") }
+        paths = { require("nviq.appl.snippet").snippet_dir() }
       }
     end
   }

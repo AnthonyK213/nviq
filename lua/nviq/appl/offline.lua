@@ -105,6 +105,8 @@ lsp.register_client_on_attach(function(client, bufnr)
   end
 end)
 
+require("nviq.appl.snippet").setup()
+
 kutil.new_keymap("i", "<CR>", function(fallback)
   if vim.fn.pumvisible() ~= 0 then
     kutil.feedkeys("<C-Y>", "in")

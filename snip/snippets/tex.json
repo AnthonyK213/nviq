@@ -130,13 +130,13 @@
   "Integral": {
     "prefix": "int",
     "body": [
-      "\\int_{${1:0}}^{${2:\\infty}}${0}"
+      "\\int_{${1:0}}^{${2:\\\\infty}}${0}"
     ]
   },
   "Sum Full": {
     "prefix": "sumi",
     "body": [
-      "\\sum_{${1:i}=${2:0}}^{${3:\\infty}}${0}"
+      "\\sum_{${1:i}=${2:0}}^{${3:\\\\infty}}${0}"
     ]
   },
   "undersetinline": {
@@ -172,7 +172,7 @@
   "Sum": {
     "prefix": "sum",
     "body": [
-      "\\sum_{${1:i=0}}^{${2:\\infty}}${0}"
+      "\\sum_{${1:i=0}}^{${2:\\\\infty}}${0}"
     ]
   },
   "hbar": {
@@ -235,7 +235,7 @@
       "",
       "\\title{${5:title}}",
       "\\author{${6:author}}",
-      "\\date{${7:\\today}}",
+      "\\date{${7:\\\\today}}",
       "",
       "\\begin{document}",
       "\\maketitle",
