@@ -2,7 +2,7 @@ local lib = require("nviq.util.lib")
 local futil = require("nviq.util.f")
 local futures = require("nviq.util.futures")
 
-local _template_dir = vim.fs.joinpath(vim.fn.stdpath("config"), "template")
+local _template_dir = vim.fs.joinpath(vim.fn.stdpath("config"), "tmpl")
 
 ---@class nviq.appl.template.Template
 ---@field private name string
