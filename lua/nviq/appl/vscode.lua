@@ -13,6 +13,7 @@ vim.cmd.syntax("off")
 
 vim.o.shada = ""
 vim.o.colorcolumn = ""
+vim.o.cmdheight = 37 -- Stop the output panel from popping up on messages.
 
 vim.g.clipboard = vim.g.vscode_clipboard
 vim.notify = vscode.notify

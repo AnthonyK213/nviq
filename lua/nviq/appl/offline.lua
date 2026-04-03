@@ -336,7 +336,7 @@ vim.keymap.set("n", "<leader>fb", ":buffer<space>", { desc = "Pick buffers" })
 ---@return string[] files File paths (relative).
 local function ls_files_default(dir)
   local files = {}
-  for name, type_ in vim.fs.dir(dir, { depth = 42 }) do
+  for name, type_ in vim.fs.dir(dir, { depth = 37 }) do
     if type_ == "file" then
       table.insert(files, name)
     end

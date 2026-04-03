@@ -483,19 +483,23 @@ end
 
 ---
 function M.info()
-  vim.print("Loaded:")
+  local info_chunk = {}
+
   for _, spec in pairs(_pack_map) do
     if spec.data.is_loaded then
-      vim.print("\t" .. spec.name)
+      table.insert(info_chunk, { "● ", "Character" })
+      table.insert(info_chunk, { spec.name .. "\n", "String" })
     end
   end
 
-  vim.print("Not loaded:")
   for _, spec in pairs(_pack_map) do
     if not spec.data.is_loaded then
-      vim.print("\t" .. spec.name)
+      table.insert(info_chunk, { "○ ", "Comment" })
+      table.insert(info_chunk, { spec.name .. "\n", "Comment" })
     end
   end
+
+  vim.api.nvim_echo(info_chunk, false, {})
 end
 
 return M
